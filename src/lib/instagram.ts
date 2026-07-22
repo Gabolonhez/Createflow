@@ -171,3 +171,39 @@ export async function getMediaList(instagramUserId: string, accessToken: string)
   const data = await res.json();
   return data.data || [];
 }
+
+export async function publishInstagramMedia(
+  instagramUserId: string,
+  accessToken: string,
+  mediaUrl: string,
+  caption: string,
+  mediaType: 'IMAGE' | 'REELS' = 'IMAGE'
+): Promise<string> {
+  let url = `${BASE_URL}/${instagramUserId}/media?image_url=${encodeURIComponent(mediaUrl)}&caption=${encodeURIComponent(caption)}&access_token=${accessToken}`;
+  if (mediaType === 'REELS') {
+    url = `${BASE_URL}/${instagramUserId}/media?media_type=REELS&video_url=${encodeURIComponent(mediaUrl)}&caption=${encodeURIComponent(caption)}&access_token=${accessToken}`;
+  }
+
+  const resContainer = await fetch(url, { method: 'POST' });
+  if (!resContainer.ok) {
+    const err = await resContainer.json();
+    throw new Error(`Erro ao criar container de mídia no Instagram: ${JSON.stringify(err)}`);
+  }
+  const containerData = await resContainer.json();
+  const creationId = containerData.id;
+
+  // Vídeos e Reels exigem tempo de processamento pelos servidores do Instagram
+  if (mediaType === 'REELS') {
+    await new Promise((resolve) => setTimeout(resolve, 7000));
+  }
+
+  const publishUrl = `${BASE_URL}/${instagramUserId}/media_publish?creation_id=${creationId}&access_token=${accessToken}`;
+  const resPublish = await fetch(publishUrl, { method: 'POST' });
+  if (!resPublish.ok) {
+    const err = await resPublish.json();
+    throw new Error(`Erro ao publicar mídia no Instagram: ${JSON.stringify(err)}`);
+  }
+  const publishData = await resPublish.json();
+  return publishData.id;
+}
+

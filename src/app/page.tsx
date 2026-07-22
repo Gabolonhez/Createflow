@@ -69,6 +69,37 @@ export default async function Page({ searchParams }: PageProps) {
     };
   }
 
+  // 5. Buscar perfil do criador para o Estúdio de Criação
+  const { data: creatorProfile } = await supabase
+    .from('creator_profiles')
+    .select('*')
+    .eq('id', 'creator_config')
+    .maybeSingle();
+
+  // 6. Buscar banco de ideias
+  const { data: ideas } = await supabase
+    .from('ideas')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  // 7. Buscar rascunhos e roteiros
+  const { data: drafts } = await supabase
+    .from('content_drafts')
+    .select('*')
+    .order('updated_at', { ascending: false });
+
+  // 8. Buscar sessões de chat do Segundo Cérebro
+  const { data: chatSessions } = await supabase
+    .from('chat_sessions')
+    .select('*')
+    .order('updated_at', { ascending: false });
+
+  // 9. Buscar templates analisados de posts virais
+  const { data: templates } = await supabase
+    .from('analyzed_templates')
+    .select('*')
+    .order('created_at', { ascending: false });
+
   return (
     <Dashboard
       config={config || null}
@@ -77,6 +108,11 @@ export default async function Page({ searchParams }: PageProps) {
       stats={stats}
       connectedParam={connected}
       errorParam={error}
+      creatorProfile={creatorProfile || null}
+      ideas={(ideas as any[]) || []}
+      drafts={(drafts as any[]) || []}
+      chatSessions={(chatSessions as any[]) || []}
+      templates={(templates as any[]) || []}
     />
   );
 }
