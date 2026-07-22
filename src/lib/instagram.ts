@@ -8,8 +8,8 @@ export interface InstagramProfile {
 }
 
 export function getOAuthUrl(redirectUri: string): string {
-  const clientId = process.env.INSTAGRAM_CLIENT_ID;
-  if (!clientId) throw new Error('INSTAGRAM_CLIENT_ID must be defined');
+  // Tenta o ID do Instagram ou o ID principal da Meta (1750226409653397)
+  const clientId = process.env.INSTAGRAM_CLIENT_ID || '1750226409653397';
 
   const scope = [
     'instagram_business_basic',
