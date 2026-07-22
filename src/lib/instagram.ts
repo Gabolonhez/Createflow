@@ -17,7 +17,7 @@ export function getOAuthUrl(redirectUri: string): string {
     'instagram_business_manage_comments',
   ].join(',');
 
-  return `https://www.instagram.com/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
+  return `https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_reauth=true&client_id=${clientId}&redirect_uri=${encodeURIComponent(
     redirectUri
   )}&scope=${scope}&response_type=code`;
 }
