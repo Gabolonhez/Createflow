@@ -321,6 +321,72 @@ Gere 5 ideias altamente engajadoras de posts.`;
   }
 }
 
+export async function generateSchedulePlanAction() {
+  const { data: profile, error } = await supabase
+    .from('creator_profiles')
+    .select('*')
+    .eq('id', 'creator_config')
+    .maybeSingle();
+
+  if (error || !profile) {
+    throw new Error('Configure seu Perfil de Marca (nicho, objetivos, público-alvo) antes de gerar o Cronograma Estratégico.');
+  }
+
+  const systemInstruction = `Você é o estrategista chefe de mídias sociais e especialista em cronogramas de publicação para criadores de conteúdo e negócios.
+Sua missão é criar o Cronograma Semanal Estratégico Ideal para o usuário baseado rigorosamente no seu nicho, objetivos de negócios e público-alvo.
+
+Análise exigida:
+1. Determine a Frequência Semanal Ideal (ex: 3 a 5 posts por semana) para evitar overposting e maximizar conversão.
+2. Defina a Ordem Sequencial dos Conteúdos na semana (ex: Começar a semana com Gancho/Atração, meio da semana com Autoridade/Educação, final da semana com Conversão/Venda ou Prova Social).
+3. Especifique Dias, Horários de Pico recomendados, Plataformas e Formatos de maior alcance.
+
+Retorne um objeto JSON estritamente no seguinte formato:
+{
+  "weeklyFrequency": "4 posts por semana",
+  "strategySummary": "Resumo da estratégia semanal explicando por que essa ordem e formatos foram escolhidos para os objetivos do criador.",
+  "items": [
+    {
+      "dayOfWeek": "Segunda-feira",
+      "recommendedTime": "08:30",
+      "platform": "linkedin",
+      "format": "text",
+      "pillar": "Atração & Tendências",
+      "suggestedTopic": "Título / Tema recomendado para este dia",
+      "reasoning": "Por que publicar este tema neste dia e horário"
+    }
+  ]
+}`;
+
+  const prompt = `Crie o cronograma semanal ideal para o meu perfil:
+- Nicho: ${profile.niche}
+- Público-alvo: ${profile.target_audience}
+- Objetivos principais: ${profile.objectives}
+- Tom de Voz: ${profile.voice_tone}
+- Pilares de Conteúdo: ${profile.content_pillars?.join(', ') || 'Geral'}
+
+Gere a estrutura completa do cronograma semanal estratégico.`;
+
+  try {
+    const result = await generateJson<{
+      weeklyFrequency: string;
+      strategySummary: string;
+      items: Array<{
+        dayOfWeek: string;
+        recommendedTime: string;
+        platform: string;
+        format: string;
+        pillar: string;
+        suggestedTopic: string;
+        reasoning: string;
+      }>;
+    }>(prompt, systemInstruction);
+
+    return result;
+  } catch (e: any) {
+    throw new Error(`Erro ao gerar Cronograma Estratégico com IA: ${e.message}`);
+  }
+}
+
 export async function generateScriptAction(data: {
   title: string;
   description?: string;

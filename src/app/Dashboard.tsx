@@ -70,6 +70,7 @@ import {
   deleteAnalyzedTemplateAction,
   refineDraftAction,
   getChatMessagesAction,
+  generateSchedulePlanAction,
 } from './actions';
 
 interface Automation {
@@ -266,6 +267,24 @@ export default function Dashboard({
   const [localTemplates, setLocalTemplates] = useState<any[]>(templates);
 
   const [isPublishing, setIsPublishing] = useState(false);
+
+  // ESTADO DO CRONOGRAMA ESTRATÉGICO
+  const [schedulePlan, setSchedulePlan] = useState<any | null>(null);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [isGeneratingSchedule, setIsGeneratingSchedule] = useState(false);
+
+  const handleGenerateSchedulePlan = async () => {
+    setIsGeneratingSchedule(true);
+    try {
+      const plan = await generateSchedulePlanAction();
+      setSchedulePlan(plan);
+      setIsScheduleModalOpen(true);
+    } catch (err: any) {
+      alert(`Erro ao gerar cronograma: ${err.message}`);
+    } finally {
+      setIsGeneratingSchedule(false);
+    }
+  };
 
   // Carregar mensagens quando a sessão do chat ativo muda
   useEffect(() => {
@@ -1170,6 +1189,16 @@ export default function Dashboard({
               >
                 <Settings className="h-4 w-4 shrink-0" />
                 Marca & Conexões
+              </button>
+
+              <button
+                type="button"
+                onClick={handleGenerateSchedulePlan}
+                disabled={isGeneratingSchedule}
+                className="py-2.5 px-4 rounded-xl text-xs font-bold bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 transition flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50"
+              >
+                <Sparkles className="h-4 w-4 text-indigo-400 animate-pulse" />
+                {isGeneratingSchedule ? 'Gerando Plano...' : '📅 Cronograma Semanal (IA)'}
               </button>
             </div>
 
@@ -2791,6 +2820,101 @@ export default function Dashboard({
             <div className="p-4 bg-slate-950/50 border-t border-slate-800 text-right">
               <button
                 onClick={() => setIsMediaSelectorOpen(false)}
+                className="px-4 py-2 border border-slate-800 text-slate-400 hover:text-white transition rounded-lg text-xs font-semibold"
+              >
+                Fechar
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* MODAL CRONOGRAMA ESTRATÉGICO DA SEMANA */}
+      {isScheduleModalOpen && schedulePlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm animate-fade-in p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            
+            <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-indigo-500/10 border border-indigo-500/20 p-2 rounded-xl text-indigo-400">
+                  <Clock className="h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="text-base font-bold text-white flex items-center gap-2">
+                    Cronograma Semanal Estratégico
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-semibold">
+                      {schedulePlan.weeklyFrequency}
+                    </span>
+                  </h4>
+                  <p className="text-xs text-slate-400">Ordem, horários e pilares recomendados para maximizar seu alcance e conversão.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsScheduleModalOpen(false)}
+                className="text-slate-400 hover:text-white transition p-1 bg-slate-800 rounded-lg"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="p-6 flex-1 overflow-y-auto space-y-6">
+              {/* Resumo da Estratégia */}
+              <div className="bg-slate-950/70 border border-slate-800 p-4 rounded-xl space-y-1 text-left">
+                <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Estratégia Recomendada para o seu Nicho</span>
+                <p className="text-xs text-slate-300 leading-relaxed">{schedulePlan.strategySummary}</p>
+              </div>
+
+              {/* Lista de Dias e Horários */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                {schedulePlan.items?.map((item: any, idx: number) => (
+                  <div key={idx} className="bg-slate-950 border border-slate-800/80 rounded-xl p-4 flex flex-col justify-between space-y-3 hover:border-slate-700 transition">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-extrabold text-white flex items-center gap-1.5">
+                          📅 {item.dayOfWeek} às {item.recommendedTime}
+                        </span>
+                        <span className="text-[9px] px-2 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-md font-bold uppercase">
+                          {item.platform} • {item.format}
+                        </span>
+                      </div>
+
+                      {item.pillar && (
+                        <span className="text-[10px] text-slate-400 block font-semibold">
+                          Pilar: <span className="text-indigo-300">{item.pillar}</span>
+                        </span>
+                      )}
+
+                      <h5 className="font-bold text-white text-xs leading-snug">{item.suggestedTopic}</h5>
+                      <p className="text-[10px] text-slate-400 leading-relaxed">{item.reasoning}</p>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setIsScheduleModalOpen(false);
+                        handleOpenDraftFromIdea({
+                          id: '',
+                          title: item.suggestedTopic,
+                          description: item.reasoning,
+                          reference_url: null,
+                          pillar: item.pillar,
+                          status: 'idea',
+                          created_at: new Date().toISOString()
+                        });
+                      }}
+                      className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 shadow"
+                    >
+                      <Sparkles className="h-3.5 w-3.5" />
+                      + Rascunhar este Post
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-4 bg-slate-950/50 border-t border-slate-800 text-right">
+              <button
+                onClick={() => setIsScheduleModalOpen(false)}
                 className="px-4 py-2 border border-slate-800 text-slate-400 hover:text-white transition rounded-lg text-xs font-semibold"
               >
                 Fechar
