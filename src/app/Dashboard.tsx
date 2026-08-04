@@ -669,6 +669,17 @@ export default function Dashboard({
     }
   };
 
+  // Handler de Geração de Imagem por IA
+  const handleGenerateAIImage = () => {
+    if (!draftForm.title && !draftForm.content) {
+      alert('Digite um título ou conteúdo antes de gerar a imagem.');
+      return;
+    }
+    const topic = encodeURIComponent(draftForm.title || draftForm.content.slice(0, 50));
+    const generatedUrl = `https://image.pollinations.ai/prompt/professional%20minimalist%20social%20media%20graphic%20about%20${topic}?width=1080&height=1080&nologo=true&seed=${Math.floor(Math.random() * 10000)}`;
+    setDraftForm((prev) => ({ ...prev, media_url: generatedUrl }));
+  };
+
   // Handlers de Publicação
   const handleConnectLinkedIn = async () => {
     setStudioLoading(true);
@@ -2608,18 +2619,75 @@ export default function Dashboard({
                     </div>
                   )}
 
-                  {/* Link da Mídia */}
-                  <div className="space-y-2 text-left">
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                      URL da Imagem ou Vídeo (Opcional no LinkedIn, Obrigatório no Instagram)
-                    </label>
-                    <input
-                      type="text"
-                      value={draftForm.media_url || ''}
-                      onChange={(e) => setDraftForm({ ...draftForm, media_url: e.target.value })}
-                      placeholder="https://exemplo.com/sua-imagem.jpg"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-700 focus:outline-none focus:border-indigo-500 transition"
-                    />
+                  {/* Mídia e Imagens */}
+                  <div className="space-y-3 text-left bg-slate-950/60 border border-slate-800/80 p-4 rounded-2xl">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                        Mídia do Post (Imagem / Vídeo)
+                      </label>
+                      <span className="text-[10px] text-slate-500">
+                        {draftForm.platform === 'instagram' ? 'Obrigatório no Insta' : 'Opcional no LinkedIn'}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="text"
+                        value={draftForm.media_url || ''}
+                        onChange={(e) => setDraftForm({ ...draftForm, media_url: e.target.value })}
+                        placeholder="https://exemplo.com/sua-imagem.jpg"
+                        className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-700 focus:outline-none focus:border-indigo-500 transition"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleGenerateAIImage}
+                        className="py-2 px-3 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shrink-0"
+                      >
+                        <Sparkles className="h-3.5 w-3.5" />
+                        {draftForm.media_url ? '🔄 Regenerar Imagem' : '🎨 Gerar Imagem por IA'}
+                      </button>
+                    </div>
+
+                    {/* Preview da Imagem Anexada */}
+                    {draftForm.media_url ? (
+                      <div className="relative group rounded-xl overflow-hidden border border-slate-800 bg-slate-900 max-h-48 flex items-center justify-center">
+                        <img
+                          src={draftForm.media_url}
+                          alt="Preview do Post"
+                          className="w-full h-48 object-cover rounded-xl"
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = 'none';
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition">
+                          <button
+                            type="button"
+                            onClick={handleGenerateAIImage}
+                            className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold shadow hover:bg-indigo-500 transition"
+                          >
+                            🔄 Regenerar IA
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDraftForm({ ...draftForm, media_url: '' })}
+                            className="px-3 py-1.5 bg-rose-600 text-white rounded-lg text-xs font-bold shadow hover:bg-rose-500 transition"
+                          >
+                            <Trash2 className="h-3.5 w-3.5 inline mr-1" /> Remover
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      config && (
+                        <button
+                          type="button"
+                          onClick={() => setIsMediaSelectorOpen(true)}
+                          className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1.5 transition"
+                        >
+                          <Image className="h-3.5 w-3.5" />
+                          Selecionar foto/vídeo das suas mídias do Instagram
+                        </button>
+                      )
+                    )}
                   </div>
 
                   {/* Agendamento Automático */}
