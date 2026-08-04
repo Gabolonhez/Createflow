@@ -202,12 +202,12 @@ export async function deleteIdeaAction(id: string) {
 }
 
 export async function saveDraftAction(formData: any) {
-  const { id, title, platform, format, content, visual_script, status, idea_id, media_url } = formData;
+  const { id, title, platform, format, content, visual_script, status, idea_id, media_url, scheduled_at } = formData;
   if (!title || !platform || !format || !content) {
     throw new Error('Título, plataforma, formato e conteúdo são obrigatórios.');
   }
 
-  const payload = {
+  const payload: any = {
     title,
     platform,
     format,
@@ -216,6 +216,7 @@ export async function saveDraftAction(formData: any) {
     status: status || 'draft',
     idea_id: idea_id || null,
     media_url: media_url || null,
+    scheduled_at: scheduled_at || null,
     updated_at: new Date().toISOString()
   };
 
@@ -240,6 +241,40 @@ export async function deleteDraftAction(id: string) {
     throw new Error(`Erro ao deletar rascunho: ${error.message}`);
   }
   revalidatePath('/');
+}
+
+export async function publishScheduledDraftsAction() {
+  const now = new Date().toISOString();
+  
+  // Buscar rascunhos agendados para publicação até o horário atual
+  const { data: scheduledDrafts, error } = await supabase
+    .from('content_drafts')
+    .select('*')
+    .eq('status', 'ready')
+    .not('scheduled_at', 'is', null)
+    .lte('scheduled_at', now);
+
+  if (error || !scheduledDrafts || scheduledDrafts.length === 0) {
+    return { publishedCount: 0 };
+  }
+
+  let publishedCount = 0;
+
+  for (const draft of scheduledDrafts) {
+    try {
+      if (draft.platform === 'linkedin') {
+        await publishToLinkedInAction(draft.id);
+        publishedCount++;
+      } else if (draft.platform === 'instagram') {
+        await publishToInstagramAction(draft.id);
+        publishedCount++;
+      }
+    } catch (e: any) {
+      console.error(`Falha ao publicar rascunho agendado ${draft.id}:`, e.message);
+    }
+  }
+
+  return { publishedCount };
 }
 
 export async function generateIdeasAction() {

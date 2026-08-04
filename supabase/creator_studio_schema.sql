@@ -89,6 +89,7 @@ alter table config add column if not exists linkedin_profile_id text;
 alter table config add column if not exists linkedin_name text;
 alter table config add column if not exists linkedin_expires_at timestamp with time zone;
 
--- Alterações na tabela content_drafts para suportar links de mídia e registro de publicação
+-- Alterações na tabela content_drafts para suportar links de mídia, agendamento e registro de publicação
 alter table content_drafts add column if not exists media_url text;
+alter table content_drafts add column if not exists scheduled_at timestamp with time zone;
 alter table content_drafts add column if not exists published_at timestamp with time zone;

@@ -126,6 +126,7 @@ interface Draft {
   created_at: string;
   updated_at: string;
   media_url?: string | null;
+  scheduled_at?: string | null;
 }
 
 interface DashboardProps {
@@ -239,6 +240,7 @@ export default function Dashboard({
     idea_id: '',
     status: 'draft' as 'draft' | 'ready' | 'published',
     media_url: '',
+    scheduled_at: '',
   });
   const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
   const [isGeneratingScript, setIsGeneratingScript] = useState(false);
@@ -366,6 +368,7 @@ export default function Dashboard({
       idea_id: idea.id,
       status: 'draft',
       media_url: '',
+      scheduled_at: '',
     });
     setCustomPrompt(idea.description || '');
     setIsDraftModalOpen(true);
@@ -382,6 +385,7 @@ export default function Dashboard({
       idea_id: '',
       status: 'draft',
       media_url: '',
+      scheduled_at: '',
     });
     setCustomPrompt('');
     setIsDraftModalOpen(true);
@@ -398,6 +402,7 @@ export default function Dashboard({
       idea_id: draft.idea_id || '',
       status: draft.status,
       media_url: draft.media_url || '',
+      scheduled_at: draft.scheduled_at || '',
     });
     setCustomPrompt('');
     setIsDraftModalOpen(true);
@@ -568,6 +573,7 @@ export default function Dashboard({
       idea_id: '',
       status: 'draft',
       media_url: '',
+      scheduled_at: '',
     });
     setCustomPrompt('');
     setIsDraftModalOpen(true);
@@ -637,6 +643,7 @@ export default function Dashboard({
       idea_id: '',
       status: 'draft',
       media_url: '',
+      scheduled_at: '',
     });
     setCustomPrompt('Foque em adaptar os placeholders [entre colchetes] do template para o meu nicho.');
     setIsDraftModalOpen(true);
@@ -808,53 +815,59 @@ export default function Dashboard({
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500 selection:text-white pb-20">
       
       {/* HEADER */}
-      <header className="border-b border-slate-900 bg-slate-950/80 sticky top-0 z-40 backdrop-blur-md">
+      {/* HEADER */}
+      <header className="border-b border-zinc-800/80 bg-[#09090b]/80 sticky top-0 z-40 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-tr from-pink-500 via-red-500 to-yellow-500 p-2 rounded-xl text-white shadow-lg">
-              <Instagram className="h-6 w-6" />
+            <div className="bg-indigo-500/10 border border-indigo-500/20 p-2.5 rounded-xl text-indigo-400 shadow-sm flex items-center justify-center">
+              <Sparkles className="h-5 w-5 text-indigo-400" />
             </div>
             <div>
-              <span className="font-extrabold text-lg bg-gradient-to-r from-indigo-400 via-purple-300 to-white bg-clip-text text-transparent">
-                CreateFlow
-              </span>
-              <span className="text-xs block text-slate-500 font-medium">Segundo Cérebro & Automação</span>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-base tracking-tight text-white">
+                  CreateFlow
+                </span>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                  AI OS
+                </span>
+              </div>
+              <span className="text-xs block text-zinc-400 font-medium">Segundo Cérebro & Automação</span>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
             {config ? (
-              <div className="flex items-center gap-3 bg-slate-900/60 border border-slate-800 rounded-full py-1.5 pl-3 pr-4 shadow-inner">
+              <div className="flex items-center gap-3 bg-[#121215] border border-zinc-800/80 rounded-full py-1.5 pl-3 pr-4 shadow-sm">
                 {config.profile_picture_url ? (
                   <img
                     src={config.profile_picture_url}
                     alt={config.instagram_username}
-                    className="h-7 w-7 rounded-full object-cover border border-indigo-500"
+                    className="h-6 w-6 rounded-full object-cover border border-indigo-500/40"
                   />
                 ) : (
-                  <div className="h-7 w-7 rounded-full bg-indigo-500 flex items-center justify-center text-xs font-bold text-white">
+                  <div className="h-6 w-6 rounded-full bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-[10px] font-bold text-indigo-300">
                     {config.instagram_username?.charAt(0).toUpperCase()}
                   </div>
                 )}
-                <span className="text-sm font-semibold text-slate-300">
+                <span className="text-xs font-semibold text-zinc-200">
                   @{config.instagram_username}
                 </span>
                 <button
                   onClick={handleDisconnect}
                   disabled={loading}
-                  className="text-slate-500 hover:text-red-400 transition"
+                  className="text-zinc-500 hover:text-rose-400 transition"
                   title="Desconectar Instagram"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-3.5 w-3.5" />
                 </button>
               </div>
             ) : (
               <button
                 onClick={handleConnect}
                 disabled={loading}
-                className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-600 hover:to-indigo-600 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-lg shadow-indigo-500/10 flex items-center gap-2 transition active:scale-95 disabled:opacity-50"
+                className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-4 py-2 rounded-xl shadow-sm shadow-indigo-600/20 flex items-center gap-2 transition active:scale-95 disabled:opacity-50"
               >
-                <Instagram className="h-4 w-4" />
+                <Instagram className="h-3.5 w-3.5" />
                 Conectar Instagram
               </button>
             )}
@@ -865,27 +878,27 @@ export default function Dashboard({
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
         
         {/* NAVEGAÇÃO DE ABAS PRINCIPAIS */}
-        <div className="flex border-b border-slate-900 pb-px gap-6 items-center">
+        <div className="flex border-b border-zinc-800/80 pb-px gap-8 items-center">
           <button
             onClick={() => setActiveMainTab('automations')}
-            className={`pb-3 text-sm font-semibold relative transition ${
+            className={`pb-3 text-sm font-semibold relative transition-all ${
               activeMainTab === 'automations'
                 ? 'text-indigo-400 border-b-2 border-indigo-500'
-                : 'text-slate-400 hover:text-slate-200'
+                : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
             Automações do Instagram
           </button>
           <button
             onClick={() => setActiveMainTab('creator_studio')}
-            className={`pb-3 text-sm font-semibold relative transition flex items-center gap-1.5 ${
+            className={`pb-3 text-sm font-semibold relative transition-all flex items-center gap-2 ${
               activeMainTab === 'creator_studio'
                 ? 'text-indigo-400 border-b-2 border-indigo-500'
-                : 'text-slate-400 hover:text-slate-200'
+                : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
             <Sparkles className="h-4 w-4 text-indigo-400" />
-            Estúdio de Criação (IA)
+            Estúdio de Criação & Segundo Cérebro
           </button>
         </div>
 
@@ -2607,6 +2620,22 @@ export default function Dashboard({
                       placeholder="https://exemplo.com/sua-imagem.jpg"
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-700 focus:outline-none focus:border-indigo-500 transition"
                     />
+                  </div>
+
+                  {/* Agendamento Automático */}
+                  <div className="space-y-2 text-left">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                      Agendamento Automático de Publicação (Opcional)
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={draftForm.scheduled_at ? new Date(draftForm.scheduled_at).toISOString().slice(0, 16) : ''}
+                      onChange={(e) => setDraftForm({ ...draftForm, scheduled_at: e.target.value ? new Date(e.target.value).toISOString() : '' })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-700 focus:outline-none focus:border-indigo-500 transition"
+                    />
+                    <p className="text-[10px] text-slate-500">
+                      Se definido e o status for "Pronto para Postar", a publicação será disparada automaticamente no horário agendado.
+                    </p>
                   </div>
 
                 </div>
