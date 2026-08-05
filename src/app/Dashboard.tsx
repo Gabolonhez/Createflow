@@ -1036,31 +1036,37 @@ export default function Dashboard({
       </aside>
 
       {/* ÁREA PRINCIPAL DE CONTEÚDO */}
-      <main className="flex-1 p-6 lg:p-8 overflow-y-auto max-w-[1550px] space-y-6">
+      <main className="flex-1 p-6 lg:p-8 overflow-y-auto max-w-[1550px] space-y-6 bg-[#0a0a0c]">
         
-        {/* NAVEGAÇÃO DE ABAS PRINCIPAIS */}
-        <div className="flex border-b border-zinc-800/80 pb-px gap-8 items-center">
-          <button
-            onClick={() => setActiveMainTab('automations')}
-            className={`pb-3 text-sm font-semibold relative transition-all ${
-              activeMainTab === 'automations'
-                ? 'text-indigo-400 border-b-2 border-indigo-500'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            Automações do Instagram
-          </button>
-          <button
-            onClick={() => setActiveMainTab('creator_studio')}
-            className={`pb-3 text-sm font-semibold relative transition-all flex items-center gap-2 ${
-              activeMainTab === 'creator_studio'
-                ? 'text-indigo-400 border-b-2 border-indigo-500'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <Sparkles className="h-4 w-4 text-indigo-400" />
-            Estúdio de Criação & Segundo Cérebro
-          </button>
+        {/* TOP BAR HEADER REPLICADO 1:1 DA REFERÊNCIA (SEARCH + CTA BUTTON) */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-2 border-b border-zinc-800/60">
+          <div className="relative w-full sm:w-96">
+            <input
+              type="text"
+              placeholder="Search ideas, scripts, automations..."
+              className="w-full bg-[#121215] border border-zinc-800/80 rounded-xl pl-9 pr-4 py-2 text-xs text-zinc-300 placeholder-zinc-500 focus:outline-none focus:border-zinc-700 transition font-mono"
+            />
+            <Compass className="h-4 w-4 text-zinc-500 absolute left-3 top-2.5" />
+          </div>
+
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <button
+              onClick={() => {
+                if (activeStudioTab === 'ideas') handleGenerateIdeasWithAI();
+                else if (activeStudioTab === 'drafts') handleOpenNewDraft();
+                else if (activeMainTab === 'automations') handleOpenNew();
+                else handleCreateSession();
+              }}
+              className="bg-[#141416] hover:bg-zinc-800 border border-zinc-700/80 hover:border-zinc-500 text-white font-mono text-xs px-4 py-2 rounded-xl font-bold transition flex items-center gap-2 shadow-sm"
+            >
+              <Plus className="h-4 w-4 text-indigo-400" />
+              <span>
+                {activeStudioTab === 'ideas' ? '+ Create idea' :
+                 activeStudioTab === 'drafts' ? '+ Create script' :
+                 activeMainTab === 'automations' ? '+ Create automation' : '+ New session'}
+              </span>
+            </button>
+          </div>
         </div>
 
         {activeMainTab === 'automations' ? (
@@ -1166,85 +1172,100 @@ export default function Dashboard({
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {automations.map((auto) => (
-                    <div
-                      key={auto.id}
-                      className="bg-[#121215] border border-zinc-800/80 hover:border-zinc-700/90 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:shadow-lg transition duration-200 group relative shadow-sm text-left"
-                    >
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <div className="p-2 rounded-xl bg-violet-600/10 text-violet-400 border border-violet-500/20">
-                              <MessageSquare className="h-4 w-4" />
+                <div className="space-y-8 text-left pt-2">
+                  
+                  {/* SEÇÃO 1: RECENT AUTOMATIONS [3] */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-zinc-400 font-mono">Recent automations</span>
+                      <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
+                        {Math.min(automations.length, 3)}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {automations.slice(0, 3).map((auto) => (
+                        <div
+                          key={auto.id}
+                          className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="h-8 w-8 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-xs font-mono font-bold">
+                              ⚡
                             </div>
-                            <span className="text-[11px] font-mono text-zinc-500">
-                              dm • instagram
+                            <button
+                              onClick={() => handleOpenEdit(auto)}
+                              className="text-zinc-600 hover:text-zinc-300 font-mono text-sm p-1 transition"
+                              title="Edit"
+                            >
+                              •••
+                            </button>
+                          </div>
+
+                          <div className="space-y-1 my-auto">
+                            <h4 className="font-bold text-white text-sm tracking-tight truncate group-hover:text-indigo-300 transition">{auto.name}</h4>
+                            <p className="text-[11px] font-mono text-zinc-500 truncate">
+                              instagram • {auto.match_type === 'any' ? 'any msg' : auto.keywords.join(', ')} • DM
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
+                            <span className="text-zinc-500">Created Jun 12</span>
+                            <span className={`font-bold ${auto.active ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                              {auto.active ? 'Active' : 'Disabled'}
                             </span>
                           </div>
-                          <span
-                            className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
-                              auto.active ? 'text-emerald-400' : 'text-zinc-500'
-                            }`}
-                          >
-                            <span className={`h-1.5 w-1.5 rounded-full ${auto.active ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'}`}></span>
-                            {auto.active ? 'Ativo' : 'Pausado'}
-                          </span>
                         </div>
-
-                        <h4 className="font-bold text-white text-xs leading-snug group-hover:text-indigo-300 transition line-clamp-1">{auto.name}</h4>
-
-                        <div className="space-y-1.5">
-                          <span className="text-[10px] font-mono text-zinc-500 block uppercase tracking-wider">Gatilhos:</span>
-                          <div className="flex flex-wrap gap-1 text-[10px] font-mono">
-                            {auto.match_type === 'any' ? (
-                              <span className="bg-[#18181c] text-indigo-400 px-2 py-0.5 rounded border border-zinc-800">Qualquer mensagem</span>
-                            ) : (
-                              auto.keywords.map((kw, i) => (
-                                <span key={i} className="bg-[#18181c] text-zinc-300 px-2 py-0.5 rounded border border-zinc-800">{kw}</span>
-                              ))
-                            )}
-                          </div>
-                        </div>
-
-                        {auto.link_text && (
-                          <div className="p-2.5 bg-[#09090b] border border-zinc-800/80 rounded-xl text-[11px] text-zinc-400 font-sans line-clamp-2">
-                            {auto.link_text}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex items-center justify-between pt-3 border-t border-zinc-800/80">
-                        <button
-                          onClick={() => handleToggle(auto.id!, !auto.active)}
-                          className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg border transition ${
-                            auto.active
-                              ? 'bg-zinc-800/80 text-zinc-400 border-zinc-700 hover:text-white'
-                              : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
-                          }`}
-                        >
-                          {auto.active ? 'Pausar' : 'Ativar'}
-                        </button>
-
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleOpenEdit(auto)}
-                            className="p-1.5 text-zinc-400 hover:text-white transition rounded-lg hover:bg-zinc-800"
-                            title="Editar Automação"
-                          >
-                            <Edit className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(auto.id!)}
-                            className="p-1.5 text-zinc-500 hover:text-rose-400 transition rounded-lg hover:bg-rose-500/10"
-                            title="Excluir Automação"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+
+                  {/* SEÇÃO 2: ALL AUTOMATIONS [N] */}
+                  <div className="space-y-4 pt-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-zinc-400 font-mono">All automations</span>
+                      <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
+                        {automations.length}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {automations.map((auto) => (
+                        <div
+                          key={auto.id}
+                          className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="h-8 w-8 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-xs font-mono font-bold">
+                              ⚡
+                            </div>
+                            <button
+                              onClick={() => handleOpenEdit(auto)}
+                              className="text-zinc-600 hover:text-zinc-300 font-mono text-sm p-1 transition"
+                              title="Edit"
+                            >
+                              •••
+                            </button>
+                          </div>
+
+                          <div className="space-y-1 my-auto">
+                            <h4 className="font-bold text-white text-sm tracking-tight truncate group-hover:text-indigo-300 transition">{auto.name}</h4>
+                            <p className="text-[11px] font-mono text-zinc-500 truncate">
+                              instagram • {auto.match_type === 'any' ? 'any msg' : auto.keywords.join(', ')} • DM
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
+                            <span className="text-zinc-500">Created Jun 12</span>
+                            <span className={`font-bold ${auto.active ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                              {auto.active ? 'Active' : 'Disabled'}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                 </div>
               )}
             </div>
@@ -1654,202 +1675,180 @@ export default function Dashboard({
               </div>
             )}
 
-            {/* 3. BANCO DE IDEIAS */}
+            {/* 3. BANCO DE IDEIAS (1:1 RÉPLICA DO PAINEL DE AGENTES DA REFERÊNCIA) */}
             {activeStudioTab === 'ideas' && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="space-y-8 animate-fade-in">
                 
-                {/* COLUNA ESQUERDA: CAPTURA & IA */}
-                <div className="lg:col-span-1 space-y-6">
-                  
-                  {/* CAPTURA RÁPIDA DE IDEIA */}
-                  <div className="bg-[#121215]/90 border border-zinc-800/80 rounded-3xl p-6 space-y-4 shadow-xl backdrop-blur-xl">
-                    <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
-                      <Plus className="h-4 w-4 text-indigo-400" />
-                      Capturar Insight Rápido
+                {/* BARRA SUPERIOR E FORMULARIO DE INGESTÃO RÁPIDA */}
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-[#121215] border border-zinc-800/80 p-4 rounded-2xl">
+                  <div className="text-left">
+                    <h3 className="text-sm font-bold text-white font-mono flex items-center gap-2">
+                      <Layers className="h-4 w-4 text-emerald-400" />
+                      Captura & Ingestão de Ideias
                     </h3>
-                    <form onSubmit={handleSaveIdea} className="space-y-4">
-                      <div className="space-y-1 text-left">
-                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Título da Ideia *</label>
-                        <input
-                          type="text"
-                          required
-                          value={ideaForm.title}
-                          onChange={(e) => setIdeaForm({ ...ideaForm, title: e.target.value })}
-                          placeholder="Ex: 5 erros cometidos por iniciantes em anúncios"
-                          className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 transition font-sans"
-                        />
-                      </div>
-                      
-                      <div className="space-y-1 text-left">
-                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Contexto / Detalhes (Opcional)</label>
-                        <textarea
-                          rows={3}
-                          value={ideaForm.description}
-                          onChange={(e) => setIdeaForm({ ...ideaForm, description: e.target.value })}
-                          placeholder="Alguma referência, links ou anotações..."
-                          className="w-full bg-[#09090b] border border-zinc-800 rounded-xl p-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 transition font-sans"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3 text-left">
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Pilar / Canal</label>
-                          <input
-                            type="text"
-                            value={ideaForm.pillar}
-                            onChange={(e) => setIdeaForm({ ...ideaForm, pillar: e.target.value })}
-                            placeholder="Ex: LinkedIn, Vendas"
-                            className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 transition font-sans"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">URL de Ref</label>
-                          <input
-                            type="text"
-                            value={ideaForm.reference_url}
-                            onChange={(e) => setIdeaForm({ ...ideaForm, reference_url: e.target.value })}
-                            placeholder="Link do post de ref"
-                            className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 transition font-sans"
-                          />
-                        </div>
-                      </div>
-
-                      <button
-                        type="submit"
-                        disabled={studioLoading}
-                        className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-md shadow-indigo-600/20"
-                      >
-                        Salvar no Backlog
-                      </button>
-                    </form>
+                    <p className="text-xs text-zinc-400">Digite um insight rápido ou peça sugestões ao Segundo Cérebro.</p>
                   </div>
 
-                  {/* GERADOR DE IDEIAS DA IA */}
-                  <div className="bg-[#121215]/90 border border-zinc-800/80 rounded-3xl p-6 space-y-4 shadow-xl backdrop-blur-xl text-left">
-                    <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-indigo-400 animate-pulse" />
-                      Brainstorm de Ideias (IA)
-                    </h3>
-                    <p className="text-xs text-zinc-400 leading-relaxed">
-                      Receba 5 sugestões de posts altamente alinhadas com o perfil estratégico da sua marca.
-                    </p>
+                  <form onSubmit={handleSaveIdea} className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                    <input
+                      type="text"
+                      required
+                      value={ideaForm.title}
+                      onChange={(e) => setIdeaForm({ ...ideaForm, title: e.target.value })}
+                      placeholder="Título ou insight..."
+                      className="bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 font-mono w-full sm:w-72"
+                    />
+                    <input
+                      type="text"
+                      value={ideaForm.pillar}
+                      onChange={(e) => setIdeaForm({ ...ideaForm, pillar: e.target.value })}
+                      placeholder="Pilar/Canal"
+                      className="bg-[#09090b] border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 font-mono w-28"
+                    />
                     <button
-                      onClick={handleGenerateIdeasWithAI}
-                      className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20"
+                      type="submit"
+                      disabled={studioLoading}
+                      className="bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs px-4 py-2 rounded-xl font-bold transition shrink-0"
                     >
-                      <Sparkles className="h-4 w-4 text-indigo-200" />
-                      Gerar 5 Sugestões por IA
+                      + Save Idea
                     </button>
-                  </div>
-
+                    <button
+                      type="button"
+                      onClick={handleGenerateIdeasWithAI}
+                      className="bg-indigo-600 hover:bg-indigo-500 text-white font-mono text-xs px-4 py-2 rounded-xl font-bold transition flex items-center gap-1 shrink-0"
+                    >
+                      <Sparkles className="h-3.5 w-3.5" />
+                      + AI Brainstorm
+                    </button>
+                  </form>
                 </div>
 
-                {/* COLUNA DIREITA: BACKLOG DE IDEIAS (GRID MICRO-CARDS) */}
-                <div className="lg:col-span-2 space-y-4">
-                  <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
-                    <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2 font-mono">
-                      <Layers className="h-4 w-4 text-emerald-400" />
-                      Banco de Ideias [{ideas.filter(i => i.status === 'idea').length}]
-                    </h3>
+                {/* SEÇÃO 1: RECENT IDEAS [3] */}
+                <div className="space-y-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-zinc-400 font-mono">Recent ideas</span>
+                    <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
+                      {Math.min(ideas.filter(i => i.status === 'idea').length, 3)}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {ideas.filter(i => i.status === 'idea').slice(0, 3).map((idea) => (
+                      <div
+                        key={idea.id}
+                        className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-mono font-bold">
+                            💡
+                          </div>
+                          <button
+                            onClick={() => handleDeleteIdea(idea.id)}
+                            className="text-zinc-600 hover:text-rose-400 font-mono text-sm p-1 transition"
+                            title="Excluir"
+                          >
+                            •••
+                          </button>
+                        </div>
+
+                        <div className="space-y-1 my-auto">
+                          <h4 className="font-bold text-white text-sm tracking-tight truncate group-hover:text-emerald-300 transition">{idea.title}</h4>
+                          <p className="text-[11px] font-mono text-zinc-500 truncate">
+                            {idea.pillar ? `${creatorProfile?.niche?.toLowerCase() || 'nicho'} • ${idea.pillar.toLowerCase()} • ideia` : 'nicho • geral • ideia'}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
+                          <span className="text-zinc-500">Created {new Date(idea.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}</span>
+                          <button
+                            onClick={() => handleOpenDraftFromIdea(idea)}
+                            className="text-emerald-400 font-bold hover:underline"
+                          >
+                            Active
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* SEÇÃO 2: ALL IDEAS [N] */}
+                <div className="space-y-4 text-left pt-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-zinc-400 font-mono">All ideas</span>
+                    <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
+                      {ideas.filter(i => i.status === 'idea').length}
+                    </span>
                   </div>
 
                   {ideas.filter(i => i.status === 'idea').length === 0 ? (
-                    <div className="bg-[#121215]/80 border border-zinc-800/80 rounded-3xl p-16 text-center text-xs text-zinc-500 italic">
-                      Nenhuma ideia no backlog. Escreva uma à esquerda ou peça sugestões à IA!
+                    <div className="bg-[#111114] border border-zinc-800/80 rounded-xl p-16 text-center text-xs text-zinc-500 font-mono">
+                      No ideas captured yet. Use the bar above to add your first idea!
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {ideas.filter(i => i.status === 'idea').map((idea) => (
                         <div
                           key={idea.id}
-                          className="bg-[#121215] border border-zinc-800/80 hover:border-zinc-700 rounded-2xl p-5 flex flex-col justify-between space-y-4 transition duration-200 group relative shadow-sm"
+                          className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
                         >
-                          <div className="space-y-2.5 text-left">
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2">
-                                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                  <Layers className="h-4 w-4" />
-                                </div>
-                                <span className="text-[10px] font-mono text-zinc-500">
-                                  {idea.pillar ? `pilar • ${idea.pillar.toLowerCase()}` : 'ideia • geral'}
-                                </span>
-                              </div>
-                              <button
-                                onClick={() => handleDeleteIdea(idea.id)}
-                                className="text-zinc-500 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition p-1.5 rounded-lg hover:bg-rose-500/10"
-                                title="Excluir ideia"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
+                          <div className="flex items-center justify-between">
+                            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-mono font-bold">
+                              💡
                             </div>
-
-                            <h4 className="font-bold text-white text-xs leading-snug group-hover:text-emerald-300 transition">{idea.title}</h4>
-                            {idea.description && (
-                              <p className="text-[11px] text-zinc-400 line-clamp-3 leading-relaxed font-sans">
-                                {idea.description}
-                              </p>
-                            )}
+                            <button
+                              onClick={() => handleDeleteIdea(idea.id)}
+                              className="text-zinc-600 hover:text-rose-400 font-mono text-sm p-1 transition"
+                              title="Excluir"
+                            >
+                              •••
+                            </button>
                           </div>
 
-                          <div className="flex items-center justify-between pt-3 border-t border-zinc-800/80">
-                            <span className="text-[10px] font-mono text-zinc-500">
-                              {new Date(idea.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              {idea.reference_url && (
-                                <a
-                                  href={idea.reference_url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="p-1.5 bg-[#18181c] border border-zinc-800 text-zinc-400 hover:text-white rounded-lg transition"
-                                  title="Link de referência"
-                                >
-                                  <Link className="h-3 w-3" />
-                                </a>
-                              )}
-                              <button
-                                onClick={() => handleOpenDraftFromIdea(idea)}
-                                className="py-1.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-[10px] font-semibold transition flex items-center gap-1 shadow-sm shadow-indigo-600/20"
-                              >
-                                <FileText className="h-3 w-3" />
-                                Escrever Post
-                              </button>
-                            </div>
+                          <div className="space-y-1 my-auto">
+                            <h4 className="font-bold text-white text-sm tracking-tight truncate group-hover:text-emerald-300 transition">{idea.title}</h4>
+                            <p className="text-[11px] font-mono text-zinc-500 truncate">
+                              {idea.pillar ? `${creatorProfile?.niche?.toLowerCase() || 'nicho'} • ${idea.pillar.toLowerCase()} • ideia` : 'nicho • geral • ideia'}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
+                            <span className="text-zinc-500">Created {new Date(idea.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}</span>
+                            <button
+                              onClick={() => handleOpenDraftFromIdea(idea)}
+                              className="text-emerald-400 font-bold hover:underline"
+                            >
+                              Active
+                            </button>
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
-
                 </div>
 
               </div>
             )}
 
-            {/* 4. RASCUNHOS & PUBLICAÇÃO */}
+            {/* 4. ROTEIROS & RASCUNHOS (1:1 RÉPLICA DA IMAGEM DE REFERÊNCIA) */}
             {activeStudioTab === 'drafts' && (
-              <div className="space-y-6">
+              <div className="space-y-8 animate-fade-in">
                 
-                {/* FILTROS & HEADER RASCUNHOS */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800/80 pb-4">
+                {/* CONTROLES E FILTROS */}
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-[#121215] border border-zinc-800/80 p-4 rounded-2xl">
                   <div className="text-left">
-                    <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider font-mono flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-white font-mono flex items-center gap-2">
                       <FileText className="h-4 w-4 text-amber-400" />
-                      Roteiros & Rascunhos [{
-                        drafts.filter(d => 
-                          (filterPlatform === 'all' || d.platform === filterPlatform) &&
-                          (filterStatus === 'all' || d.status === filterStatus)
-                        ).length
-                      }]
+                      Filtro de Conteúdos & Roteiros
                     </h3>
+                    <p className="text-xs text-zinc-400">Filtre por canal de publicação ou estado do post.</p>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3">
-                    {/* Filtro Rede */}
+                  <div className="flex flex-wrap items-center gap-2">
                     <select
                       value={filterPlatform}
                       onChange={(e) => setFilterPlatform(e.target.value)}
-                      className="bg-[#121215] border border-zinc-800 text-zinc-400 text-xs px-3 py-1.5 rounded-xl focus:outline-none focus:border-indigo-500 transition font-mono"
+                      className="bg-[#09090b] border border-zinc-800 text-zinc-400 text-xs px-3 py-2 rounded-xl focus:outline-none focus:border-zinc-600 font-mono"
                     >
                       <option value="all">Todas as Redes</option>
                       <option value="linkedin">LinkedIn</option>
@@ -1857,11 +1856,10 @@ export default function Dashboard({
                       <option value="tiktok">TikTok</option>
                     </select>
 
-                    {/* Filtro Status */}
                     <select
                       value={filterStatus}
                       onChange={(e) => setFilterStatus(e.target.value)}
-                      className="bg-[#121215] border border-zinc-800 text-zinc-400 text-xs px-3 py-1.5 rounded-xl focus:outline-none focus:border-indigo-500 transition font-mono"
+                      className="bg-[#09090b] border border-zinc-800 text-zinc-400 text-xs px-3 py-2 rounded-xl focus:outline-none focus:border-zinc-600 font-mono"
                     >
                       <option value="all">Todos os Status</option>
                       <option value="draft">Rascunhos</option>
@@ -1871,152 +1869,141 @@ export default function Dashboard({
 
                     <button
                       onClick={handleOpenNewDraft}
-                      className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-4 py-2 rounded-xl shadow-md shadow-indigo-600/20 flex items-center justify-center gap-1.5 transition active:scale-95"
+                      className="bg-indigo-600 hover:bg-indigo-500 text-white font-mono text-xs px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5"
                     >
-                      <Plus className="h-4 w-4" />
-                      Escrever Post
+                      <Plus className="h-3.5 w-3.5" />
+                      + Create script
                     </button>
                   </div>
                 </div>
 
-                {/* LISTAGEM DE RASCUNHOS (GRID 3 COLUNAS) */}
-                {drafts.filter(d => 
-                  (filterPlatform === 'all' || d.platform === filterPlatform) &&
-                  (filterStatus === 'all' || d.status === filterStatus)
-                ).length === 0 ? (
-                  <div className="bg-[#121215]/80 border border-dashed border-zinc-800 rounded-3xl p-16 text-center flex flex-col items-center justify-center space-y-3">
-                    <FileText className="h-8 w-8 text-zinc-600 animate-pulse" />
-                    <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider font-mono">Nenhum rascunho encontrado</h4>
-                    <p className="text-xs text-zinc-500 max-w-sm leading-relaxed">
-                      Clique em "Escrever Post" acima ou vá para "Banco de Ideias" para transformar um insight em rascunho.
-                    </p>
+                {/* SEÇÃO 1: RECENT SCRIPTS [3] */}
+                <div className="space-y-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-zinc-400 font-mono">Recent scripts</span>
+                    <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
+                      {Math.min(drafts.filter(d => 
+                        (filterPlatform === 'all' || d.platform === filterPlatform) &&
+                        (filterStatus === 'all' || d.status === filterStatus)
+                      ).length, 3)}
+                    </span>
                   </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {drafts.filter(d => 
                       (filterPlatform === 'all' || d.platform === filterPlatform) &&
                       (filterStatus === 'all' || d.status === filterStatus)
-                    ).map((draft) => (
+                    ).slice(0, 3).map((draft) => (
                       <div
                         key={draft.id}
-                        className="bg-[#121215] border border-zinc-800/80 hover:border-zinc-700/90 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:shadow-lg transition duration-200 group relative"
+                        className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
                       >
-                        <div className="space-y-3 text-left">
-                          <div className="flex items-center justify-between gap-2">
-                            {/* BADGE REDE SOCIAL */}
-                            <div className="flex items-center gap-2">
-                              <div className={`p-2 rounded-xl border ${
-                                draft.platform === 'linkedin' ? 'bg-blue-600/10 text-blue-400 border-blue-500/20' :
-                                draft.platform === 'instagram' ? 'bg-pink-600/10 text-pink-400 border-pink-500/20' :
-                                'bg-purple-600/10 text-purple-400 border-purple-500/20'
-                              }`}>
-                                <FileText className="h-4 w-4" />
-                              </div>
-                              <span className="text-[11px] font-mono text-zinc-500">
-                                {draft.platform} • {draft.format}
-                              </span>
-                            </div>
-
-                            {/* BADGE STATUS */}
-                            <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
-                              draft.status === 'published' ? 'text-emerald-400' :
-                              draft.status === 'ready' ? 'text-amber-400' : 'text-zinc-500'
-                            }`}>
-                              <span className={`h-1.5 w-1.5 rounded-full ${
-                                draft.status === 'published' ? 'bg-emerald-400 animate-pulse' :
-                                draft.status === 'ready' ? 'bg-amber-400' : 'bg-zinc-600'
-                              }`}></span>
-                              {draft.status === 'draft' ? 'Rascunho' :
-                               draft.status === 'ready' ? 'Pronto' : 'Publicado'}
-                            </span>
+                        <div className="flex items-center justify-between">
+                          <div className={`h-8 w-8 rounded-lg border flex items-center justify-center text-xs font-mono font-bold ${
+                            draft.platform === 'linkedin' ? 'bg-blue-600/10 text-blue-400 border-blue-500/20' :
+                            draft.platform === 'instagram' ? 'bg-pink-600/10 text-pink-400 border-pink-500/20' :
+                            'bg-purple-600/10 text-purple-400 border-purple-500/20'
+                          }`}>
+                            {draft.platform === 'linkedin' ? 'in' : draft.platform === 'instagram' ? 'ig' : 'tt'}
                           </div>
-
-                          <h4 className="font-bold text-white text-xs leading-snug group-hover:text-indigo-300 transition line-clamp-1">{draft.title}</h4>
-                          
-                          <p className="text-[11px] text-zinc-400 line-clamp-3 leading-relaxed whitespace-pre-line bg-[#09090b] p-3 rounded-xl border border-zinc-800/80 font-sans">
-                            {draft.content}
-                          </p>
-
-                          {draft.media_url && (
-                            <div className="rounded-xl overflow-hidden border border-zinc-800 max-h-36 bg-[#09090b]">
-                              <img
-                                src={draft.media_url}
-                                alt="Preview Mídia"
-                                className="w-full h-36 object-cover"
-                                onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
-                              />
-                            </div>
-                          )}
+                          <button
+                            onClick={() => handleOpenEditDraft(draft)}
+                            className="text-zinc-600 hover:text-zinc-300 font-mono text-sm p-1 transition"
+                            title="Edit"
+                          >
+                            •••
+                          </button>
                         </div>
 
-                        <div className="flex items-center justify-between pt-3 border-t border-zinc-800/80">
-                          {/* SNET STATUS SELECTOR */}
-                          <select
-                            value={draft.status}
-                            onChange={(e) => handleUpdateDraftStatus(draft, e.target.value as any)}
-                            className="bg-[#18181c] border border-zinc-800 text-[10px] font-mono text-zinc-400 rounded-lg px-2 py-1 focus:outline-none"
-                          >
-                            <option value="draft">Rascunho</option>
-                            <option value="ready">Pronto</option>
-                            <option value="published">✅ Publicado</option>
-                          </select>
+                        <div className="space-y-1 my-auto">
+                          <h4 className="font-bold text-white text-sm tracking-tight truncate group-hover:text-indigo-300 transition">{draft.title}</h4>
+                          <p className="text-[11px] font-mono text-zinc-500 truncate">
+                            {draft.platform} • {draft.format} • {draft.status}
+                          </p>
+                        </div>
 
-                          {/* AÇÕES DE BOTÃO */}
-                          <div className="flex items-center gap-1">
-                            {draft.status === 'ready' && (
-                              <>
-                                {draft.platform === 'linkedin' && (
-                                  <button
-                                    onClick={() => handlePublishLinkedIn(draft.id)}
-                                    disabled={isPublishing}
-                                    className="p-1.5 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 rounded-lg transition"
-                                    title="Publicar no LinkedIn"
-                                  >
-                                    <ExternalLink className="h-3.5 w-3.5" />
-                                  </button>
-                                )}
-                                {draft.platform === 'instagram' && (
-                                  <button
-                                    onClick={() => handlePublishInstagram(draft.id)}
-                                    disabled={isPublishing}
-                                    className="p-1.5 bg-pink-600/10 hover:bg-pink-600/20 text-pink-400 border border-pink-500/20 rounded-lg transition"
-                                    title="Publicar no Instagram"
-                                  >
-                                    <ExternalLink className="h-3.5 w-3.5" />
-                                  </button>
-                                )}
-                              </>
-                            )}
-
-                            <button
-                              onClick={() => handleOpenEditDraft(draft)}
-                              className="p-1.5 text-zinc-400 hover:text-white transition rounded-lg hover:bg-zinc-800"
-                              title="Editar"
-                            >
-                              <Edit className="h-3.5 w-3.5" />
-                            </button>
-
-                            <button
-                              onClick={() => copyToClipboard(draft.content)}
-                              className="p-1.5 text-zinc-400 hover:text-indigo-400 transition rounded-lg hover:bg-zinc-800"
-                              title="Copiar Texto"
-                            >
-                              <Copy className="h-3.5 w-3.5" />
-                            </button>
-
-                            <button
-                              onClick={() => handleDeleteDraft(draft.id)}
-                              className="p-1.5 text-zinc-500 hover:text-rose-400 transition rounded-lg hover:bg-rose-500/10"
-                              title="Excluir Rascunho"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
+                        <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
+                          <span className="text-zinc-500">Created {new Date(draft.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}</span>
+                          <span className={`font-bold ${
+                            draft.status === 'published' ? 'text-emerald-400' :
+                            draft.status === 'ready' ? 'text-amber-400' : 'text-purple-400'
+                          }`}>
+                            {draft.status === 'published' ? 'Active' : draft.status === 'ready' ? 'Ready' : 'Draft'}
+                          </span>
                         </div>
                       </div>
                     ))}
                   </div>
-                )}
+                </div>
+
+                {/* SEÇÃO 2: ALL SCRIPTS [N] */}
+                <div className="space-y-4 text-left pt-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-zinc-400 font-mono">All scripts</span>
+                    <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
+                      {drafts.filter(d => 
+                        (filterPlatform === 'all' || d.platform === filterPlatform) &&
+                        (filterStatus === 'all' || d.status === filterStatus)
+                      ).length}
+                    </span>
+                  </div>
+
+                  {drafts.filter(d => 
+                    (filterPlatform === 'all' || d.platform === filterPlatform) &&
+                    (filterStatus === 'all' || d.status === filterStatus)
+                  ).length === 0 ? (
+                    <div className="bg-[#111114] border border-zinc-800/80 rounded-xl p-16 text-center text-xs text-zinc-500 font-mono">
+                      No scripts found. Click "+ Create script" above to create one!
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {drafts.filter(d => 
+                        (filterPlatform === 'all' || d.platform === filterPlatform) &&
+                        (filterStatus === 'all' || d.status === filterStatus)
+                      ).map((draft) => (
+                        <div
+                          key={draft.id}
+                          className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className={`h-8 w-8 rounded-lg border flex items-center justify-center text-xs font-mono font-bold ${
+                              draft.platform === 'linkedin' ? 'bg-blue-600/10 text-blue-400 border-blue-500/20' :
+                              draft.platform === 'instagram' ? 'bg-pink-600/10 text-pink-400 border-pink-500/20' :
+                              'bg-purple-600/10 text-purple-400 border-purple-500/20'
+                            }`}>
+                              {draft.platform === 'linkedin' ? 'in' : draft.platform === 'instagram' ? 'ig' : 'tt'}
+                            </div>
+                            <button
+                              onClick={() => handleOpenEditDraft(draft)}
+                              className="text-zinc-600 hover:text-zinc-300 font-mono text-sm p-1 transition"
+                              title="Edit"
+                            >
+                              •••
+                            </button>
+                          </div>
+
+                          <div className="space-y-1 my-auto">
+                            <h4 className="font-bold text-white text-sm tracking-tight truncate group-hover:text-indigo-300 transition">{draft.title}</h4>
+                            <p className="text-[11px] font-mono text-zinc-500 truncate">
+                              {draft.platform} • {draft.format} • {draft.status}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
+                            <span className="text-zinc-500">Created {new Date(draft.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}</span>
+                            <span className={`font-bold ${
+                              draft.status === 'published' ? 'text-emerald-400' :
+                              draft.status === 'ready' ? 'text-amber-400' : 'text-purple-400'
+                            }`}>
+                              {draft.status === 'published' ? 'Active' : draft.status === 'ready' ? 'Ready' : 'Draft'}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
               </div>
             )}
 
