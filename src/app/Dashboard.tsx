@@ -846,8 +846,8 @@ export default function Dashboard({
       
       {/* HEADER */}
       {/* HEADER */}
-      <header className="border-b border-zinc-800/80 bg-[#09090b]/80 sticky top-0 z-40 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <header className="border-b border-zinc-800/80 bg-[#09090b]/90 sticky top-0 z-40 backdrop-blur-xl">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="bg-indigo-500/10 border border-indigo-500/20 p-2.5 rounded-xl text-indigo-400 shadow-sm flex items-center justify-center">
               <Sparkles className="h-5 w-5 text-indigo-400" />
@@ -905,7 +905,7 @@ export default function Dashboard({
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
         
         {/* NAVEGAÇÃO DE ABAS PRINCIPAIS */}
         <div className="flex border-b border-zinc-800/80 pb-px gap-8 items-center">
@@ -1134,13 +1134,13 @@ export default function Dashboard({
           <div className="space-y-6 animate-fade-in">
             
             {/* SUB-ABAS DO ESTÚDIO */}
-            <div className="flex gap-2 p-1 bg-slate-950/40 backdrop-blur-md border border-slate-800/60 rounded-2xl w-full max-w-3xl shadow-xl overflow-x-auto scrollbar-none">
+            <div className="flex flex-wrap items-center gap-2 p-1.5 bg-[#121215] border border-zinc-800/80 rounded-2xl w-full shadow-sm">
               <button
                 onClick={() => setActiveStudioTab('chat')}
-                className={`flex-1 text-center py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${
+                className={`py-2.5 px-4 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${
                   activeStudioTab === 'chat'
-                    ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/20'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/30'
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
                 }`}
               >
                 <Brain className="h-4 w-4 shrink-0" />
@@ -1148,10 +1148,10 @@ export default function Dashboard({
               </button>
               <button
                 onClick={() => setActiveStudioTab('trends')}
-                className={`flex-1 text-center py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${
+                className={`py-2.5 px-4 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${
                   activeStudioTab === 'trends'
-                    ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/20'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/30'
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
                 }`}
               >
                 <Compass className="h-4 w-4 shrink-0" />
@@ -1159,10 +1159,10 @@ export default function Dashboard({
               </button>
               <button
                 onClick={() => setActiveStudioTab('ideas')}
-                className={`flex-1 text-center py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${
+                className={`py-2.5 px-4 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${
                   activeStudioTab === 'ideas'
-                    ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/20'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/30'
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
                 }`}
               >
                 <Layers className="h-4 w-4 shrink-0" />
@@ -1170,10 +1170,10 @@ export default function Dashboard({
               </button>
               <button
                 onClick={() => setActiveStudioTab('drafts')}
-                className={`flex-1 text-center py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${
+                className={`py-2.5 px-4 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${
                   activeStudioTab === 'drafts'
-                    ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/20'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/30'
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
                 }`}
               >
                 <FileText className="h-4 w-4 shrink-0" />
@@ -1181,10 +1181,10 @@ export default function Dashboard({
               </button>
               <button
                 onClick={() => setActiveStudioTab('profile')}
-                className={`flex-1 text-center py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${
+                className={`py-2.5 px-4 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${
                   activeStudioTab === 'profile'
-                    ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/20'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/30'
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
                 }`}
               >
                 <Settings className="h-4 w-4 shrink-0" />
@@ -1195,7 +1195,7 @@ export default function Dashboard({
                 type="button"
                 onClick={handleGenerateSchedulePlan}
                 disabled={isGeneratingSchedule}
-                className="py-2.5 px-4 rounded-xl text-xs font-bold bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 transition flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50"
+                className="ml-auto py-2 px-3.5 rounded-xl text-xs font-semibold bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 transition flex items-center gap-2 whitespace-nowrap disabled:opacity-50"
               >
                 <Sparkles className="h-4 w-4 text-indigo-400 animate-pulse" />
                 {isGeneratingSchedule ? 'Gerando Plano...' : '📅 Cronograma Semanal (IA)'}
@@ -1206,14 +1206,14 @@ export default function Dashboard({
             
             {/* 1. SEGUNDO CÉREBRO (CHAT) */}
             {activeStudioTab === 'chat' && (
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 bg-slate-900/10 border border-slate-900/60 rounded-3xl p-6 min-h-[580px] backdrop-blur-md shadow-2xl">
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 bg-[#121215]/90 border border-zinc-800/80 rounded-3xl p-6 min-h-[640px] shadow-2xl backdrop-blur-xl">
                 {/* BARRA LATERAL: BRAINSTORMS */}
-                <div className="lg:col-span-1 border-r border-slate-900 pr-4 flex flex-col space-y-4">
+                <div className="lg:col-span-1 border-r border-zinc-800/80 pr-4 flex flex-col space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sessões de Brainstorm</span>
+                    <span className="text-xs font-bold text-zinc-300 uppercase tracking-wider">Brainstorms</span>
                     <button
                       onClick={handleCreateSession}
-                      className="p-1.5 bg-indigo-600/10 hover:bg-indigo-600/25 border border-indigo-500/20 text-indigo-400 rounded-xl transition duration-300 flex items-center gap-1 text-[10px] font-bold"
+                      className="px-2.5 py-1 bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/20 text-indigo-400 rounded-xl transition flex items-center gap-1 text-xs font-semibold"
                       title="Nova sessão"
                     >
                       <Plus className="h-3.5 w-3.5" />
@@ -1221,27 +1221,27 @@ export default function Dashboard({
                     </button>
                   </div>
                   
-                  <div className="space-y-1 overflow-y-auto max-h-[460px] scrollbar-thin">
+                  <div className="space-y-1.5 overflow-y-auto max-h-[520px] scrollbar-thin">
                     {sessions.length === 0 ? (
-                      <div className="text-center p-6 text-slate-600 text-xs italic">Nenhuma conversa iniciada</div>
+                      <div className="text-center p-6 text-zinc-500 text-xs italic">Nenhuma conversa iniciada</div>
                     ) : (
                       sessions.map((s) => (
                         <div
                           key={s.id}
                           onClick={() => setActiveSessionId(s.id)}
-                          className={`w-full text-left p-3 rounded-xl cursor-pointer transition-all duration-300 flex items-center justify-between gap-2 group border ${
+                          className={`w-full text-left p-3 rounded-xl cursor-pointer transition flex items-center justify-between gap-2 group border ${
                             activeSessionId === s.id
-                              ? 'bg-indigo-600/10 text-indigo-400 border-indigo-500/30 shadow-inner'
-                              : 'hover:bg-slate-900/40 text-slate-400 border-transparent hover:text-slate-200'
+                              ? 'bg-indigo-600/10 text-indigo-300 border-indigo-500/30 shadow-sm'
+                              : 'hover:bg-zinc-800/50 text-zinc-400 border-transparent hover:text-zinc-200'
                           }`}
                         >
                           <div className="flex items-center gap-2 truncate">
-                            <MessageSquare className="h-4 w-4 shrink-0 text-slate-500 group-hover:text-indigo-400" />
+                            <MessageSquare className="h-4 w-4 shrink-0 text-zinc-500 group-hover:text-indigo-400" />
                             <span className="text-xs font-semibold truncate">{s.title}</span>
                           </div>
                           <button
                             onClick={(e) => handleDeleteSession(s.id, e)}
-                            className="text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition duration-300 p-1 rounded-lg hover:bg-red-500/10"
+                            className="text-zinc-500 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition p-1 rounded-lg hover:bg-rose-500/10"
                             title="Excluir"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -1253,17 +1253,45 @@ export default function Dashboard({
                 </div>
 
                 {/* PAINEL CENTRAL DO CHAT */}
-                <div className="lg:col-span-3 flex flex-col justify-between h-[520px]">
+                <div className="lg:col-span-3 flex flex-col justify-between min-h-[560px]">
                   {!activeSessionId ? (
-                    <div className="flex flex-col items-center justify-center flex-1 text-center p-6 space-y-4">
-                      <div className="p-5 bg-gradient-to-tr from-indigo-600/10 to-violet-600/10 border border-indigo-500/15 rounded-full text-indigo-400">
-                        <Brain className="h-12 w-12 animate-pulse" />
+                    <div className="flex flex-col items-center justify-center flex-1 text-center p-6 space-y-6">
+                      <div className="p-5 bg-indigo-500/10 border border-indigo-500/20 rounded-3xl text-indigo-400 shadow-inner">
+                        <Brain className="h-12 w-12 animate-pulse text-indigo-400" />
                       </div>
-                      <div className="space-y-2 max-w-sm">
-                        <h4 className="text-sm font-bold text-white">Segundo Cérebro Digital</h4>
-                        <p className="text-xs text-slate-400 leading-relaxed">
-                          Selecione ou crie uma sessão de brainstorming na barra lateral. O chat está alimentado com o seu **Nicho, Público e Tom de Voz** para criar ganchos virais e posts sob medida.
+                      <div className="space-y-2 max-w-md">
+                        <h4 className="text-lg font-bold text-white tracking-tight">Segundo Cérebro Digital</h4>
+                        <p className="text-xs text-zinc-400 leading-relaxed">
+                          Alimentado com o **Nicho, Público-Alvo e Tom de Voz** da sua marca. Clique em um dos atalhos abaixo ou inicie uma conversa para criar posts estratégicos.
                         </p>
+                      </div>
+
+                      {/* PROMPTS INICIAIS RÁPIDOS */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-xl text-left">
+                        {[
+                          { title: '🚀 3 Ganchos Virais', prompt: 'Crie 3 ganchos virais irresistíveis para o meu nicho de mercado.' },
+                          { title: '📝 Post para LinkedIn', prompt: 'Escreva um post estruturado e autêntico para o meu LinkedIn sobre superação de desafios.' },
+                          { title: '🎬 Roteiro de Reels/TikTok', prompt: 'Escreva um roteiro dinâmico de Reels em 3 cenas com falas e indicações visuais.' },
+                          { title: '📅 Estratégia da Semana', prompt: 'Qual é a melhor ordem de postagens para esta semana baseada no meu público?' }
+                        ].map((starter, i) => (
+                          <button
+                            key={i}
+                            onClick={async () => {
+                              try {
+                                const newSession = await createChatSessionAction(starter.title);
+                                setSessions((prev) => [newSession, ...prev]);
+                                setActiveSessionId(newSession.id);
+                                setInputMessage(starter.prompt);
+                              } catch (e: any) {
+                                alert(e.message);
+                              }
+                            }}
+                            className="p-3.5 bg-[#18181c] border border-zinc-800 hover:border-indigo-500/50 rounded-2xl text-left transition hover:bg-zinc-800/40 group space-y-1"
+                          >
+                            <span className="text-xs font-bold text-zinc-200 group-hover:text-indigo-400 transition block">{starter.title}</span>
+                            <span className="text-[11px] text-zinc-500 line-clamp-1 block">{starter.prompt}</span>
+                          </button>
+                        ))}
                       </div>
                     </div>
                   ) : (
@@ -1271,59 +1299,60 @@ export default function Dashboard({
                       {/* HISTÓRICO DE MENSAGENS */}
                       <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4 scrollbar-thin flex flex-col">
                         {messages.length === 0 ? (
-                          <div className="text-center p-8 text-slate-500 text-xs italic my-auto">
-                            O cérebro está pronto. Diga o que planeja criar hoje!
+                          <div className="text-center p-12 text-zinc-500 text-xs italic my-auto space-y-3">
+                            <Sparkles className="h-8 w-8 mx-auto text-indigo-400 animate-bounce" />
+                            <p>O cérebro está pronto. O que você gostaria de criar ou analisar agora?</p>
                           </div>
                         ) : (
                           messages.map((m) => (
                             <div
                               key={m.id}
-                              className={`flex gap-3 max-w-[85%] ${
+                              className={`flex gap-3 max-w-[88%] ${
                                 m.role === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto'
                               }`}
                             >
                               <div
                                 className={`h-8 w-8 rounded-full shrink-0 flex items-center justify-center text-xs font-bold border ${
                                   m.role === 'user'
-                                    ? 'bg-slate-800 text-slate-300 border-slate-700'
-                                    : 'bg-indigo-600/10 text-indigo-400 border-indigo-500/20'
+                                    ? 'bg-zinc-800 text-zinc-200 border-zinc-700'
+                                    : 'bg-indigo-600/20 text-indigo-300 border-indigo-500/30'
                                 }`}
                               >
                                 {m.role === 'user' ? 'U' : 'IA'}
                               </div>
-                              <div className="space-y-1.5 text-left">
+                              <div className="space-y-2 text-left">
                                 <div
-                                  className={`p-3.5 rounded-2xl text-xs leading-relaxed shadow-lg ${
+                                  className={`p-4 rounded-2xl text-xs leading-relaxed shadow-md ${
                                     m.role === 'user'
-                                      ? 'bg-slate-800 text-slate-100 rounded-tr-none border border-slate-700'
-                                      : 'bg-slate-900/60 border border-slate-800/80 text-slate-200 rounded-tl-none whitespace-pre-wrap'
+                                      ? 'bg-indigo-600 text-white rounded-tr-none font-medium'
+                                      : 'bg-[#18181c] border border-zinc-800 text-zinc-200 rounded-tl-none whitespace-pre-wrap'
                                   }`}
                                 >
                                   {m.content}
                                 </div>
                                 {m.role === 'model' && (
-                                  <div className="flex items-center gap-3 text-[10px] text-slate-500 ml-1">
+                                  <div className="flex items-center gap-3 text-[11px] text-zinc-400 font-medium ml-1">
                                     <button
                                       onClick={() => handleSaveChatMessageAsIdea(m.content)}
-                                      className="flex items-center gap-1 hover:text-indigo-400 transition duration-300 font-bold"
+                                      className="flex items-center gap-1 hover:text-indigo-400 transition"
                                     >
-                                      <Brain className="h-3 w-3" />
+                                      <Brain className="h-3.5 w-3.5 text-indigo-400" />
                                       Salvar como Ideia
                                     </button>
-                                    <span className="text-slate-800">•</span>
+                                    <span className="text-zinc-700">•</span>
                                     <button
                                       onClick={() => handleSaveChatMessageAsDraft(m.content)}
-                                      className="flex items-center gap-1 hover:text-indigo-400 transition duration-300 font-bold"
+                                      className="flex items-center gap-1 hover:text-indigo-400 transition"
                                     >
-                                      <FileText className="h-3 w-3" />
+                                      <FileText className="h-3.5 w-3.5 text-indigo-400" />
                                       Escrever Post
                                     </button>
-                                    <span className="text-slate-800">•</span>
+                                    <span className="text-zinc-700">•</span>
                                     <button
                                       onClick={() => copyToClipboard(m.content)}
-                                      className="flex items-center gap-1 hover:text-indigo-400 transition duration-300 font-bold"
+                                      className="flex items-center gap-1 hover:text-indigo-400 transition"
                                     >
-                                      <Copy className="h-3 w-3" />
+                                      <Copy className="h-3.5 w-3.5" />
                                       Copiar
                                     </button>
                                   </div>
@@ -1334,10 +1363,10 @@ export default function Dashboard({
                         )}
                         {isSendingMessage && (
                           <div className="flex gap-3 max-w-[85%] mr-auto">
-                            <div className="h-8 w-8 rounded-full bg-indigo-600/10 text-indigo-400 flex items-center justify-center text-xs font-bold border border-indigo-500/20 animate-pulse">
+                            <div className="h-8 w-8 rounded-full bg-indigo-600/20 text-indigo-300 flex items-center justify-center text-xs font-bold border border-indigo-500/30 animate-pulse">
                               IA
                             </div>
-                            <div className="bg-slate-900/60 border border-slate-800 text-slate-400 p-4 rounded-2xl rounded-tl-none text-xs flex items-center gap-2">
+                            <div className="bg-[#18181c] border border-zinc-800 text-zinc-400 p-4 rounded-2xl rounded-tl-none text-xs flex items-center gap-2">
                               <span className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
                               <span className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
                               <span className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce"></span>
@@ -1347,18 +1376,18 @@ export default function Dashboard({
                       </div>
 
                       {/* ENTRADA DE MENSAGEM */}
-                      <form onSubmit={handleSendMessage} className="flex gap-2 bg-slate-950 border border-slate-800/80 p-1.5 rounded-2xl focus-within:border-indigo-500/50 focus-within:ring-2 focus-within:ring-indigo-500/10 transition duration-300">
+                      <form onSubmit={handleSendMessage} className="flex gap-2 bg-[#09090b] border border-zinc-800 p-2 rounded-2xl focus-within:border-indigo-500/80 focus-within:ring-2 focus-within:ring-indigo-500/10 transition">
                         <input
                           type="text"
                           value={inputMessage}
                           onChange={(e) => setInputMessage(e.target.value)}
-                          placeholder="Fale com o seu segundo cérebro (Ex: Esboce um post sobre produtividade)..."
-                          className="flex-1 bg-transparent px-3 text-xs text-white focus:outline-none placeholder-slate-600"
+                          placeholder="Fale com o seu segundo cérebro (Ex: Crie um roteiro em 3 passos para Reels)..."
+                          className="flex-1 bg-transparent px-3 text-xs text-white focus:outline-none placeholder-zinc-500"
                         />
                         <button
                           type="submit"
                           disabled={!inputMessage.trim() || isSendingMessage}
-                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-900 disabled:text-slate-700 text-white rounded-xl font-bold text-xs transition duration-300 flex items-center gap-1.5 shadow"
+                          className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-md shadow-indigo-600/20"
                         >
                           <Sparkles className="h-3.5 w-3.5" />
                           Enviar
@@ -1513,54 +1542,54 @@ export default function Dashboard({
                 <div className="lg:col-span-1 space-y-6">
                   
                   {/* CAPTURA RÁPIDA DE IDEIA */}
-                  <div className="bg-slate-900/30 border border-slate-900 rounded-3xl p-6 space-y-4 backdrop-blur-md">
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                      <Plus className="h-4 w-4 text-indigo-400 animate-pulse" />
+                  <div className="bg-[#121215]/90 border border-zinc-800/80 rounded-3xl p-6 space-y-4 shadow-xl backdrop-blur-xl">
+                    <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
+                      <Plus className="h-4 w-4 text-indigo-400" />
                       Capturar Insight Rápido
                     </h3>
                     <form onSubmit={handleSaveIdea} className="space-y-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Título da Ideia *</label>
+                      <div className="space-y-1 text-left">
+                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Título da Ideia *</label>
                         <input
                           type="text"
                           required
                           value={ideaForm.title}
                           onChange={(e) => setIdeaForm({ ...ideaForm, title: e.target.value })}
                           placeholder="Ex: 5 erros cometidos por iniciantes em anúncios"
-                          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-700 focus:outline-none focus:border-indigo-500 transition"
+                          className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 transition font-sans"
                         />
                       </div>
                       
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Contexto / Detalhes (Opcional)</label>
+                      <div className="space-y-1 text-left">
+                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Contexto / Detalhes (Opcional)</label>
                         <textarea
                           rows={3}
                           value={ideaForm.description}
                           onChange={(e) => setIdeaForm({ ...ideaForm, description: e.target.value })}
                           placeholder="Alguma referência, links ou anotações..."
-                          className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white placeholder-slate-700 focus:outline-none focus:border-indigo-500 transition"
+                          className="w-full bg-[#09090b] border border-zinc-800 rounded-xl p-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 transition font-sans"
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-2 gap-3 text-left">
                         <div className="space-y-1">
-                          <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Pilar / Canal</label>
+                          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Pilar / Canal</label>
                           <input
                             type="text"
                             value={ideaForm.pillar}
                             onChange={(e) => setIdeaForm({ ...ideaForm, pillar: e.target.value })}
                             placeholder="Ex: LinkedIn, Vendas"
-                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-700 focus:outline-none focus:border-indigo-500 transition"
+                            className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 transition font-sans"
                           />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">URL de Ref</label>
+                          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">URL de Ref</label>
                           <input
                             type="text"
                             value={ideaForm.reference_url}
                             onChange={(e) => setIdeaForm({ ...ideaForm, reference_url: e.target.value })}
                             placeholder="Link do post de ref"
-                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-700 focus:outline-none focus:border-indigo-500 transition"
+                            className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 transition font-sans"
                           />
                         </div>
                       </div>
@@ -1568,7 +1597,7 @@ export default function Dashboard({
                       <button
                         type="submit"
                         disabled={studioLoading}
-                        className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition duration-300"
+                        className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-md shadow-indigo-600/20"
                       >
                         Salvar no Backlog
                       </button>
@@ -1576,19 +1605,19 @@ export default function Dashboard({
                   </div>
 
                   {/* GERADOR DE IDEIAS DA IA */}
-                  <div className="bg-slate-900/30 border border-slate-900 rounded-3xl p-6 space-y-4 backdrop-blur-md">
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                      <Sparkles className="h-4.5 w-4.5 text-indigo-400 animate-bounce" />
+                  <div className="bg-[#121215]/90 border border-zinc-800/80 rounded-3xl p-6 space-y-4 shadow-xl backdrop-blur-xl text-left">
+                    <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-indigo-400 animate-pulse" />
                       Brainstorm de Ideias (IA)
                     </h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      Clique no botão abaixo para receber 5 sugestões de posts altamente alinhadas com o perfil estratégico da sua marca.
+                    <p className="text-xs text-zinc-400 leading-relaxed">
+                      Receba 5 sugestões de posts altamente alinhadas com o perfil estratégico da sua marca.
                     </p>
                     <button
                       onClick={handleGenerateIdeasWithAI}
-                      className="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:opacity-95 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow"
+                      className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20"
                     >
-                      <Sparkles className="h-4 w-4 text-indigo-300" />
+                      <Sparkles className="h-4 w-4 text-indigo-200" />
                       Gerar 5 Sugestões por IA
                     </button>
                   </div>
