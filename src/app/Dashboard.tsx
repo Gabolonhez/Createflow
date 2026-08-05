@@ -1166,93 +1166,82 @@ export default function Dashboard({
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   {automations.map((auto) => (
                     <div
                       key={auto.id}
-                      className="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700 transition flex flex-col md:flex-row md:items-center justify-between gap-5"
+                      className="bg-[#121215] border border-zinc-800/80 hover:border-zinc-700/90 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:shadow-lg transition duration-200 group relative shadow-sm text-left"
                     >
-                      <div className="space-y-2 max-w-xl">
-                        <div className="flex items-center gap-3">
-                          <h4 className="font-bold text-white text-base leading-none">{auto.name}</h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <div className="p-2 rounded-xl bg-violet-600/10 text-violet-400 border border-violet-500/20">
+                              <MessageSquare className="h-4 w-4" />
+                            </div>
+                            <span className="text-[11px] font-mono text-zinc-500">
+                              dm • instagram
+                            </span>
+                          </div>
                           <span
-                            className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                              auto.active
-                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                : 'bg-slate-800 text-slate-500 border border-slate-700'
+                            className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
+                              auto.active ? 'text-emerald-400' : 'text-zinc-500'
                             }`}
                           >
+                            <span className={`h-1.5 w-1.5 rounded-full ${auto.active ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'}`}></span>
                             {auto.active ? 'Ativo' : 'Pausado'}
                           </span>
                         </div>
 
-                        <div className="flex flex-wrap gap-2 text-xs">
-                          {auto.trigger_comment && (
-                            <span className="bg-slate-800/80 text-slate-400 px-2.5 py-1 rounded-md border border-slate-700">
-                              💬 Comentários
-                            </span>
-                          )}
-                          {auto.trigger_story && (
-                            <span className="bg-slate-800/80 text-slate-400 px-2.5 py-1 rounded-md border border-slate-700">
-                              📸 Stories
-                            </span>
-                          )}
-                          {auto.trigger_dm && (
-                            <span className="bg-slate-800/80 text-slate-400 px-2.5 py-1 rounded-md border border-slate-700">
-                              ✉️ DMs diretas
-                            </span>
-                          )}
+                        <h4 className="font-bold text-white text-xs leading-snug group-hover:text-indigo-300 transition line-clamp-1">{auto.name}</h4>
+
+                        <div className="space-y-1.5">
+                          <span className="text-[10px] font-mono text-zinc-500 block uppercase tracking-wider">Gatilhos:</span>
+                          <div className="flex flex-wrap gap-1 text-[10px] font-mono">
+                            {auto.match_type === 'any' ? (
+                              <span className="bg-[#18181c] text-indigo-400 px-2 py-0.5 rounded border border-zinc-800">Qualquer mensagem</span>
+                            ) : (
+                              auto.keywords.map((kw, i) => (
+                                <span key={i} className="bg-[#18181c] text-zinc-300 px-2 py-0.5 rounded border border-zinc-800">{kw}</span>
+                              ))
+                            )}
+                          </div>
                         </div>
 
-                        <div className="text-slate-300 text-sm font-medium">
-                          Palavras-chave:{' '}
-                          <span className="text-indigo-400">
-                            {auto.match_type === 'any' ? 'Qualquer mensagem' : auto.keywords.join(', ')}
-                          </span>{' '}
-                          <span className="text-slate-500 text-xs">({auto.match_type})</span>
-                        </div>
-
-                        {auto.post_id && auto.post_permalink && (
-                          <a
-                            href={auto.post_permalink}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-xs text-indigo-400 hover:underline flex items-center gap-1.5 mt-1"
-                          >
-                            <Link className="h-3 w-3" />
-                            Publicação específica vinculada
-                          </a>
+                        {auto.link_text && (
+                          <div className="p-2.5 bg-[#09090b] border border-zinc-800/80 rounded-xl text-[11px] text-zinc-400 font-sans line-clamp-2">
+                            {auto.link_text}
+                          </div>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-3 border-t md:border-t-0 border-slate-800/80 pt-4 md:pt-0 self-stretch md:self-auto justify-end">
+                      <div className="flex items-center justify-between pt-3 border-t border-zinc-800/80">
                         <button
                           onClick={() => handleToggle(auto.id!, !auto.active)}
-                          className={`p-2 rounded-xl transition ${
+                          className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg border transition ${
                             auto.active
-                              ? 'text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20'
-                              : 'text-slate-500 bg-slate-800 hover:bg-slate-700'
+                              ? 'bg-zinc-800/80 text-zinc-400 border-zinc-700 hover:text-white'
+                              : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
                           }`}
-                          title={auto.active ? 'Pausar' : 'Ativar'}
                         >
-                          <Power className="h-4 w-4" />
-                        </button>
-                        
-                        <button
-                          onClick={() => handleOpenEdit(auto)}
-                          className="p-2 text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 rounded-xl transition"
-                          title="Editar"
-                        >
-                          <Edit className="h-4 w-4" />
+                          {auto.active ? 'Pausar' : 'Ativar'}
                         </button>
 
-                        <button
-                          onClick={() => handleDelete(auto.id!)}
-                          className="p-2 text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition"
-                          title="Excluir"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleOpenEdit(auto)}
+                            className="p-1.5 text-zinc-400 hover:text-white transition rounded-lg hover:bg-zinc-800"
+                            title="Editar Automação"
+                          >
+                            <Edit className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(auto.id!)}
+                            className="p-1.5 text-zinc-500 hover:text-rose-400 transition rounded-lg hover:bg-rose-500/10"
+                            title="Excluir Automação"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -1755,17 +1744,17 @@ export default function Dashboard({
 
                 </div>
 
-                {/* COLUNA DIREITA: BACKLOG DE IDEIAS (KANBAN COMPACTO) */}
+                {/* COLUNA DIREITA: BACKLOG DE IDEIAS (GRID MICRO-CARDS) */}
                 <div className="lg:col-span-2 space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-900 pb-3">
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                      <Layers className="h-4 w-4 text-indigo-400" />
-                      Banco de Ideias ({ideas.filter(i => i.status === 'idea').length})
+                  <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
+                    <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2 font-mono">
+                      <Layers className="h-4 w-4 text-emerald-400" />
+                      Banco de Ideias [{ideas.filter(i => i.status === 'idea').length}]
                     </h3>
                   </div>
 
                   {ideas.filter(i => i.status === 'idea').length === 0 ? (
-                    <div className="bg-slate-900/10 border border-slate-900 rounded-3xl p-16 text-center text-xs text-slate-500 italic">
+                    <div className="bg-[#121215]/80 border border-zinc-800/80 rounded-3xl p-16 text-center text-xs text-zinc-500 italic">
                       Nenhuma ideia no backlog. Escreva uma à esquerda ou peça sugestões à IA!
                     </div>
                   ) : (
@@ -1773,55 +1762,59 @@ export default function Dashboard({
                       {ideas.filter(i => i.status === 'idea').map((idea) => (
                         <div
                           key={idea.id}
-                          className="bg-slate-900/20 border border-slate-900/60 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-slate-800 transition duration-300 hover:-translate-y-0.5 group"
+                          className="bg-[#121215] border border-zinc-800/80 hover:border-zinc-700 rounded-2xl p-5 flex flex-col justify-between space-y-4 transition duration-200 group relative shadow-sm"
                         >
-                          <div className="space-y-2 text-left">
+                          <div className="space-y-2.5 text-left">
                             <div className="flex items-center justify-between gap-2">
-                              {idea.pillar ? (
-                                <span className="bg-slate-900 text-indigo-400 border border-indigo-500/20 text-[9px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
-                                  {idea.pillar}
+                              <div className="flex items-center gap-2">
+                                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                  <Layers className="h-4 w-4" />
+                                </div>
+                                <span className="text-[10px] font-mono text-zinc-500">
+                                  {idea.pillar ? `pilar • ${idea.pillar.toLowerCase()}` : 'ideia • geral'}
                                 </span>
-                              ) : (
-                                <span className="bg-slate-900 text-slate-500 border border-slate-800 text-[9px] px-2 py-0.5 rounded-md font-medium uppercase tracking-wider">
-                                  Ideia Geral
-                                </span>
-                              )}
+                              </div>
                               <button
                                 onClick={() => handleDeleteIdea(idea.id)}
-                                className="text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition duration-300 p-1 rounded-lg hover:bg-red-500/10"
+                                className="text-zinc-500 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition p-1.5 rounded-lg hover:bg-rose-500/10"
                                 title="Excluir ideia"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
                               </button>
                             </div>
 
-                            <h4 className="font-bold text-white text-xs leading-snug">{idea.title}</h4>
+                            <h4 className="font-bold text-white text-xs leading-snug group-hover:text-emerald-300 transition">{idea.title}</h4>
                             {idea.description && (
-                              <p className="text-[10px] text-slate-400 line-clamp-3 leading-relaxed">
+                              <p className="text-[11px] text-zinc-400 line-clamp-3 leading-relaxed font-sans">
                                 {idea.description}
                               </p>
                             )}
                           </div>
 
-                          <div className="flex items-center gap-2 pt-2 border-t border-slate-900/80">
-                            <button
-                              onClick={() => handleOpenDraftFromIdea(idea)}
-                              className="flex-1 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-bold transition duration-300 flex items-center justify-center gap-1 shadow-sm"
-                            >
-                              <FileText className="h-3 w-3" />
-                              Escrever Post
-                            </button>
-                            {idea.reference_url && (
-                              <a
-                                href={idea.reference_url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="p-1.5 bg-slate-950 border border-slate-900 text-slate-400 hover:text-white rounded-lg transition duration-300"
-                                title="Link de referência"
+                          <div className="flex items-center justify-between pt-3 border-t border-zinc-800/80">
+                            <span className="text-[10px] font-mono text-zinc-500">
+                              {new Date(idea.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              {idea.reference_url && (
+                                <a
+                                  href={idea.reference_url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="p-1.5 bg-[#18181c] border border-zinc-800 text-zinc-400 hover:text-white rounded-lg transition"
+                                  title="Link de referência"
+                                >
+                                  <Link className="h-3 w-3" />
+                                </a>
+                              )}
+                              <button
+                                onClick={() => handleOpenDraftFromIdea(idea)}
+                                className="py-1.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-[10px] font-semibold transition flex items-center gap-1 shadow-sm shadow-indigo-600/20"
                               >
-                                <Link className="h-3 w-3" />
-                              </a>
-                            )}
+                                <FileText className="h-3 w-3" />
+                                Escrever Post
+                              </button>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -1833,15 +1826,22 @@ export default function Dashboard({
               </div>
             )}
 
-            {/* 4. RASCUNHOS & PUBLICAÇÃO (JÁ CONTROLA A EXIBIÇÃO NO TAB ROUTING ORIGINAL) */}
+            {/* 4. RASCUNHOS & PUBLICAÇÃO */}
             {activeStudioTab === 'drafts' && (
               <div className="space-y-6">
                 
                 {/* FILTROS & HEADER RASCUNHOS */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800/80 pb-4">
                   <div className="text-left">
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Roteiros e Conteúdos</h3>
-                    <p className="text-xs text-slate-450">Seus posts criados, prontos ou publicados.</p>
+                    <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider font-mono flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-amber-400" />
+                      Roteiros & Rascunhos [{
+                        drafts.filter(d => 
+                          (filterPlatform === 'all' || d.platform === filterPlatform) &&
+                          (filterStatus === 'all' || d.status === filterStatus)
+                        ).length
+                      }]
+                    </h3>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">
@@ -1849,7 +1849,7 @@ export default function Dashboard({
                     <select
                       value={filterPlatform}
                       onChange={(e) => setFilterPlatform(e.target.value)}
-                      className="bg-slate-950 border border-slate-900 text-slate-400 text-xs px-3 py-1.5 rounded-xl focus:outline-none focus:border-indigo-500 transition"
+                      className="bg-[#121215] border border-zinc-800 text-zinc-400 text-xs px-3 py-1.5 rounded-xl focus:outline-none focus:border-indigo-500 transition font-mono"
                     >
                       <option value="all">Todas as Redes</option>
                       <option value="linkedin">LinkedIn</option>
@@ -1861,7 +1861,7 @@ export default function Dashboard({
                     <select
                       value={filterStatus}
                       onChange={(e) => setFilterStatus(e.target.value)}
-                      className="bg-slate-950 border border-slate-900 text-slate-400 text-xs px-3 py-1.5 rounded-xl focus:outline-none focus:border-indigo-500 transition"
+                      className="bg-[#121215] border border-zinc-800 text-zinc-400 text-xs px-3 py-1.5 rounded-xl focus:outline-none focus:border-indigo-500 transition font-mono"
                     >
                       <option value="all">Todos os Status</option>
                       <option value="draft">Rascunhos</option>
@@ -1871,7 +1871,7 @@ export default function Dashboard({
 
                     <button
                       onClick={handleOpenNewDraft}
-                      className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md flex items-center justify-center gap-1.5 transition active:scale-95 duration-300"
+                      className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-4 py-2 rounded-xl shadow-md shadow-indigo-600/20 flex items-center justify-center gap-1.5 transition active:scale-95"
                     >
                       <Plus className="h-4 w-4" />
                       Escrever Post
@@ -1879,87 +1879,89 @@ export default function Dashboard({
                   </div>
                 </div>
 
-                {/* LISTAGEM DE RASCUNHOS */}
+                {/* LISTAGEM DE RASCUNHOS (GRID 3 COLUNAS) */}
                 {drafts.filter(d => 
                   (filterPlatform === 'all' || d.platform === filterPlatform) &&
                   (filterStatus === 'all' || d.status === filterStatus)
                 ).length === 0 ? (
-                  <div className="border border-dashed border-slate-900 rounded-3xl p-16 text-center flex flex-col items-center justify-center space-y-3">
-                    <FileText className="h-8 w-8 text-slate-650 animate-pulse" />
-                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Nenhum rascunho encontrado</h4>
-                    <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
-                      Clique em "Escrever Post" acima ou vá para "Banco de Ideias" para criar um rascunho.
+                  <div className="bg-[#121215]/80 border border-dashed border-zinc-800 rounded-3xl p-16 text-center flex flex-col items-center justify-center space-y-3">
+                    <FileText className="h-8 w-8 text-zinc-600 animate-pulse" />
+                    <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider font-mono">Nenhum rascunho encontrado</h4>
+                    <p className="text-xs text-zinc-500 max-w-sm leading-relaxed">
+                      Clique em "Escrever Post" acima ou vá para "Banco de Ideias" para transformar um insight em rascunho.
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {drafts.filter(d => 
                       (filterPlatform === 'all' || d.platform === filterPlatform) &&
                       (filterStatus === 'all' || d.status === filterStatus)
                     ).map((draft) => (
                       <div
                         key={draft.id}
-                        className="bg-slate-900/20 border border-slate-900/70 rounded-2xl p-5 flex flex-col justify-between gap-4 hover:border-slate-800 transition duration-300"
+                        className="bg-[#121215] border border-zinc-800/80 hover:border-zinc-700/90 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:shadow-lg transition duration-200 group relative"
                       >
                         <div className="space-y-3 text-left">
-                          <div className="flex items-start justify-between gap-2">
-                            {/* TAGS REDE SOCIAL & FORMATO */}
-                            <div className="flex items-center gap-1.5">
-                              <span className={`text-[8px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ${
-                                draft.platform === 'linkedin' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
-                                draft.platform === 'instagram' ? 'bg-pink-500/10 text-pink-400 border border-pink-500/20' :
-                                'bg-slate-800 text-slate-200 border border-slate-700'
+                          <div className="flex items-center justify-between gap-2">
+                            {/* BADGE REDE SOCIAL */}
+                            <div className="flex items-center gap-2">
+                              <div className={`p-2 rounded-xl border ${
+                                draft.platform === 'linkedin' ? 'bg-blue-600/10 text-blue-400 border-blue-500/20' :
+                                draft.platform === 'instagram' ? 'bg-pink-600/10 text-pink-400 border-pink-500/20' :
+                                'bg-purple-600/10 text-purple-400 border-purple-500/20'
                               }`}>
-                                {draft.platform}
-                              </span>
-                              <span className="bg-slate-950 text-slate-400 border border-slate-900 text-[8px] px-2 py-0.5 rounded font-semibold uppercase tracking-wider">
-                                {draft.format}
+                                <FileText className="h-4 w-4" />
+                              </div>
+                              <span className="text-[11px] font-mono text-zinc-500">
+                                {draft.platform} • {draft.format}
                               </span>
                             </div>
 
                             {/* BADGE STATUS */}
-                            <span className={`text-[8px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ${
-                              draft.status === 'draft' ? 'bg-slate-900 text-slate-500' :
-                              draft.status === 'ready' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse' :
-                              'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                            <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
+                              draft.status === 'published' ? 'text-emerald-400' :
+                              draft.status === 'ready' ? 'text-amber-400' : 'text-zinc-500'
                             }`}>
+                              <span className={`h-1.5 w-1.5 rounded-full ${
+                                draft.status === 'published' ? 'bg-emerald-400 animate-pulse' :
+                                draft.status === 'ready' ? 'bg-amber-400' : 'bg-zinc-600'
+                              }`}></span>
                               {draft.status === 'draft' ? 'Rascunho' :
                                draft.status === 'ready' ? 'Pronto' : 'Publicado'}
                             </span>
                           </div>
 
-                          <h4 className="font-bold text-white text-xs line-clamp-1 leading-snug">{draft.title}</h4>
-                          <p className="text-[11px] text-slate-400 line-clamp-4 leading-relaxed whitespace-pre-line bg-slate-950/20 p-2.5 rounded-xl border border-slate-950">
+                          <h4 className="font-bold text-white text-xs leading-snug group-hover:text-indigo-300 transition line-clamp-1">{draft.title}</h4>
+                          
+                          <p className="text-[11px] text-zinc-400 line-clamp-3 leading-relaxed whitespace-pre-line bg-[#09090b] p-3 rounded-xl border border-zinc-800/80 font-sans">
                             {draft.content}
                           </p>
 
-                          {draft.visual_script && (
-                            <div className="p-3 bg-slate-950 border border-slate-900 rounded-xl text-[10px] text-slate-400">
-                              <span className="font-bold text-indigo-400 block mb-1">Roteiro Visual / Slides:</span>
-                              <div className="line-clamp-2 leading-relaxed whitespace-pre-line">{draft.visual_script}</div>
-                            </div>
-                          )}
                           {draft.media_url && (
-                            <div className="flex items-center gap-1.5 text-[9px] text-slate-500 bg-slate-950/40 p-2 rounded-lg truncate border border-slate-950">
-                              <Image className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                              <span className="truncate">{draft.media_url}</span>
+                            <div className="rounded-xl overflow-hidden border border-zinc-800 max-h-36 bg-[#09090b]">
+                              <img
+                                src={draft.media_url}
+                                alt="Preview Mídia"
+                                className="w-full h-36 object-cover"
+                                onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                              />
                             </div>
                           )}
                         </div>
 
-                        <div className="flex items-center justify-between border-t border-slate-900/60 pt-3">
-                          {/* MUDANÇA RÁPIDA DE STATUS */}
+                        <div className="flex items-center justify-between pt-3 border-t border-zinc-800/80">
+                          {/* SNET STATUS SELECTOR */}
                           <select
                             value={draft.status}
                             onChange={(e) => handleUpdateDraftStatus(draft, e.target.value as any)}
-                            className="bg-slate-950 border border-slate-900 text-[10px] text-slate-400 rounded-lg px-2 py-1.5 focus:outline-none"
+                            className="bg-[#18181c] border border-zinc-800 text-[10px] font-mono text-zinc-400 rounded-lg px-2 py-1 focus:outline-none"
                           >
                             <option value="draft">Rascunho</option>
                             <option value="ready">Pronto</option>
                             <option value="published">✅ Publicado</option>
                           </select>
 
-                          {/* AÇÕES */}
+                          {/* AÇÕES DE BOTÃO */}
                           <div className="flex items-center gap-1">
                             {draft.status === 'ready' && (
                               <>
@@ -1967,7 +1969,7 @@ export default function Dashboard({
                                   <button
                                     onClick={() => handlePublishLinkedIn(draft.id)}
                                     disabled={isPublishing}
-                                    className="p-1.5 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 rounded-lg transition duration-300"
+                                    className="p-1.5 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 rounded-lg transition"
                                     title="Publicar no LinkedIn"
                                   >
                                     <ExternalLink className="h-3.5 w-3.5" />
@@ -1977,7 +1979,7 @@ export default function Dashboard({
                                   <button
                                     onClick={() => handlePublishInstagram(draft.id)}
                                     disabled={isPublishing}
-                                    className="p-1.5 bg-pink-600/10 hover:bg-pink-600/20 text-pink-400 border border-pink-500/20 rounded-lg transition duration-300"
+                                    className="p-1.5 bg-pink-600/10 hover:bg-pink-600/20 text-pink-400 border border-pink-500/20 rounded-lg transition"
                                     title="Publicar no Instagram"
                                   >
                                     <ExternalLink className="h-3.5 w-3.5" />
@@ -1987,16 +1989,8 @@ export default function Dashboard({
                             )}
 
                             <button
-                              onClick={() => handleDeleteDraft(draft.id)}
-                              className="p-1.5 text-slate-500 hover:text-red-400 transition rounded-lg hover:bg-slate-900/40"
-                              title="Excluir Rascunho"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-
-                            <button
                               onClick={() => handleOpenEditDraft(draft)}
-                              className="p-1.5 text-slate-500 hover:text-indigo-400 transition rounded-lg hover:bg-slate-900/40"
+                              className="p-1.5 text-zinc-400 hover:text-white transition rounded-lg hover:bg-zinc-800"
                               title="Editar"
                             >
                               <Edit className="h-3.5 w-3.5" />
@@ -2004,10 +1998,18 @@ export default function Dashboard({
 
                             <button
                               onClick={() => copyToClipboard(draft.content)}
-                              className="p-1.5 text-indigo-400 hover:text-indigo-300 transition rounded-lg hover:bg-slate-900/40"
+                              className="p-1.5 text-zinc-400 hover:text-indigo-400 transition rounded-lg hover:bg-zinc-800"
                               title="Copiar Texto"
                             >
                               <Copy className="h-3.5 w-3.5" />
+                            </button>
+
+                            <button
+                              onClick={() => handleDeleteDraft(draft.id)}
+                              className="p-1.5 text-zinc-500 hover:text-rose-400 transition rounded-lg hover:bg-rose-500/10"
+                              title="Excluir Rascunho"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
                             </button>
                           </div>
                         </div>
