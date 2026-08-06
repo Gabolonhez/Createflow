@@ -351,8 +351,13 @@ export default function Dashboard({
     setShowAiSuggestionsModal(true);
     setAiSuggestions([]);
     try {
-      const suggestions = await generateIdeasAction();
-      setAiSuggestions(suggestions);
+      const suggestions: any = await generateIdeasAction();
+      if (suggestions && suggestions.error) {
+        alert(suggestions.error);
+        setShowAiSuggestionsModal(false);
+        return;
+      }
+      setAiSuggestions(Array.isArray(suggestions) ? suggestions : []);
     } catch (err: any) {
       alert(err.message);
       setShowAiSuggestionsModal(false);
@@ -436,7 +441,7 @@ export default function Dashboard({
     }
     setIsGeneratingScript(true);
     try {
-      const result = await generateScriptAction({
+      const result: any = await generateScriptAction({
         title: draftForm.title,
         description: customPrompt,
         platform: draftForm.platform,
@@ -444,9 +449,14 @@ export default function Dashboard({
         customPrompt,
       });
 
+      if (result && result.error) {
+        alert(`Erro ao gerar roteiro com IA: ${result.error}`);
+        return;
+      }
+
       setDraftForm((prev) => ({
         ...prev,
-        content: result.content,
+        content: result.content || '',
         visual_script: result.visual_script || '',
       }));
     } catch (err: any) {
@@ -514,9 +524,13 @@ export default function Dashboard({
     if (!title) return;
     setStudioLoading(true);
     try {
-      const newSession = await createChatSessionAction(title);
-      setSessions((prev) => [newSession, ...prev]);
-      setActiveSessionId(newSession.id);
+      const res: any = await createChatSessionAction(title);
+      if (res && res.error) {
+        alert(`Erro ao criar sessão: ${res.error}`);
+        return;
+      }
+      setSessions((prev) => [res, ...prev]);
+      setActiveSessionId(res.id);
     } catch (err: any) {
       alert(`Erro ao criar sessão: ${err.message}`);
     } finally {
@@ -529,7 +543,11 @@ export default function Dashboard({
     if (!confirm('Deseja excluir esta sessão e todo o histórico de mensagens?')) return;
     setStudioLoading(true);
     try {
-      await deleteChatSessionAction(id);
+      const res: any = await deleteChatSessionAction(id);
+      if (res && res.error) {
+        alert(`Erro ao deletar: ${res.error}`);
+        return;
+      }
       setSessions((prev) => prev.filter((s) => s.id !== id));
       if (activeSessionId === id) {
         setActiveSessionId(null);
@@ -553,8 +571,12 @@ export default function Dashboard({
     setIsSendingMessage(true);
 
     try {
-      const result = await sendMessageAction(activeSessionId, text);
-      const tempModelMsg = { id: Math.random().toString(), role: 'model', content: result.content };
+      const res: any = await sendMessageAction(activeSessionId, text);
+      if (res && res.error) {
+        alert(`Erro ao obter resposta da IA: ${res.error}`);
+        return;
+      }
+      const tempModelMsg = { id: Math.random().toString(), role: 'model', content: res.content };
       setMessages((prev) => [...prev, tempModelMsg]);
     } catch (err: any) {
       alert(`Erro ao obter resposta da IA: ${err.message}`);
@@ -607,8 +629,12 @@ export default function Dashboard({
     setIsAnalyzingTrend(true);
     setAnalyzedResult(null);
     try {
-      const result = await analyzeTrendAction(trendText);
-      setAnalyzedResult(result);
+      const res: any = await analyzeTrendAction(trendText);
+      if (res && res.error) {
+        alert(`Erro ao analisar post: ${res.error}`);
+        return;
+      }
+      setAnalyzedResult(res);
     } catch (err: any) {
       alert(`Erro ao analisar post: ${err.message}`);
     } finally {
@@ -678,11 +704,18 @@ export default function Dashboard({
     }
     setIsGeneratingScript(true);
     try {
-      const refinedText = await refineDraftAction({
+      const res: any = await refineDraftAction({
         content: draftForm.content,
         refinementType: type,
       });
-      setDraftForm((prev) => ({ ...prev, content: refinedText }));
+
+      if (res && res.error) {
+        alert(`Erro ao humanizar/refinar texto: ${res.error}`);
+        return;
+      }
+
+      const text = typeof res === 'string' ? res : (res.content || '');
+      setDraftForm((prev) => ({ ...prev, content: text }));
     } catch (err: any) {
       alert(`Erro ao humanizar/refinar texto: ${err.message}`);
     } finally {

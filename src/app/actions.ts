@@ -241,13 +241,14 @@ export async function publishScheduledDraftsAction() {
 }
 
 export async function generateIdeasAction() {
-  const profile = await getDocById('creator_profiles', 'creator_config');
+  try {
+    const profile = await getDocById('creator_profiles', 'creator_config');
 
-  if (!profile) {
-    throw new Error('Configure sua marca e nicho antes de gerar ideias com IA.');
-  }
+    if (!profile) {
+      return { error: 'Configure sua marca e nicho no Perfil de Marca antes de gerar ideias com IA.' };
+    }
 
-  const systemInstruction = `Você é um estrategista de conteúdo sênior especialista em LinkedIn, Instagram e TikTok.
+    const systemInstruction = `Você é um estrategista de conteúdo sênior especialista em LinkedIn, Instagram e TikTok.
 O usuário fornecerá dados de seu nicho, público-alvo, objetivos da marca, tom de voz e pilares de conteúdo.
 Sua missão é sugerir 5 ideias inovadoras de posts que convertam e gerem valor real.
 Retorne um objeto JSON contendo um array de ideias exatamente no seguinte formato:
@@ -263,7 +264,7 @@ Retorne um objeto JSON contendo um array de ideias exatamente no seguinte format
   ]
 }`;
 
-  const prompt = `Aqui estão os detalhes do meu perfil para basear as ideias:
+    const prompt = `Aqui estão os detalhes do meu perfil para basear as ideias:
 - Nicho: ${profile.niche}
 - Público-alvo: ${profile.target_audience}
 - Objetivos: ${profile.objectives}
@@ -272,22 +273,23 @@ Retorne um objeto JSON contendo um array de ideias exatamente no seguinte format
 
 Gere 5 ideias altamente engajadoras de posts.`;
 
-  try {
     const result = await generateJson<{ ideas: any[] }>(prompt, systemInstruction);
     return result.ideas;
   } catch (e: any) {
-    throw new Error(`Erro ao gerar ideias com IA: ${e.message}`);
+    console.error('Erro ao gerar ideias:', e);
+    return { error: e.message || 'Erro ao gerar ideias com IA.' };
   }
 }
 
 export async function generateSchedulePlanAction() {
-  const profile = await getDocById('creator_profiles', 'creator_config');
+  try {
+    const profile = await getDocById('creator_profiles', 'creator_config');
 
-  if (!profile) {
-    throw new Error('Configure seu Perfil de Marca (nicho, objetivos, público-alvo) antes de gerar o Cronograma Estratégico.');
-  }
+    if (!profile) {
+      return { error: 'Configure seu Perfil de Marca (nicho, objetivos, público-alvo) antes de gerar o Cronograma Estratégico.' };
+    }
 
-  const systemInstruction = `Você é o estrategista chefe de mídias sociais e especialista em cronogramas de publicação para criadores de conteúdo e negócios.
+    const systemInstruction = `Você é o estrategista chefe de mídias sociais e especialista em cronogramas de publicação para criadores de conteúdo e negócios.
 Sua missão é criar o Cronograma Semanal Estratégico Ideal para o usuário baseado rigorosamente no seu nicho, objetivos de negócios e público-alvo.
 
 Análise exigida:
@@ -312,7 +314,7 @@ Retorne um objeto JSON estritamente no seguinte formato:
   ]
 }`;
 
-  const prompt = `Crie o cronograma semanal ideal para o meu perfil:
+    const prompt = `Crie o cronograma semanal ideal para o meu perfil:
 - Nicho: ${profile.niche}
 - Público-alvo: ${profile.target_audience}
 - Objetivos principais: ${profile.objectives}
@@ -321,7 +323,6 @@ Retorne um objeto JSON estritamente no seguinte formato:
 
 Gere a estrutura completa do cronograma semanal estratégico.`;
 
-  try {
     const result = await generateJson<{
       weeklyFrequency: string;
       strategySummary: string;
@@ -338,7 +339,8 @@ Gere a estrutura completa do cronograma semanal estratégico.`;
 
     return result;
   } catch (e: any) {
-    throw new Error(`Erro ao gerar Cronograma Estratégico com IA: ${e.message}`);
+    console.error('Erro ao gerar cronograma:', e);
+    return { error: e.message || 'Erro ao gerar Cronograma Estratégico com IA.' };
   }
 }
 
@@ -349,26 +351,27 @@ export async function generateScriptAction(data: {
   format: 'reels' | 'carousel' | 'post' | 'text';
   customPrompt?: string;
 }) {
-  const { title, description, platform, format, customPrompt } = data;
-  
-  const profile = await getDocById('creator_profiles', 'creator_config');
+  try {
+    const { title, description, platform, format, customPrompt } = data;
+    
+    const profile = await getDocById('creator_profiles', 'creator_config');
 
-  const nicheContext = profile 
-    ? `Meu Nicho: ${profile.niche}
+    const nicheContext = profile 
+      ? `Meu Nicho: ${profile.niche}
 Meu Público-alvo: ${profile.target_audience}
 Meus Objetivos: ${profile.objectives}
 Meu Tom de Voz: ${profile.voice_tone}
 Pilares de Conteúdo: ${profile.content_pillars?.join(', ') || 'Geral'}`
-    : 'Use um tom profissional, direto e agregador de valor.';
+      : 'Use um tom profissional, direto e agregador de valor.';
 
-  const systemInstruction = `Você é um redator de conteúdo especialista em redes sociais de alta performance.
+    const systemInstruction = `Você é um redator de conteúdo especialista em redes sociais de alta performance.
 Você criará rascunhos de posts completos, prontos para copiar e colar, otimizados para a plataforma e formato especificados pelo usuário.
 Você deve respeitar o contexto de nicho, público-alvo, objetivos e tom de voz fornecidos.
 Retorne um objeto JSON contendo:
 - "content": O texto principal / legenda do post (ou roteiro falado formatado).
 - "visual_script": Instruções visuais detalhadas (cenas, transições, ou slides).`;
 
-  const prompt = `Contexto da minha marca:
+    const prompt = `Contexto da minha marca:
 ${nicheContext}
 
 Instruções para o post:
@@ -380,11 +383,11 @@ ${customPrompt ? `- Diretrizes extras do usuário: ${customPrompt}` : ''}
 
 Por favor, gere o post de alta conversão estruturado conforme as instruções do sistema.`;
 
-  try {
     const result = await generateJson<{ content: string; visual_script?: string }>(prompt, systemInstruction);
     return result;
   } catch (e: any) {
-    throw new Error(`Erro ao gerar roteiro com IA: ${e.message}`);
+    console.error('Erro ao gerar roteiro:', e);
+    return { error: e.message || 'Erro ao gerar roteiro com IA.' };
   }
 }
 
@@ -470,42 +473,53 @@ export async function publishToInstagramAction(draftId: string) {
 }
 
 export async function createChatSessionAction(title: string) {
-  const data = await addDocData('chat_sessions', { title });
-  revalidatePath('/');
-  return data;
+  try {
+    const data = await addDocData('chat_sessions', { title });
+    revalidatePath('/');
+    return { success: true, ...data };
+  } catch (err: any) {
+    console.error('Erro ao criar sessão:', err);
+    return { error: err.message || 'Erro ao criar sessão no banco de dados.' };
+  }
 }
 
 export async function deleteChatSessionAction(id: string) {
-  await deleteDocData('chat_sessions', id);
-  revalidatePath('/');
+  try {
+    await deleteDocData('chat_sessions', id);
+    revalidatePath('/');
+    return { success: true };
+  } catch (err: any) {
+    return { error: err.message };
+  }
 }
 
 export async function sendMessageAction(sessionId: string, messageText: string) {
-  const messagesColRef = collection(db, `chat_sessions/${sessionId}/messages`);
-  const now = new Date().toISOString();
-  
-  await addDoc(messagesColRef, {
-    role: 'user',
-    content: messageText,
-    created_at: now
-  });
+  try {
+    const messagesColRef = collection(db, `chat_sessions/${sessionId}/messages`);
+    const now = new Date().toISOString();
+    
+    await addDoc(messagesColRef, {
+      role: 'user',
+      content: messageText,
+      created_at: now
+    });
 
-  const profile = await getDocById('creator_profiles', 'creator_config');
+    const profile = await getDocById('creator_profiles', 'creator_config');
 
-  const nicheContext = profile
-    ? `Meu Perfil Estratégico de Conteúdo:
+    const nicheContext = profile
+      ? `Meu Perfil Estratégico de Conteúdo:
 - Nicho: ${profile.niche}
 - Público-Alvo: ${profile.target_audience}
 - Objetivos principais: ${profile.objectives}
 - Tom de Voz: ${profile.voice_tone}
 - Pilares de Conteúdo: ${profile.content_pillars?.join(', ') || 'Geral'}`
-    : 'Use um tom profissional, direto e aglutinador de valor.';
+      : 'Use um tom profissional, direto e aglutinador de valor.';
 
-  const q = query(messagesColRef, orderBy('created_at', 'asc'));
-  const historySnap = await getDocs(q);
-  const history = historySnap.docs.map((d) => d.data());
+    const q = query(messagesColRef, orderBy('created_at', 'asc'));
+    const historySnap = await getDocs(q);
+    const history = historySnap.docs.map((d) => d.data());
 
-  const systemInstruction = `Você é um estrategista digital de elite e o "Segundo Cérebro" do criador de conteúdo.
+    const systemInstruction = `Você é um estrategista digital de elite e o "Segundo Cérebro" do criador de conteúdo.
 Sua missão é ajudar o usuário a ter ideias de posts, estruturar roteiros de vídeo, revisar copies e planejar posts de LinkedIn, Instagram e TikTok.
 Você deve responder sempre com textos HUMANIZADOS, sem clichês típicos de IA.
 Escreva de forma conversacional, autêntica, como se fosse um colega ou ghostwriter experiente.
@@ -515,10 +529,9 @@ ${nicheContext}
 
 Mantenha formatação limpa e de fácil leitura.`;
 
-  const formattedHistory = history.slice(-10).map((m: any) => `${m.role === 'user' ? 'Usuário' : 'Assistente'}: ${m.content}`).join('\n\n');
-  const prompt = `${formattedHistory}\n\nResponda à última mensagem do Usuário de forma humana e direta.`;
+    const formattedHistory = history.slice(-10).map((m: any) => `${m.role === 'user' ? 'Usuário' : 'Assistente'}: ${m.content}`).join('\n\n');
+    const prompt = `${formattedHistory}\n\nResponda à última mensagem do Usuário de forma humana e direta.`;
 
-  try {
     const responseText = await generateText(prompt, systemInstruction);
 
     await addDoc(messagesColRef, {
@@ -530,9 +543,10 @@ Mantenha formatação limpa e de fácil leitura.`;
     await updateDocData('chat_sessions', sessionId, { updated_at: new Date().toISOString() });
 
     revalidatePath('/');
-    return { content: responseText };
+    return { success: true, content: responseText };
   } catch (err: any) {
-    throw new Error(`Erro ao obter resposta do Gemini: ${err.message}`);
+    console.error('Erro ao obter resposta do Gemini:', err);
+    return { error: err.message || 'Erro ao comunicar com o Gemini.' };
   }
 }
 
@@ -565,9 +579,10 @@ Retorne um objeto JSON estritamente no seguinte formato:
       reusable_template: string;
     }>(prompt, systemInstruction);
 
-    return result;
+    return { success: true, ...result };
   } catch (err: any) {
-    throw new Error(`Erro ao analisar tendência com IA: ${err.message}`);
+    console.error('Erro ao analisar tendência:', err);
+    return { error: err.message || 'Erro ao analisar tendência com IA.' };
   }
 }
 
@@ -599,9 +614,10 @@ export async function refineDraftAction(data: {
   content: string;
   refinementType: 'humanize' | 'shorten' | 'simplify' | 'engagement';
 }) {
-  const { content, refinementType } = data;
-  
-  const systemInstruction = `Você é um copywriter humano sênior e ghostwriter de executivos e criadores de conteúdo.
+  try {
+    const { content, refinementType } = data;
+    
+    const systemInstruction = `Você é um copywriter humano sênior e ghostwriter de executivos e criadores de conteúdo.
 Sua tarefa é refinar e reescrever o rascunho de texto enviado pelo usuário.
 Elimine todos os clichês e marcadores de inteligência artificial.
 Escreva de forma extremamente natural, humana, com frases curtas, tom de conversa sincera e ritmo dinâmico.
@@ -616,13 +632,13 @@ Retorne um objeto JSON contendo o texto refinado:
   "content": "O texto refinado aqui"
 }`;
 
-  const prompt = `Aplique o refinamento '${refinementType}' neste texto:\n\n${content}`;
+    const prompt = `Aplique o refinamento '${refinementType}' neste texto:\n\n${content}`;
 
-  try {
     const result = await generateJson<{ content: string }>(prompt, systemInstruction);
-    return result.content;
+    return { success: true, content: result.content };
   } catch (err: any) {
-    throw new Error(`Erro ao refinar com IA: ${err.message}`);
+    console.error('Erro ao refinar rascunho:', err);
+    return { error: err.message || 'Erro ao refinar texto com IA.' };
   }
 }
 
