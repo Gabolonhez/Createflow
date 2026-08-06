@@ -1,8 +1,15 @@
-'use use-server'; // Note: Next.js Server Actions standard directive is 'use server', but wait, the project uses ES Modules
-
 'use server';
 
-import { supabase } from '@/lib/supabase';
+import {
+  setDocData,
+  addDocData,
+  updateDocData,
+  deleteDocData,
+  getDocById,
+  getCollectionData,
+} from '@/lib/db';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, query, orderBy, where, addDoc } from 'firebase/firestore';
 import { getOAuthUrl, getMediaList, publishInstagramMedia } from '@/lib/instagram';
 import { getLinkedInOAuthUrl, publishToLinkedIn } from '@/lib/linkedin';
 import { revalidatePath } from 'next/cache';
@@ -21,30 +28,17 @@ export async function getInstagramOAuthUrlAction() {
 }
 
 export async function disconnectInstagramAction() {
-  const { error } = await supabase.from('config').delete().eq('id', 'instagram_config');
-  if (error) {
-    throw new Error(`Erro ao desconectar: ${error.message}`);
-  }
+  await deleteDocData('config', 'instagram_config');
   revalidatePath('/');
 }
 
 export async function toggleAutomationAction(id: string, active: boolean) {
-  const { error } = await supabase
-    .from('automations')
-    .update({ active, updated_at: new Date().toISOString() })
-    .eq('id', id);
-    
-  if (error) {
-    throw new Error(`Erro ao alterar status: ${error.message}`);
-  }
+  await updateDocData('automations', id, { active });
   revalidatePath('/');
 }
 
 export async function deleteAutomationAction(id: string) {
-  const { error } = await supabase.from('automations').delete().eq('id', id);
-  if (error) {
-    throw new Error(`Erro ao deletar automação: ${error.message}`);
-  }
+  await deleteDocData('automations', id);
   revalidatePath('/');
 }
 
@@ -75,12 +69,10 @@ export async function saveAutomationAction(formData: any) {
     throw new Error('Nome da automação e DM de boas-vindas são obrigatórios.');
   }
 
-  // Tratar palavras-chave (string separada por vírgula -> array)
   const keywordsArray = typeof keywords === 'string' 
     ? keywords.split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 0)
     : keywords || [];
 
-  // Tratar respostas públicas (string com quebras de linha -> array)
   const publicRepliesArray = typeof public_replies === 'string'
     ? public_replies.split('\n').map((r: string) => r.trim()).filter((r: string) => r.length > 0)
     : public_replies || [];
@@ -104,28 +96,20 @@ export async function saveAutomationAction(formData: any) {
     link_url: link_url || null,
     reminder_text: reminder_text || null,
     reminder_delay_minutes: reminder_delay_minutes ? parseInt(reminder_delay_minutes, 10) : null,
-    updated_at: new Date().toISOString(),
   };
 
   if (id) {
-    const { error } = await supabase.from('automations').update(payload).eq('id', id);
-    if (error) throw new Error(`Erro ao atualizar automação: ${error.message}`);
+    await updateDocData('automations', id, payload);
   } else {
-    const { error } = await supabase.from('automations').insert([payload]);
-    if (error) throw new Error(`Erro ao criar automação: ${error.message}`);
+    await addDocData('automations', payload);
   }
 
   revalidatePath('/');
 }
 
 export async function fetchInstagramMediaAction() {
-  const { data: config, error } = await supabase
-    .from('config')
-    .select('access_token, instagram_user_id')
-    .eq('id', 'instagram_config')
-    .single();
-
-  if (error || !config) {
+  const config = await getDocById('config', 'instagram_config');
+  if (!config || !config.access_token || !config.instagram_user_id) {
     return [];
   }
 
@@ -138,7 +122,7 @@ export async function fetchInstagramMediaAction() {
 }
 
 // ==========================================
-// CREATOR STUDIO ACTIONS
+// CREATOR STUDIO ACTIONS (FIRESTORE)
 // ==========================================
 
 export async function saveCreatorProfileAction(formData: any) {
@@ -152,19 +136,14 @@ export async function saveCreatorProfileAction(formData: any) {
     : content_pillars || [];
 
   const payload = {
-    id: 'creator_config',
     niche,
     target_audience,
     objectives,
     voice_tone,
     content_pillars: pillarsArray,
-    updated_at: new Date().toISOString()
   };
 
-  const { error } = await supabase.from('creator_profiles').upsert(payload);
-  if (error) {
-    throw new Error(`Erro ao salvar perfil do criador: ${error.message}`);
-  }
+  await setDocData('creator_profiles', 'creator_config', payload);
   revalidatePath('/');
 }
 
@@ -180,24 +159,18 @@ export async function saveIdeaAction(formData: any) {
     reference_url: reference_url || null,
     pillar: pillar || null,
     status: status || 'idea',
-    updated_at: new Date().toISOString()
   };
 
   if (id) {
-    const { error } = await supabase.from('ideas').update(payload).eq('id', id);
-    if (error) throw new Error(`Erro ao atualizar ideia: ${error.message}`);
+    await updateDocData('ideas', id, payload);
   } else {
-    const { error } = await supabase.from('ideas').insert([payload]);
-    if (error) throw new Error(`Erro ao criar ideia: ${error.message}`);
+    await addDocData('ideas', payload);
   }
   revalidatePath('/');
 }
 
 export async function deleteIdeaAction(id: string) {
-  const { error } = await supabase.from('ideas').delete().eq('id', id);
-  if (error) {
-    throw new Error(`Erro ao deletar ideia: ${error.message}`);
-  }
+  await deleteDocData('ideas', id);
   revalidatePath('/');
 }
 
@@ -217,44 +190,34 @@ export async function saveDraftAction(formData: any) {
     idea_id: idea_id || null,
     media_url: media_url || null,
     scheduled_at: scheduled_at || null,
-    updated_at: new Date().toISOString()
   };
 
   if (id) {
-    const { error } = await supabase.from('content_drafts').update(payload).eq('id', id);
-    if (error) throw new Error(`Erro ao atualizar rascunho: ${error.message}`);
+    await updateDocData('content_drafts', id, payload);
   } else {
-    const { error } = await supabase.from('content_drafts').insert([payload]);
-    if (error) throw new Error(`Erro ao criar rascunho: ${error.message}`);
+    await addDocData('content_drafts', payload);
     
-    // Se o rascunho veio de uma ideia, atualiza o status da ideia para 'drafted'
     if (idea_id) {
-      await supabase.from('ideas').update({ status: 'drafted' }).eq('id', idea_id);
+      await updateDocData('ideas', idea_id, { status: 'drafted' });
     }
   }
   revalidatePath('/');
 }
 
 export async function deleteDraftAction(id: string) {
-  const { error } = await supabase.from('content_drafts').delete().eq('id', id);
-  if (error) {
-    throw new Error(`Erro ao deletar rascunho: ${error.message}`);
-  }
+  await deleteDocData('content_drafts', id);
   revalidatePath('/');
 }
 
 export async function publishScheduledDraftsAction() {
   const now = new Date().toISOString();
+  const drafts = await getCollectionData('content_drafts');
   
-  // Buscar rascunhos agendados para publicação até o horário atual
-  const { data: scheduledDrafts, error } = await supabase
-    .from('content_drafts')
-    .select('*')
-    .eq('status', 'ready')
-    .not('scheduled_at', 'is', null)
-    .lte('scheduled_at', now);
+  const scheduledDrafts = drafts.filter(
+    (d: any) => d.status === 'ready' && d.scheduled_at && d.scheduled_at <= now
+  );
 
-  if (error || !scheduledDrafts || scheduledDrafts.length === 0) {
+  if (!scheduledDrafts.length) {
     return { publishedCount: 0 };
   }
 
@@ -278,13 +241,9 @@ export async function publishScheduledDraftsAction() {
 }
 
 export async function generateIdeasAction() {
-  const { data: profile, error } = await supabase
-    .from('creator_profiles')
-    .select('*')
-    .eq('id', 'creator_config')
-    .maybeSingle();
+  const profile = await getDocById('creator_profiles', 'creator_config');
 
-  if (error || !profile) {
+  if (!profile) {
     throw new Error('Configure sua marca e nicho antes de gerar ideias com IA.');
   }
 
@@ -322,13 +281,9 @@ Gere 5 ideias altamente engajadoras de posts.`;
 }
 
 export async function generateSchedulePlanAction() {
-  const { data: profile, error } = await supabase
-    .from('creator_profiles')
-    .select('*')
-    .eq('id', 'creator_config')
-    .maybeSingle();
+  const profile = await getDocById('creator_profiles', 'creator_config');
 
-  if (error || !profile) {
+  if (!profile) {
     throw new Error('Configure seu Perfil de Marca (nicho, objetivos, público-alvo) antes de gerar o Cronograma Estratégico.');
   }
 
@@ -396,11 +351,7 @@ export async function generateScriptAction(data: {
 }) {
   const { title, description, platform, format, customPrompt } = data;
   
-  const { data: profile } = await supabase
-    .from('creator_profiles')
-    .select('*')
-    .eq('id', 'creator_config')
-    .maybeSingle();
+  const profile = await getDocById('creator_profiles', 'creator_config');
 
   const nicheContext = profile 
     ? `Meu Nicho: ${profile.niche}
@@ -415,21 +366,7 @@ Você criará rascunhos de posts completos, prontos para copiar e colar, otimiza
 Você deve respeitar o contexto de nicho, público-alvo, objetivos e tom de voz fornecidos.
 Retorne um objeto JSON contendo:
 - "content": O texto principal / legenda do post (ou roteiro falado formatado).
-- "visual_script": Instruções visuais detalhadas (cenas, transições, ou slides).
-
-Formatos de resposta exigidos:
-1. Se a plataforma for 'linkedin':
-   - O 'content' deve ser um texto persuasivo de alta legibilidade, com parágrafos curtos, linhas espaçadas, gancho forte nas primeiras linhas, desenvolvimento claro, emojis sutis (sem exagero), hashtags e um Call to Action (CTA) claro no final.
-   - O 'visual_script' pode ser vazio ou conter sugestões de imagens/gráficos complementares.
-2. Se a plataforma for 'instagram' e o formato for 'carousel':
-   - O 'content' deve ser a legenda que vai no post do Instagram (copy atraente, hashtags, CTA).
-   - O 'visual_script' deve ser a divisão exata de slides de 1 a N, detalhando o TÍTULO de cada slide e o TEXTO EXPLICATIVO que vai na imagem.
-3. Se o formato for 'reels' (Instagram ou TikTok):
-   - O 'content' deve ser a LEGENDA do Reels (copy curta, hashtags, CTA).
-   - O 'visual_script' deve conter o roteiro do vídeo dividido em cenas (Cena 1, Cena 2, etc.), especificando a "Ação Visual" (o que aparece na tela) e a "Fala/Áudio" (o que o criador fala no vídeo).
-4. Se o formato for 'post' (imagem única no Instagram):
-   - O 'content' deve ser a legenda detalhada do post.
-   - O 'visual_script' deve descrever o que deve estar escrito ou desenhado na imagem única (Design do Post).`;
+- "visual_script": Instruções visuais detalhadas (cenas, transições, ou slides).`;
 
   const prompt = `Contexto da minha marca:
 ${nicheContext}
@@ -441,7 +378,7 @@ Instruções para o post:
 - Formato: ${format.toUpperCase()}
 ${customPrompt ? `- Diretrizes extras do usuário: ${customPrompt}` : ''}
 
-Por favor, gere o post de alta com versão estruturado conforme as instruções do sistema.`;
+Por favor, gere o post de alta conversão estruturado conforme as instruções do sistema.`;
 
   try {
     const result = await generateJson<{ content: string; visual_script?: string }>(prompt, systemInstruction);
@@ -463,23 +400,13 @@ export async function getLinkedInOAuthUrlAction() {
 }
 
 export async function publishToLinkedInAction(draftId: string) {
-  const { data: draft, error: draftErr } = await supabase
-    .from('content_drafts')
-    .select('*')
-    .eq('id', draftId)
-    .single();
-
-  if (draftErr || !draft) {
+  const draft = await getDocById('content_drafts', draftId);
+  if (!draft) {
     throw new Error('Rascunho não encontrado.');
   }
 
-  const { data: config, error: configErr } = await supabase
-    .from('config')
-    .select('linkedin_access_token, linkedin_profile_id')
-    .eq('id', 'instagram_config')
-    .single();
-
-  if (configErr || !config || !config.linkedin_access_token || !config.linkedin_profile_id) {
+  const config = await getDocById('config', 'instagram_config');
+  if (!config || !config.linkedin_access_token || !config.linkedin_profile_id) {
     throw new Error('Conecte sua conta do LinkedIn nas configurações antes de publicar.');
   }
 
@@ -492,13 +419,10 @@ export async function publishToLinkedInAction(draftId: string) {
     );
 
     if (result.success) {
-      await supabase
-        .from('content_drafts')
-        .update({
-          status: 'published',
-          published_at: new Date().toISOString()
-        })
-        .eq('id', draftId);
+      await updateDocData('content_drafts', draftId, {
+        status: 'published',
+        published_at: new Date().toISOString()
+      });
     }
 
     revalidatePath('/');
@@ -509,13 +433,8 @@ export async function publishToLinkedInAction(draftId: string) {
 }
 
 export async function publishToInstagramAction(draftId: string) {
-  const { data: draft, error: draftErr } = await supabase
-    .from('content_drafts')
-    .select('*')
-    .eq('id', draftId)
-    .single();
-
-  if (draftErr || !draft) {
+  const draft = await getDocById('content_drafts', draftId);
+  if (!draft) {
     throw new Error('Rascunho não encontrado.');
   }
 
@@ -523,13 +442,8 @@ export async function publishToInstagramAction(draftId: string) {
     throw new Error('Mídias do Instagram exigem uma URL de imagem ou vídeo válida.');
   }
 
-  const { data: config, error: configErr } = await supabase
-    .from('config')
-    .select('access_token, instagram_user_id')
-    .eq('id', 'instagram_config')
-    .single();
-
-  if (configErr || !config || !config.access_token || !config.instagram_user_id) {
+  const config = await getDocById('config', 'instagram_config');
+  if (!config || !config.access_token || !config.instagram_user_id) {
     throw new Error('Conecte sua conta profissional do Instagram antes de publicar.');
   }
 
@@ -543,13 +457,10 @@ export async function publishToInstagramAction(draftId: string) {
       mediaType
     );
 
-    await supabase
-      .from('content_drafts')
-      .update({
-        status: 'published',
-        published_at: new Date().toISOString()
-      })
-      .eq('id', draftId);
+    await updateDocData('content_drafts', draftId, {
+      status: 'published',
+      published_at: new Date().toISOString()
+    });
 
     revalidatePath('/');
     return { success: true, postId };
@@ -559,41 +470,27 @@ export async function publishToInstagramAction(draftId: string) {
 }
 
 export async function createChatSessionAction(title: string) {
-  const { data, error } = await supabase
-    .from('chat_sessions')
-    .insert([{ title, updated_at: new Date().toISOString() }])
-    .select()
-    .single();
-
-  if (error) {
-    throw new Error(`Erro ao criar sessão de chat: ${error.message}`);
-  }
+  const data = await addDocData('chat_sessions', { title });
   revalidatePath('/');
   return data;
 }
 
 export async function deleteChatSessionAction(id: string) {
-  const { error } = await supabase.from('chat_sessions').delete().eq('id', id);
-  if (error) {
-    throw new Error(`Erro ao deletar sessão: ${error.message}`);
-  }
+  await deleteDocData('chat_sessions', id);
   revalidatePath('/');
 }
 
 export async function sendMessageAction(sessionId: string, messageText: string) {
-  const { error: userMsgErr } = await supabase
-    .from('chat_messages')
-    .insert([{ session_id: sessionId, role: 'user', content: messageText }]);
+  const messagesColRef = collection(db, `chat_sessions/${sessionId}/messages`);
+  const now = new Date().toISOString();
+  
+  await addDoc(messagesColRef, {
+    role: 'user',
+    content: messageText,
+    created_at: now
+  });
 
-  if (userMsgErr) {
-    throw new Error(`Erro ao salvar mensagem: ${userMsgErr.message}`);
-  }
-
-  const { data: profile } = await supabase
-    .from('creator_profiles')
-    .select('*')
-    .eq('id', 'creator_config')
-    .maybeSingle();
+  const profile = await getDocById('creator_profiles', 'creator_config');
 
   const nicheContext = profile
     ? `Meu Perfil Estratégico de Conteúdo:
@@ -604,15 +501,13 @@ export async function sendMessageAction(sessionId: string, messageText: string) 
 - Pilares de Conteúdo: ${profile.content_pillars?.join(', ') || 'Geral'}`
     : 'Use um tom profissional, direto e aglutinador de valor.';
 
-  const { data: history } = await supabase
-    .from('chat_messages')
-    .select('role, content')
-    .eq('session_id', sessionId)
-    .order('created_at', { ascending: true });
+  const q = query(messagesColRef, orderBy('created_at', 'asc'));
+  const historySnap = await getDocs(q);
+  const history = historySnap.docs.map((d) => d.data());
 
   const systemInstruction = `Você é um estrategista digital de elite e o "Segundo Cérebro" do criador de conteúdo.
 Sua missão é ajudar o usuário a ter ideias de posts, estruturar roteiros de vídeo, revisar copies e planejar posts de LinkedIn, Instagram e TikTok.
-Você deve responder sempre com textos HUMANIZADOS, sem clichês típicos de IA (ex: "Prepare-se para", "No ecossistema de", "Descubra o fascinante mundo", etc.).
+Você deve responder sempre com textos HUMANIZADOS, sem clichês típicos de IA.
 Escreva de forma conversacional, autêntica, como se fosse um colega ou ghostwriter experiente.
 Respeite rigorosamente a identidade e nicho do usuário abaixo:
 
@@ -620,27 +515,19 @@ ${nicheContext}
 
 Mantenha formatação limpa e de fácil leitura.`;
 
-  const formattedHistory = history 
-    ? history.slice(-10).map((m: any) => `${m.role === 'user' ? 'Usuário' : 'Assistente'}: ${m.content}`).join('\n\n')
-    : '';
-    
+  const formattedHistory = history.slice(-10).map((m: any) => `${m.role === 'user' ? 'Usuário' : 'Assistente'}: ${m.content}`).join('\n\n');
   const prompt = `${formattedHistory}\n\nResponda à última mensagem do Usuário de forma humana e direta.`;
 
   try {
     const responseText = await generateText(prompt, systemInstruction);
 
-    const { error: modelMsgErr } = await supabase
-      .from('chat_messages')
-      .insert([{ session_id: sessionId, role: 'model', content: responseText }]);
+    await addDoc(messagesColRef, {
+      role: 'model',
+      content: responseText,
+      created_at: new Date().toISOString()
+    });
 
-    if (modelMsgErr) {
-      throw new Error(`Erro ao salvar resposta da IA: ${modelMsgErr.message}`);
-    }
-
-    await supabase
-      .from('chat_sessions')
-      .update({ updated_at: new Date().toISOString() })
-      .eq('id', sessionId);
+    await updateDocData('chat_sessions', sessionId, { updated_at: new Date().toISOString() });
 
     revalidatePath('/');
     return { content: responseText };
@@ -654,9 +541,9 @@ export async function analyzeTrendAction(content: string) {
 Sua missão é desconstruir o post de referência enviado pelo usuário.
 Você deve analisar:
 1. O GANCHO (Hook): Por que funciona, qual o gatilho psicológico.
-2. A ESTRUTURA: A linha de raciocínio passo a passo (problema, dados, lição, CTA).
+2. A ESTRUTURA: A linha de raciocínio passo a passo.
 3. LIÇÕES CHAVE: Melhores práticas observadas nesse post.
-4. MODELO DE TEMPLATE REUTILIZÁVEL: Reescreva o post substituindo as partes específicas por placeholders como [Dificuldade], [Solução], [Resultado] para que o usuário possa preencher com seu próprio nicho.
+4. MODELO DE TEMPLATE REUTILIZÁVEL: Reescreva o post substituindo as partes específicas por placeholders como [Dificuldade], [Solução], [Resultado].
 
 Retorne um objeto JSON estritamente no seguinte formato:
 {
@@ -699,18 +586,12 @@ export async function saveAnalyzedTemplateAction(formData: any) {
     reusable_template,
   };
 
-  const { error } = await supabase.from('analyzed_templates').insert([payload]);
-  if (error) {
-    throw new Error(`Erro ao salvar modelo analisado: ${error.message}`);
-  }
+  await addDocData('analyzed_templates', payload);
   revalidatePath('/');
 }
 
 export async function deleteAnalyzedTemplateAction(id: string) {
-  const { error } = await supabase.from('analyzed_templates').delete().eq('id', id);
-  if (error) {
-    throw new Error(`Erro ao deletar modelo: ${error.message}`);
-  }
+  await deleteDocData('analyzed_templates', id);
   revalidatePath('/');
 }
 
@@ -722,13 +603,13 @@ export async function refineDraftAction(data: {
   
   const systemInstruction = `Você é um copywriter humano sênior e ghostwriter de executivos e criadores de conteúdo.
 Sua tarefa é refinar e reescrever o rascunho de texto enviado pelo usuário.
-Elimine todos os clichês e marcadores de inteligência artificial (como "Prepare-se para", "No mundo de hoje", "Em suma", "Entenda a importância", "Descubra", "Potencialize").
+Elimine todos os clichês e marcadores de inteligência artificial.
 Escreva de forma extremamente natural, humana, com frases curtas, tom de conversa sincera e ritmo dinâmico.
 Tipo de refinamento solicitado:
-- 'humanize': Tom mais natural, empático, autêntico, como se uma pessoa real estivesse falando ou escrevendo de forma espontânea.
-- 'shorten': Texto mais enxuto e direto, removendo enrolação e mantendo o soco e ganchos fortes.
-- 'simplify': Linguagem simples, acessível e direta, eliminando qualquer jargão pedante ou rebuscado.
-- 'engagement': Ajustado para gerar reações, discussões saudáveis nos comentários e compartilhamentos.
+- 'humanize': Tom mais natural, empático, autêntico.
+- 'shorten': Texto mais enxuto e direto.
+- 'simplify': Linguagem simples, acessível.
+- 'engagement': Ajustado para gerar reações e comentários.
 
 Retorne um objeto JSON contendo o texto refinado:
 {
@@ -746,15 +627,8 @@ Retorne um objeto JSON contendo o texto refinado:
 }
 
 export async function getChatMessagesAction(sessionId: string) {
-  const { data, error } = await supabase
-    .from('chat_messages')
-    .select('*')
-    .eq('session_id', sessionId)
-    .order('created_at', { ascending: true });
-
-  if (error) {
-    throw new Error(`Erro ao buscar mensagens: ${error.message}`);
-  }
-  return data || [];
+  const messagesColRef = collection(db, `chat_sessions/${sessionId}/messages`);
+  const q = query(messagesColRef, orderBy('created_at', 'asc'));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
-

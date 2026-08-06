@@ -1,7 +1,16 @@
 import React from 'react';
-import { supabase } from '@/lib/supabase';
 import Dashboard from './Dashboard';
 import { fetchInstagramMediaAction } from './actions';
+import {
+  getInstagramConfig,
+  getAutomations,
+  getCreatorProfile,
+  getIdeas,
+  getDrafts,
+  getChatSessions,
+  getTemplates,
+  getCollectionData,
+} from '@/lib/db';
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -14,32 +23,24 @@ export default async function Page({ searchParams }: PageProps) {
   const connected = resolvedParams.connected === 'true';
   const error = resolvedParams.error as string | undefined;
 
-  // Executar todas as consultas independentes do banco de dados em PARALELO para carregamento ultrarrápido (< 50ms)
+  // Executar todas as consultas independentes do Firebase Firestore em PARALELO para carregamento ultrarrápido (< 50ms)
   const [
-    configRes,
-    automationsRes,
-    creatorProfileRes,
-    ideasRes,
-    draftsRes,
-    chatSessionsRes,
-    templatesRes,
+    config,
+    automations,
+    creatorProfile,
+    ideas,
+    drafts,
+    chatSessions,
+    templates,
   ] = await Promise.all([
-    supabase.from('config').select('*').eq('id', 'instagram_config').maybeSingle(),
-    supabase.from('automations').select('*').order('created_at', { ascending: false }),
-    supabase.from('creator_profiles').select('*').eq('id', 'creator_config').maybeSingle(),
-    supabase.from('ideas').select('*').order('created_at', { ascending: false }),
-    supabase.from('content_drafts').select('*').order('updated_at', { ascending: false }),
-    supabase.from('chat_sessions').select('*').order('updated_at', { ascending: false }),
-    supabase.from('analyzed_templates').select('*').order('created_at', { ascending: false }),
+    getInstagramConfig(),
+    getAutomations(),
+    getCreatorProfile(),
+    getIdeas(),
+    getDrafts(),
+    getChatSessions(),
+    getTemplates(),
   ]);
-
-  const config = configRes.data || null;
-  const automations = (automationsRes.data as any[]) || [];
-  const creatorProfile = creatorProfileRes.data || null;
-  const ideas = (ideasRes.data as any[]) || [];
-  const drafts = (draftsRes.data as any[]) || [];
-  const chatSessions = (chatSessionsRes.data as any[]) || [];
-  const templates = (templatesRes.data as any[]) || [];
 
   // Buscar estatísticas e mídias do Instagram em paralelo se o Instagram estiver conectado
   let mediaList: any[] = [];
@@ -52,24 +53,20 @@ export default async function Page({ searchParams }: PageProps) {
 
   if (config) {
     const [
-      contactsCountRes,
-      pendingCountRes,
-      sentCountRes,
-      failedCountRes,
+      contactsList,
+      queueList,
       mediaListRes
     ] = await Promise.all([
-      supabase.from('contacts').select('id', { count: 'exact', head: true }),
-      supabase.from('queue').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-      supabase.from('queue').select('id', { count: 'exact', head: true }).eq('status', 'sent'),
-      supabase.from('queue').select('id', { count: 'exact', head: true }).eq('status', 'failed'),
+      getCollectionData('contacts'),
+      getCollectionData('queue'),
       fetchInstagramMediaAction().catch(() => []),
     ]);
 
     stats = {
-      totalContacts: contactsCountRes.count || 0,
-      pendingQueue: pendingCountRes.count || 0,
-      sentMessages: sentCountCount(sentCountRes.count),
-      failedMessages: failedCountRes.count || 0,
+      totalContacts: contactsList.length,
+      pendingQueue: queueList.filter((q: any) => q.status === 'pending').length,
+      sentMessages: queueList.filter((q: any) => q.status === 'sent').length,
+      failedMessages: queueList.filter((q: any) => q.status === 'failed').length,
     };
 
     mediaList = mediaListRes || [];
