@@ -26,6 +26,7 @@ import {
   Compass,
   Video,
   Layers,
+  Menu,
 } from 'lucide-react';
 
 const Instagram = (props: React.SVGProps<SVGSVGElement>) => (
@@ -163,6 +164,7 @@ export default function Dashboard({
   templates,
 }: DashboardProps) {
   const [loading, setLoading] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMediaSelectorOpen, setIsMediaSelectorOpen] = useState(false);
   const [currentMediaList, setCurrentMediaList] = useState<any[]>(mediaList);
@@ -842,24 +844,42 @@ export default function Dashboard({
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0c0c0e] text-zinc-100 font-sans selection:bg-indigo-500 selection:text-white">
+    <div className="flex min-h-screen bg-[#0c0c0e] text-zinc-100 font-sans selection:bg-indigo-500 selection:text-white relative overflow-x-hidden">
       
-      {/* LEFT SIDEBAR BARRA NAVEGAÇÃO FIXA */}
-      <aside className="w-64 border-r border-zinc-800/70 bg-[#09090b] flex flex-col justify-between h-screen sticky top-0 shrink-0 select-none z-40">
+      {/* BACKDROP MOBILE DRAWER */}
+      {isMobileSidebarOpen && (
+        <div
+          onClick={() => setIsMobileSidebarOpen(false)}
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-30 lg:hidden transition-opacity"
+        />
+      )}
+
+      {/* LEFT SIDEBAR BARRA NAVEGAÇÃO FIXA / RESPONSIVA */}
+      <aside className={`w-64 border-r border-zinc-800/70 bg-[#09090b] flex flex-col justify-between h-screen fixed lg:sticky top-0 left-0 shrink-0 select-none z-40 transition-transform duration-300 ${
+        isMobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'
+      }`}>
         <div className="p-4 space-y-6 overflow-y-auto scrollbar-none">
           
-          {/* BRAND LOGO */}
-          <div className="flex items-center gap-3 px-2 py-1">
-            <div className="bg-indigo-600/20 border border-indigo-500/30 p-2 rounded-xl text-indigo-400">
-              <Sparkles className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-sm tracking-tight text-white">CreateFlow</span>
-                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">AI OS</span>
+          {/* BRAND LOGO E BOTAO FECHAR MOBILE */}
+          <div className="flex items-center justify-between px-2 py-1">
+            <div className="flex items-center gap-3">
+              <div className="bg-indigo-600/20 border border-indigo-500/30 p-2 rounded-xl text-indigo-400">
+                <Sparkles className="h-5 w-5" />
               </div>
-              <span className="text-[11px] text-zinc-500 block font-medium">Segundo Cérebro & DM</span>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-extrabold text-sm tracking-tight text-white">CreateFlow</span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">AI OS</span>
+                </div>
+                <span className="text-[11px] text-zinc-500 block font-medium">Segundo Cérebro & DM</span>
+              </div>
             </div>
+            <button
+              onClick={() => setIsMobileSidebarOpen(false)}
+              className="lg:hidden text-zinc-400 hover:text-white p-1 rounded-lg bg-zinc-800/50"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
 
           {/* BUSCA RÁPIDA ⌘K */}
@@ -876,7 +896,7 @@ export default function Dashboard({
             <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-2 block mb-2 font-mono">Plataforma</span>
             
             <button
-              onClick={() => { setActiveMainTab('creator_studio'); setActiveStudioTab('chat'); }}
+              onClick={() => { setActiveMainTab('creator_studio'); setActiveStudioTab('chat'); setIsMobileSidebarOpen(false); }}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition ${
                 activeMainTab === 'creator_studio' && activeStudioTab === 'chat'
                   ? 'bg-[#18181c] text-white border border-zinc-700/80 shadow-sm font-semibold'
@@ -890,7 +910,7 @@ export default function Dashboard({
             </button>
 
             <button
-              onClick={() => { setActiveMainTab('creator_studio'); setActiveStudioTab('ideas'); }}
+              onClick={() => { setActiveMainTab('creator_studio'); setActiveStudioTab('ideas'); setIsMobileSidebarOpen(false); }}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition ${
                 activeMainTab === 'creator_studio' && activeStudioTab === 'ideas'
                   ? 'bg-[#18181c] text-white border border-zinc-700/80 shadow-sm font-semibold'
@@ -909,7 +929,7 @@ export default function Dashboard({
             </button>
 
             <button
-              onClick={() => { setActiveMainTab('creator_studio'); setActiveStudioTab('drafts'); }}
+              onClick={() => { setActiveMainTab('creator_studio'); setActiveStudioTab('drafts'); setIsMobileSidebarOpen(false); }}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition ${
                 activeMainTab === 'creator_studio' && activeStudioTab === 'drafts'
                   ? 'bg-[#18181c] text-white border border-zinc-700/80 shadow-sm font-semibold'
@@ -928,7 +948,7 @@ export default function Dashboard({
             </button>
 
             <button
-              onClick={() => { setActiveMainTab('creator_studio'); setActiveStudioTab('trends'); }}
+              onClick={() => { setActiveMainTab('creator_studio'); setActiveStudioTab('trends'); setIsMobileSidebarOpen(false); }}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition ${
                 activeMainTab === 'creator_studio' && activeStudioTab === 'trends'
                   ? 'bg-[#18181c] text-white border border-zinc-700/80 shadow-sm font-semibold'
@@ -942,7 +962,7 @@ export default function Dashboard({
             </button>
 
             <button
-              onClick={() => setActiveMainTab('automations')}
+              onClick={() => { setActiveMainTab('automations'); setIsMobileSidebarOpen(false); }}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition ${
                 activeMainTab === 'automations'
                   ? 'bg-[#18181c] text-white border border-zinc-700/80 shadow-sm font-semibold'
@@ -966,7 +986,7 @@ export default function Dashboard({
             <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-2 block mb-2 font-mono">Estratégia</span>
             
             <button
-              onClick={handleGenerateSchedulePlan}
+              onClick={() => { handleGenerateSchedulePlan(); setIsMobileSidebarOpen(false); }}
               disabled={isGeneratingSchedule}
               className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/20 transition"
             >
@@ -975,7 +995,7 @@ export default function Dashboard({
             </button>
 
             <button
-              onClick={() => { setActiveMainTab('creator_studio'); setActiveStudioTab('profile'); }}
+              onClick={() => { setActiveMainTab('creator_studio'); setActiveStudioTab('profile'); setIsMobileSidebarOpen(false); }}
               className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${
                 activeMainTab === 'creator_studio' && activeStudioTab === 'profile'
                   ? 'bg-[#18181c] text-white border border-zinc-700/80 shadow-sm font-semibold'
@@ -1035,18 +1055,29 @@ export default function Dashboard({
         </div>
       </aside>
 
-      {/* ÁREA PRINCIPAL DE CONTEÚDO */}
-      <main className="flex-1 p-6 lg:p-8 overflow-y-auto max-w-[1550px] space-y-6 bg-[#0a0a0c]">
+      {/* ÁREA PRINCIPAL DE CONTEÚDO (100% RESPONSIVA - PREENCHE O MONITOR SEM GAPS) */}
+      <main className="flex-1 w-full min-w-0 p-4 sm:p-6 lg:p-8 overflow-y-auto space-y-6 bg-[#0a0a0c]">
         
-        {/* TOP BAR HEADER REPLICADO 1:1 DA REFERÊNCIA (SEARCH + CTA BUTTON) */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-2 border-b border-zinc-800/60">
-          <div className="relative w-full sm:w-96">
-            <input
-              type="text"
-              placeholder="Search ideas, scripts, automations..."
-              className="w-full bg-[#121215] border border-zinc-800/80 rounded-xl pl-9 pr-4 py-2 text-xs text-zinc-300 placeholder-zinc-500 focus:outline-none focus:border-zinc-700 transition font-mono"
-            />
-            <Compass className="h-4 w-4 text-zinc-500 absolute left-3 top-2.5" />
+        {/* TOP BAR HEADER REPLICADO 1:1 DA REFERÊNCIA (SEARCH + HAMBURGER MOBILE + CTA BUTTON) */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-2 border-b border-zinc-800/60 w-full">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            {/* BOTAO HAMBURGER MOBILE */}
+            <button
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="lg:hidden text-zinc-400 hover:text-white p-2 rounded-xl bg-[#121215] border border-zinc-800 shrink-0"
+              title="Abrir Menu"
+            >
+              <Menu className="h-4 w-4" />
+            </button>
+
+            <div className="relative w-full sm:w-96">
+              <input
+                type="text"
+                placeholder="Search ideas, scripts, automations..."
+                className="w-full bg-[#121215] border border-zinc-800/80 rounded-xl pl-9 pr-4 py-2 text-xs text-zinc-300 placeholder-zinc-500 focus:outline-none focus:border-zinc-700 transition font-mono"
+              />
+              <Compass className="h-4 w-4 text-zinc-500 absolute left-3 top-2.5" />
+            </div>
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
@@ -1057,7 +1088,7 @@ export default function Dashboard({
                 else if (activeMainTab === 'automations') handleOpenNew();
                 else handleCreateSession();
               }}
-              className="bg-[#141416] hover:bg-zinc-800 border border-zinc-700/80 hover:border-zinc-500 text-white font-mono text-xs px-4 py-2 rounded-xl font-bold transition flex items-center gap-2 shadow-sm"
+              className="bg-[#141416] hover:bg-zinc-800 border border-zinc-700/80 hover:border-zinc-500 text-white font-mono text-xs px-4 py-2 rounded-xl font-bold transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto"
             >
               <Plus className="h-4 w-4 text-indigo-400" />
               <span>
