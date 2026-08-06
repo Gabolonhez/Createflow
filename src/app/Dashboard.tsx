@@ -1571,34 +1571,34 @@ export default function Dashboard({
               </div>
             )}
 
-            {/* 2. ANALISADOR DE TENDÊNCIAS */}
+            {/* 2. ANALISADOR DE TENDÊNCIAS (PADRÃO OBSIDIAN DESIGN.MD) */}
             {activeStudioTab === 'trends' && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
                 {/* COLUNA ESQUERDA: DESCONSTRUTOR */}
                 <div className="lg:col-span-1 space-y-6">
-                  <div className="bg-slate-900/30 border border-slate-900 rounded-3xl p-6 space-y-4 backdrop-blur-md">
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                      <Compass className="h-4 w-4 text-indigo-400 animate-pulse" />
+                  <div className="bg-[#121215] border border-zinc-800/80 rounded-2xl p-6 space-y-4 shadow-sm text-left">
+                    <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider font-mono flex items-center gap-2">
+                      <Compass className="h-4 w-4 text-indigo-400" />
                       Engenharia Reversa de Posts
                     </h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      Viu um post com muito engajamento no LinkedIn ou Instagram? Cole o texto completo dele abaixo. O Gemini analisará a estrutura mental por trás e extrairá um template reutilizável para você.
+                    <p className="text-xs text-zinc-400 leading-relaxed">
+                      Cole um post viral do LinkedIn ou Instagram. A IA analisará o gancho, a retenção e extrairá um template reutilizável.
                     </p>
                     <form onSubmit={handleAnalyzeTrend} className="space-y-4">
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Post de Sucesso original</label>
+                        <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Post de Sucesso original</label>
                         <textarea
                           rows={8}
                           value={trendText}
                           onChange={(e) => setTrendText(e.target.value)}
                           placeholder="Cole o texto bruto do post aqui..."
-                          className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-xs text-white placeholder-slate-700 focus:outline-none focus:border-indigo-500 transition duration-300 font-sans leading-relaxed"
+                          className="w-full bg-[#09090b] border border-zinc-800 rounded-xl p-4 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition font-sans leading-relaxed"
                         />
                       </div>
                       <button
                         type="submit"
                         disabled={isAnalyzingTrend || !trendText.trim()}
-                        className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-900 disabled:text-slate-650 text-white rounded-xl text-xs font-bold transition duration-300 flex items-center justify-center gap-2"
+                        className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white rounded-xl text-xs font-mono font-bold transition flex items-center justify-center gap-2"
                       >
                         {isAnalyzingTrend ? (
                           <>
@@ -1620,15 +1620,15 @@ export default function Dashboard({
                 <div className="lg:col-span-2 space-y-6">
                   {/* RESULTADO DA ANÁLISE ATUAL */}
                   {analyzedResult && (
-                    <div className="bg-slate-900/30 border border-indigo-500/20 rounded-3xl p-6 space-y-5 animate-fade-in shadow-xl">
-                      <div className="flex items-center justify-between border-b border-slate-900 pb-4">
-                        <h4 className="text-sm font-bold text-indigo-400 flex items-center gap-2">
+                    <div className="bg-[#121215] border border-indigo-500/30 rounded-2xl p-6 space-y-5 animate-fade-in shadow-sm text-left">
+                      <div className="flex items-center justify-between border-b border-zinc-800/80 pb-4">
+                        <h4 className="text-xs font-bold text-indigo-400 font-mono flex items-center gap-2">
                           <Sparkles className="h-4 w-4 text-indigo-400" />
                           {analyzedResult.title}
                         </h4>
                         <button
                           onClick={handleSaveTemplate}
-                          className="py-1.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition duration-300 flex items-center gap-1 shadow-md shadow-indigo-500/10"
+                          className="py-1.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-mono font-bold transition flex items-center gap-1 shadow-sm"
                         >
                           <Check className="h-3.5 w-3.5" />
                           Salvar Template
@@ -1637,22 +1637,22 @@ export default function Dashboard({
 
                       <div className="space-y-4 text-xs">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="bg-slate-950/40 p-4 rounded-2xl border border-slate-900 text-left">
-                            <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block mb-1">🪝 O Gancho (Hook)</span>
-                            <p className="text-slate-300 leading-relaxed">{analyzedResult.hook}</p>
+                          <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/80 text-left">
+                            <span className="font-bold text-zinc-400 uppercase tracking-widest text-[9px] font-mono block mb-1">🪝 O Gancho (Hook)</span>
+                            <p className="text-zinc-300 leading-relaxed font-sans">{analyzedResult.hook}</p>
                           </div>
-                          <div className="bg-slate-950/40 p-4 rounded-2xl border border-slate-900 text-left">
-                            <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block mb-1">🏗️ Estrutura de Retenção</span>
-                            <p className="text-slate-300 leading-relaxed">{analyzedResult.structure}</p>
+                          <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/80 text-left">
+                            <span className="font-bold text-zinc-400 uppercase tracking-widest text-[9px] font-mono block mb-1">🏗️ Estrutura de Retenção</span>
+                            <p className="text-zinc-300 leading-relaxed font-sans">{analyzedResult.structure}</p>
                           </div>
                         </div>
-                        <div className="bg-slate-950/40 p-4 rounded-2xl border border-slate-900 text-left">
-                          <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block mb-1">💡 Aprendizados Chave</span>
-                          <p className="text-slate-300 leading-relaxed">{analyzedResult.key_takeaways}</p>
+                        <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/80 text-left">
+                          <span className="font-bold text-zinc-400 uppercase tracking-widest text-[9px] font-mono block mb-1">💡 Aprendizados Chave</span>
+                          <p className="text-zinc-300 leading-relaxed font-sans">{analyzedResult.key_takeaways}</p>
                         </div>
                         <div className="space-y-1.5 text-left">
-                          <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block ml-1">📝 Template Reutilizável com Placeholders</span>
-                          <div className="bg-slate-950 border border-slate-900 p-4 rounded-2xl font-mono text-[10px] text-emerald-400 whitespace-pre-wrap leading-relaxed shadow-inner">
+                          <span className="font-bold text-zinc-400 uppercase tracking-widest text-[9px] font-mono block ml-1">📝 Template Reutilizável com Placeholders</span>
+                          <div className="bg-[#09090b] border border-zinc-800 p-4 rounded-xl font-mono text-[11px] text-emerald-400 whitespace-pre-wrap leading-relaxed">
                             {analyzedResult.reusable_template}
                           </div>
                         </div>
@@ -2038,76 +2038,76 @@ export default function Dashboard({
               </div>
             )}
 
-            {/* 5. MARCA, NICHO & CONEXÕES */}
+            {/* 5. MARCA, NICHO & CONEXÕES (PADRÃO OBSIDIAN DESIGN.MD) */}
             {activeStudioTab === 'profile' && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
                 {/* DEFINIÇÕES DE PERSONA */}
                 <div className="lg:col-span-2">
-                  <div className="bg-slate-900/30 border border-slate-900 rounded-3xl p-6 space-y-6 backdrop-blur-md">
+                  <div className="bg-[#121215] border border-zinc-800/80 rounded-2xl p-6 space-y-6 shadow-sm">
                     <div className="text-left">
-                      <h3 className="text-sm font-bold text-white uppercase tracking-wider">Identidade de Marca</h3>
-                      <p className="text-xs text-slate-400">Personalize o contexto estratégico usado na criação inteligente de conteúdo.</p>
+                      <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider font-mono">Identidade de Marca</h3>
+                      <p className="text-xs text-zinc-400">Personalize o contexto estratégico usado na criação inteligente de conteúdo.</p>
                     </div>
 
                     <form onSubmit={handleSaveProfile} className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1 text-left">
-                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nicho de Atuação *</label>
+                          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest font-mono">Nicho de Atuação *</label>
                           <input
                             type="text"
                             required
                             value={profileForm.niche}
                             onChange={(e) => setProfileForm({ ...profileForm, niche: e.target.value })}
                             placeholder="Ex: Marketing para PMEs, Nutrição Esportiva"
-                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-700 focus:outline-none focus:border-indigo-500 transition"
+                            className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition font-sans"
                           />
                         </div>
                         <div className="space-y-1 text-left">
-                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Público-Alvo *</label>
+                          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest font-mono">Público-Alvo *</label>
                           <input
                             type="text"
                             required
                             value={profileForm.target_audience}
                             onChange={(e) => setProfileForm({ ...profileForm, target_audience: e.target.value })}
                             placeholder="Ex: Empreendedores que faturam até R$ 50k"
-                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-700 focus:outline-none focus:border-indigo-500 transition"
+                            className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition font-sans"
                           />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1 text-left">
-                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Objetivos do Perfil *</label>
+                          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest font-mono">Objetivos do Perfil *</label>
                           <input
                             type="text"
                             required
                             value={profileForm.objectives}
                             onChange={(e) => setProfileForm({ ...profileForm, objectives: e.target.value })}
                             placeholder="Ex: Obter leads para mentoria, criar autoridade"
-                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-700 focus:outline-none focus:border-indigo-500 transition"
+                            className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition font-sans"
                           />
                         </div>
                         <div className="space-y-1 text-left">
-                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tom de Voz *</label>
+                          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest font-mono">Tom de Voz *</label>
                           <input
                             type="text"
                             required
                             value={profileForm.voice_tone}
                             onChange={(e) => setProfileForm({ ...profileForm, voice_tone: e.target.value })}
                             placeholder="Ex: Prático, enérgico, direto ao ponto, sincero"
-                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-700 focus:outline-none focus:border-indigo-500 transition"
+                            className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition font-sans"
                           />
                         </div>
                       </div>
 
                       <div className="space-y-1 text-left">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pilares de Conteúdo (Separados por vírgula)</label>
+                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest font-mono">Pilares de Conteúdo (Separados por vírgula)</label>
                         <input
                           type="text"
                           value={profileForm.content_pillars}
                           onChange={(e) => setProfileForm({ ...profileForm, content_pillars: e.target.value })}
                           placeholder="Ex: Estratégias de Vendas, Cases de Sucesso, Hacks de Produtividade"
-                          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-700 focus:outline-none focus:border-indigo-500 transition"
+                          className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition font-sans"
                         />
                       </div>
 
@@ -2115,7 +2115,7 @@ export default function Dashboard({
                         <button
                           type="submit"
                           disabled={studioLoading}
-                          className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition shadow"
+                          className="bg-indigo-600 hover:bg-indigo-500 text-white font-mono text-xs px-5 py-2.5 rounded-xl transition font-bold shadow-sm"
                         >
                           {studioLoading ? 'Salvando...' : 'Salvar Diretrizes de Marca'}
                         </button>
@@ -2126,38 +2126,38 @@ export default function Dashboard({
 
                 {/* CONEXÕES COM REDES SOCIAIS */}
                 <div className="lg:col-span-1 space-y-6">
-                  <div className="bg-slate-900/30 border border-slate-900 rounded-3xl p-6 space-y-4 backdrop-blur-md">
+                  <div className="bg-[#121215] border border-zinc-800/80 rounded-2xl p-6 space-y-4 shadow-sm">
                     <div className="text-left">
-                      <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                      <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider font-mono flex items-center gap-1.5">
                         <Link className="h-4 w-4 text-indigo-400" />
                         Conectar Redes Sociais
                       </h3>
-                      <p className="text-xs text-slate-400 leading-relaxed">
+                      <p className="text-xs text-zinc-400 leading-relaxed">
                         Habilite a postagem direta dos seus roteiros de conteúdo aprovados do estúdio de criação.
                       </p>
                     </div>
 
                     <div className="space-y-3">
                       {/* INSTAGRAM BUSINESS CONNECTION */}
-                      <div className="p-4 bg-slate-950 rounded-2xl border border-slate-900 flex items-center justify-between">
+                      <div className="p-4 bg-[#09090b] rounded-xl border border-zinc-800 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Image className="h-4.5 w-4.5 text-pink-400" />
                           <div className="text-left">
                             <p className="text-xs font-bold text-white">Instagram Business</p>
-                            <p className="text-[10px] text-slate-500">
+                            <p className="text-[10px] font-mono text-zinc-500">
                               {config?.instagram_username ? `@${config.instagram_username}` : 'Desconectado'}
                             </p>
                           </div>
                         </div>
                         {config?.instagram_username ? (
-                          <span className="text-[9px] font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-500/20 px-2 py-0.5 rounded-md uppercase tracking-wider">Ativo</span>
+                          <span className="text-[9px] font-mono font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-500/20 px-2 py-0.5 rounded-md uppercase tracking-wider">Ativo</span>
                         ) : (
-                          <span className="text-[9px] font-bold text-slate-500 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-md uppercase tracking-wider">Pendente</span>
+                          <span className="text-[9px] font-mono font-bold text-zinc-500 bg-[#141416] border border-zinc-800 px-2 py-0.5 rounded-md uppercase tracking-wider">Pendente</span>
                         )}
                       </div>
 
                       {/* LINKEDIN PROFILE CONNECTION */}
-                      <div className="p-4 bg-slate-950 rounded-2xl border border-slate-900 flex items-center justify-between">
+                      <div className="p-4 bg-[#09090b] rounded-xl border border-zinc-800 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <FileText className="h-4.5 w-4.5 text-blue-450" />
                           <div className="text-left">
