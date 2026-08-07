@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Settings,
   Power,
@@ -47,6 +48,7 @@ const Instagram = (props: React.SVGProps<SVGSVGElement>) => (
     <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
   </svg>
 );
+
 import {
   disconnectInstagramAction,
   getInstagramOAuthUrlAction,
@@ -150,6 +152,50 @@ interface DashboardProps {
   templates: any[];
 }
 
+const cardGridVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.04,
+    },
+  },
+};
+
+const cardItemVariants = {
+  hidden: { opacity: 0, y: 12, scale: 0.98 },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: 'spring' as const,
+      stiffness: 300,
+      damping: 24,
+    },
+  },
+};
+
+const modalSpringVariants = {
+  hidden: { opacity: 0, scale: 0.95, y: 16 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: {
+      type: 'spring' as const,
+      stiffness: 320,
+      damping: 26,
+    },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.95,
+    y: 12,
+    transition: { duration: 0.15 },
+  },
+};
+
 export default function Dashboard({
   config,
   automations,
@@ -168,6 +214,20 @@ export default function Dashboard({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMediaSelectorOpen, setIsMediaSelectorOpen] = useState(false);
   const [currentMediaList, setCurrentMediaList] = useState<any[]>(mediaList);
+
+  // Sistema de Busca Reativa 21st.dev
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Sistema de Notificações Toast Flutuante com Framer Motion
+  const [toasts, setToasts] = useState<{ id: string; message: string; type: 'success' | 'info' | 'error' }[]>([]);
+
+  const addToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 3500);
+  };
 
   // Estado do formulário de automação
   const [formState, setFormState] = useState<Automation>({
@@ -200,15 +260,15 @@ export default function Dashboard({
       const url = await getInstagramOAuthUrlAction();
       window.location.href = url;
     } catch (e: any) {
-      alert(`Erro ao obter URL de autenticação: ${e.message}`);
+      addToast(`Erro ao obter URL: ${e.message}`, 'error');
       setLoading(false);
     }
   };
   
   // Controle de abas principais
-  const [activeMainTab, setActiveMainTab] = useState<'automations' | 'creator_studio'>('automations');
-  // Controle de sub-abas do Creator Studio (Padrão para CHAT do segundo cérebro!)
-  const [activeStudioTab, setActiveStudioTab] = useState<'chat' | 'trends' | 'ideas' | 'drafts' | 'profile'>('chat');
+  const [activeMainTab, setActiveMainTab] = useState<'automations' | 'creator_studio'>('creator_studio');
+  // Controle de sub-abas do Creator Studio
+  const [activeStudioTab, setActiveStudioTab] = useState<'chat' | 'trends' | 'ideas' | 'drafts' | 'profile'>('ideas');
 
   // Estado do Perfil de Marca
   const [profileForm, setProfileForm] = useState({
@@ -281,8 +341,9 @@ export default function Dashboard({
       const plan = await generateSchedulePlanAction();
       setSchedulePlan(plan);
       setIsScheduleModalOpen(true);
+      addToast('Cronograma semanal gerado com IA!', 'success');
     } catch (err: any) {
-      alert(`Erro ao gerar cronograma: ${err.message}`);
+      addToast(`Erro ao gerar cronograma: ${err.message}`, 'error');
     } finally {
       setIsGeneratingSchedule(false);
     }
@@ -311,9 +372,9 @@ export default function Dashboard({
     setStudioLoading(true);
     try {
       await saveCreatorProfileAction(profileForm);
-      alert('Perfil de marca salvo com sucesso!');
+      addToast('Perfil de marca salvo com sucesso!', 'success');
     } catch (err: any) {
-      alert(`Erro ao salvar perfil: ${err.message}`);
+      addToast(`Erro ao salvar perfil: ${err.message}`, 'error');
     } finally {
       setStudioLoading(false);
     }
@@ -326,8 +387,9 @@ export default function Dashboard({
       await saveIdeaAction(ideaForm);
       setIdeaForm({ id: '', title: '', description: '', reference_url: '', pillar: '' });
       setIsIdeaModalOpen(false);
+      addToast('Ideia salva no seu Segundo Cérebro!', 'success');
     } catch (err: any) {
-      alert(`Erro ao salvar ideia: ${err.message}`);
+      addToast(`Erro ao salvar ideia: ${err.message}`, 'error');
     } finally {
       setStudioLoading(false);
     }
@@ -338,8 +400,9 @@ export default function Dashboard({
       setStudioLoading(true);
       try {
         await deleteIdeaAction(id);
+        addToast('Ideia removida.', 'info');
       } catch (err: any) {
-        alert(err.message);
+        addToast(`Erro ao excluir: ${err.message}`, 'error');
       } finally {
         setStudioLoading(false);
       }
@@ -353,13 +416,14 @@ export default function Dashboard({
     try {
       const suggestions: any = await generateIdeasAction();
       if (suggestions && suggestions.error) {
-        alert(suggestions.error);
+        addToast(suggestions.error, 'error');
         setShowAiSuggestionsModal(false);
         return;
       }
       setAiSuggestions(Array.isArray(suggestions) ? suggestions : []);
+      addToast('Ideias geradas pelo Gemini Pro!', 'success');
     } catch (err: any) {
-      alert(err.message);
+      addToast(err.message, 'error');
       setShowAiSuggestionsModal(false);
     } finally {
       setIsAiSuggestionsLoading(false);
@@ -371,13 +435,15 @@ export default function Dashboard({
     try {
       await saveIdeaAction({
         title: aiIdea.title,
-        description: aiIdea.description,
+        description: aiIdea.reasoning,
         pillar: aiIdea.pillar,
+        reference_url: '',
         status: 'idea',
       });
-      setAiSuggestions((prev) => prev.filter((item) => item.title !== aiIdea.title));
+      setAiSuggestions((prev) => prev.filter((i) => i.title !== aiIdea.title));
+      addToast('Ideia adicionada ao backlog!', 'success');
     } catch (err: any) {
-      alert(`Erro ao adicionar ideia: ${err.message}`);
+      addToast(`Erro ao adicionar ideia: ${err.message}`, 'error');
     } finally {
       setStudioLoading(false);
     }
@@ -387,16 +453,16 @@ export default function Dashboard({
     setDraftForm({
       id: '',
       title: idea.title,
-      platform: idea.pillar?.toLowerCase().includes('linkedin') ? 'linkedin' : 'instagram',
-      format: idea.pillar?.toLowerCase().includes('linkedin') ? 'text' : 'reels',
-      content: '',
+      platform: 'instagram',
+      format: 'post',
+      content: idea.description || '',
       visual_script: '',
       idea_id: idea.id,
       status: 'draft',
-      media_url: '',
+      media_url: idea.reference_url || '',
       scheduled_at: '',
     });
-    setCustomPrompt(idea.description || '');
+    setCustomPrompt('');
     setIsDraftModalOpen(true);
   };
 
@@ -417,7 +483,7 @@ export default function Dashboard({
     setIsDraftModalOpen(true);
   };
 
-  const handleOpenEditDraft = (draft: Draft) => {
+  const handleEditDraft = (draft: Draft) => {
     setDraftForm({
       id: draft.id,
       title: draft.title,
@@ -434,9 +500,23 @@ export default function Dashboard({
     setIsDraftModalOpen(true);
   };
 
-  const handleGenerateScriptWithAI = async () => {
+  const handleDeleteDraft = async (id: string) => {
+    if (confirm('Deseja excluir este rascunho?')) {
+      setStudioLoading(true);
+      try {
+        await deleteDraftAction(id);
+        addToast('Rascunho excluído.', 'info');
+      } catch (err: any) {
+        addToast(`Erro ao excluir: ${err.message}`, 'error');
+      } finally {
+        setStudioLoading(false);
+      }
+    }
+  };
+
+  const handleGenerateScript = async () => {
     if (!draftForm.title) {
-      alert('Por favor, informe pelo menos o título do post para gerar o roteiro.');
+      addToast('Por favor, dê um título ou tema para o rascunho.', 'error');
       return;
     }
     setIsGeneratingScript(true);
@@ -450,7 +530,7 @@ export default function Dashboard({
       });
 
       if (result && result.error) {
-        alert(`Erro ao gerar roteiro com IA: ${result.error}`);
+        addToast(`Erro ao gerar roteiro: ${result.error}`, 'error');
         return;
       }
 
@@ -459,8 +539,9 @@ export default function Dashboard({
         content: result.content || '',
         visual_script: result.visual_script || '',
       }));
+      addToast('Roteiro estruturado gerado com sucesso!', 'success');
     } catch (err: any) {
-      alert(`Erro ao gerar roteiro com IA: ${err.message}`);
+      addToast(`Erro ao gerar roteiro com IA: ${err.message}`, 'error');
     } finally {
       setIsGeneratingScript(false);
     }
@@ -472,171 +553,157 @@ export default function Dashboard({
     try {
       await saveDraftAction(draftForm);
       setIsDraftModalOpen(false);
+      addToast('Rascunho salvo no estúdio!', 'success');
     } catch (err: any) {
-      alert(`Erro ao salvar rascunho: ${err.message}`);
+      addToast(`Erro ao salvar rascunho: ${err.message}`, 'error');
     } finally {
       setStudioLoading(false);
     }
-  };
-
-  const handleDeleteDraft = async (id: string) => {
-    if (confirm('Excluir este rascunho permanentemente?')) {
-      setStudioLoading(true);
-      try {
-        await deleteDraftAction(id);
-      } catch (err: any) {
-        alert(err.message);
-      } finally {
-        setStudioLoading(false);
-      }
-    }
-  };
-
-  const handleUpdateDraftStatus = async (draft: Draft, newStatus: 'draft' | 'ready' | 'published') => {
-    setStudioLoading(true);
-    try {
-      await saveDraftAction({
-        ...draft,
-        status: newStatus,
-      });
-    } catch (err: any) {
-      alert(err.message);
-    } finally {
-      setStudioLoading(false);
-    }
-  };
-
-  const handlePlatformChange = (platform: 'instagram' | 'linkedin' | 'tiktok') => {
-    let format: 'reels' | 'carousel' | 'post' | 'text' = 'post';
-    if (platform === 'linkedin') format = 'text';
-    if (platform === 'tiktok') format = 'reels';
-    setDraftForm((prev) => ({ ...prev, platform, format }));
   };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    alert('Texto copiado com sucesso!');
+    addToast('Copiado para a área de transferência! ✨', 'info');
   };
 
-  // Handlers do Segundo Cérebro (Conversação Chat)
-  const handleCreateSession = async () => {
-    const title = prompt('Digite o título da nova sessão de brainstorming:');
-    if (!title) return;
-    setStudioLoading(true);
+  const handlePublishLinkedIn = async (draft: Draft) => {
+    if (!confirm('Deseja publicar este post agora no seu LinkedIn conectado?')) return;
+    setIsPublishing(true);
     try {
-      const res: any = await createChatSessionAction(title);
-      if (res && res.error) {
-        alert(`Erro ao criar sessão: ${res.error}`);
-        return;
-      }
-      setSessions((prev) => [res, ...prev]);
-      setActiveSessionId(res.id);
+      await publishToLinkedInAction(draft.id);
+      addToast('Post publicado com sucesso no LinkedIn! 🚀', 'success');
     } catch (err: any) {
-      alert(`Erro ao criar sessão: ${err.message}`);
+      addToast(`Erro ao publicar no LinkedIn: ${err.message}`, 'error');
     } finally {
-      setStudioLoading(false);
+      setIsPublishing(false);
     }
   };
 
-  const handleDeleteSession = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!confirm('Deseja excluir esta sessão e todo o histórico de mensagens?')) return;
-    setStudioLoading(true);
+  const handlePublishInstagram = async (draft: Draft) => {
+    if (!confirm('Deseja publicar este post agora na sua conta do Instagram?')) return;
+    setIsPublishing(true);
     try {
-      const res: any = await deleteChatSessionAction(id);
-      if (res && res.error) {
-        alert(`Erro ao deletar: ${res.error}`);
-        return;
-      }
-      setSessions((prev) => prev.filter((s) => s.id !== id));
-      if (activeSessionId === id) {
-        setActiveSessionId(null);
-      }
+      await publishToInstagramAction(draft.id);
+      addToast('Post publicado com sucesso no Instagram! 📸', 'success');
     } catch (err: any) {
-      alert(`Erro ao deletar: ${err.message}`);
+      addToast(`Erro ao publicar no Instagram: ${err.message}`, 'error');
     } finally {
-      setStudioLoading(false);
+      setIsPublishing(false);
+    }
+  };
+
+  const handleConnectLinkedIn = async () => {
+    try {
+      const url = await getLinkedInOAuthUrlAction();
+      window.location.href = url;
+    } catch (err: any) {
+      addToast(`Erro ao conectar LinkedIn: ${err.message}`, 'error');
+    }
+  };
+
+  // Handlers do Chat com IA (Segundo Cérebro)
+  const handleCreateSession = async () => {
+    const title = prompt('Nome do novo Brainstorm ou Tópico:', 'Novo Brainstorm');
+    if (!title) return;
+    try {
+      const newSession: any = await createChatSessionAction(title);
+      setSessions((prev) => [newSession, ...prev]);
+      setActiveSessionId(newSession.id);
+      addToast('Nova sessão de Brainstorm criada!', 'success');
+    } catch (err: any) {
+      addToast(`Erro ao criar sessão: ${err.message}`, 'error');
+    }
+  };
+
+  const handleDeleteSession = async (sessionId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Excluir esta sessão de conversa?')) return;
+    try {
+      await deleteChatSessionAction(sessionId);
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+      if (activeSessionId === sessionId) {
+        setActiveSessionId(null);
+        setMessages([]);
+      }
+      addToast('Sessão excluída.', 'info');
+    } catch (err: any) {
+      addToast(`Erro ao excluir sessão: ${err.message}`, 'error');
     }
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputMessage.trim() || !activeSessionId || isSendingMessage) return;
-    const text = inputMessage.trim();
+    if (!inputMessage.trim() || isSendingMessage || !activeSessionId) return;
+
+    const userText = inputMessage.trim();
     setInputMessage('');
-    
-    // Inserção temporária da msg do usuário no UI
-    const tempUserMsg = { id: Math.random().toString(), role: 'user', content: text };
-    setMessages((prev) => [...prev, tempUserMsg]);
     setIsSendingMessage(true);
 
+    const tempUserMsg = {
+      id: 'temp_u_' + Date.now(),
+      session_id: activeSessionId,
+      role: 'user',
+      content: userText,
+      created_at: new Date().toISOString(),
+    };
+
+    setMessages((prev) => [...prev, tempUserMsg]);
+
     try {
-      const res: any = await sendMessageAction(activeSessionId, text);
-      if (res && res.error) {
-        alert(`Erro ao obter resposta da IA: ${res.error}`);
-        return;
-      }
-      const tempModelMsg = { id: Math.random().toString(), role: 'model', content: res.content };
-      setMessages((prev) => [...prev, tempModelMsg]);
+      const modelMsg: any = await sendMessageAction(activeSessionId, userText);
+
+      setMessages((prev) => [...prev, modelMsg]);
     } catch (err: any) {
-      alert(`Erro ao obter resposta da IA: ${err.message}`);
+      addToast(`Erro ao enviar mensagem: ${err.message}`, 'error');
     } finally {
       setIsSendingMessage(false);
     }
   };
 
   const handleSaveChatMessageAsIdea = async (content: string) => {
-    const title = prompt('Deseja dar um título para esta ideia?', content.substring(0, 40) + '...');
-    if (title === null) return; // cancelou
-    setStudioLoading(true);
     try {
       await saveIdeaAction({
-        title: title || 'Insight do Chat',
+        title: content.slice(0, 50) + (content.length > 50 ? '...' : ''),
         description: content,
+        pillar: 'Chat IA',
+        reference_url: '',
         status: 'idea',
       });
-      alert('Insight salvo no Banco de Ideias!');
+      addToast('Mensagem salva no Banco de Ideias! 💡', 'success');
     } catch (err: any) {
-      alert(`Erro ao salvar: ${err.message}`);
-    } finally {
-      setStudioLoading(false);
+      addToast(`Erro ao salvar: ${err.message}`, 'error');
     }
   };
 
   const handleSaveChatMessageAsDraft = (content: string) => {
-    const title = prompt('Deseja dar um título para este rascunho?', 'Post criado do Chat');
-    if (title === null) return;
     setDraftForm({
       id: '',
-      title: title || 'Post criado do Chat',
-      platform: 'linkedin',
-      format: 'text',
-      content: content,
+      title: content.slice(0, 40) + '...',
+      platform: 'instagram',
+      format: 'post',
+      content,
       visual_script: '',
       idea_id: '',
       status: 'draft',
       media_url: '',
       scheduled_at: '',
     });
-    setCustomPrompt('');
     setIsDraftModalOpen(true);
   };
 
-  // Handlers do Analisador de Tendências
+  // Handlers do Analisador de Tendências & Deconstrutor
   const handleAnalyzeTrend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!trendText.trim()) return;
     setIsAnalyzingTrend(true);
     setAnalyzedResult(null);
+
     try {
-      const res: any = await analyzeTrendAction(trendText);
-      if (res && res.error) {
-        alert(`Erro ao analisar post: ${res.error}`);
-        return;
-      }
-      setAnalyzedResult(res);
+      const result: any = await analyzeTrendAction(trendText);
+      setAnalyzedResult(result);
+      addToast('Análise de estrutura viral concluída!', 'success');
     } catch (err: any) {
-      alert(`Erro ao analisar post: ${err.message}`);
+      addToast(`Erro na análise: ${err.message}`, 'error');
     } finally {
       setIsAnalyzingTrend(false);
     }
@@ -644,49 +711,40 @@ export default function Dashboard({
 
   const handleSaveTemplate = async () => {
     if (!analyzedResult) return;
-    setStudioLoading(true);
     try {
-      await saveAnalyzedTemplateAction({
+      const newTemplate = await saveAnalyzedTemplateAction({
         title: analyzedResult.title,
-        original_content: trendText,
         hook: analyzedResult.hook,
         structure: analyzedResult.structure,
         key_takeaways: analyzedResult.key_takeaways,
         reusable_template: analyzedResult.reusable_template,
       });
-      alert('Modelo de sucesso salvo na biblioteca!');
-      setTrendText('');
-      setAnalyzedResult(null);
-      // Atualizar lista local de modelos
-      window.location.reload(); // Recarga simples para atualizar os Server Components
+      setLocalTemplates((prev) => [newTemplate, ...prev]);
+      addToast('Template salvo na sua biblioteca de tendências!', 'success');
     } catch (err: any) {
-      alert(`Erro ao salvar modelo: ${err.message}`);
-    } finally {
-      setStudioLoading(false);
+      addToast(`Erro ao salvar template: ${err.message}`, 'error');
     }
   };
 
-  const handleDeleteTemplate = async (id: string) => {
-    if (!confirm('Deseja deletar este modelo da sua biblioteca?')) return;
-    setStudioLoading(true);
+  const handleDeleteTemplate = async (templateId: string) => {
+    if (!confirm('Excluir este template viral salvo?')) return;
     try {
-      await deleteAnalyzedTemplateAction(id);
-      setLocalTemplates((prev) => prev.filter((t) => t.id !== id));
+      await deleteAnalyzedTemplateAction(templateId);
+      setLocalTemplates((prev) => prev.filter((t) => t.id !== templateId));
+      addToast('Template excluído.', 'info');
     } catch (err: any) {
-      alert(err.message);
-    } finally {
-      setStudioLoading(false);
+      addToast(`Erro ao deletar: ${err.message}`, 'error');
     }
   };
 
   const handleOpenDraftFromTemplate = (template: any) => {
     setDraftForm({
       id: '',
-      title: `Novo post baseado em: ${template.title}`,
-      platform: 'linkedin',
-      format: 'text',
+      title: `Roteiro: ${template.title}`,
+      platform: 'instagram',
+      format: 'post',
       content: template.reusable_template,
-      visual_script: '',
+      visual_script: `Gancho: ${template.hook}\nEstrutura: ${template.structure}`,
       idea_id: '',
       status: 'draft',
       media_url: '',
@@ -699,7 +757,7 @@ export default function Dashboard({
   // Handlers do Refinador/Humanizador de Cópia
   const handleRefineDraft = async (type: 'humanize' | 'shorten' | 'simplify' | 'engagement') => {
     if (!draftForm.content) {
-      alert('Por favor, escreva ou gere algum texto antes de refinar.');
+      addToast('Por favor, escreva ou gere algum texto antes de refinar.', 'error');
       return;
     }
     setIsGeneratingScript(true);
@@ -710,14 +768,15 @@ export default function Dashboard({
       });
 
       if (res && res.error) {
-        alert(`Erro ao humanizar/refinar texto: ${res.error}`);
+        addToast(`Erro ao humanizar/refinar texto: ${res.error}`, 'error');
         return;
       }
 
       const text = typeof res === 'string' ? res : (res.content || '');
       setDraftForm((prev) => ({ ...prev, content: text }));
+      addToast('Texto refinado com sucesso!', 'success');
     } catch (err: any) {
-      alert(`Erro ao humanizar/refinar texto: ${err.message}`);
+      addToast(`Erro ao humanizar/refinar texto: ${err.message}`, 'error');
     } finally {
       setIsGeneratingScript(false);
     }
@@ -726,62 +785,39 @@ export default function Dashboard({
   // Handler de Geração de Imagem por IA
   const handleGenerateAIImage = () => {
     if (!draftForm.title && !draftForm.content) {
-      alert('Digite um título ou conteúdo antes de gerar a imagem.');
+      addToast('Digite um título ou conteúdo antes de gerar a imagem.', 'error');
       return;
     }
     const topic = encodeURIComponent(draftForm.title || draftForm.content.slice(0, 50));
-    const generatedUrl = `https://image.pollinations.ai/prompt/professional%20minimalist%20social%20media%20graphic%20about%20${topic}?width=1080&height=1080&nologo=true&seed=${Math.floor(Math.random() * 10000)}`;
-    setDraftForm((prev) => ({ ...prev, media_url: generatedUrl }));
-  };
-
-  // Handlers de Publicação
-  const handleConnectLinkedIn = async () => {
-    setStudioLoading(true);
-    try {
-      const url = await getLinkedInOAuthUrlAction();
-      window.location.href = url;
-    } catch (err: any) {
-      alert(`Erro ao obter login do LinkedIn: ${err.message}`);
-    } finally {
-      setStudioLoading(false);
-    }
-  };
-
-  const handlePublishLinkedIn = async (draftId: string) => {
-    if (!confirm('Publicar este post imediatamente no seu perfil do LinkedIn?')) return;
-    setIsPublishing(true);
-    try {
-      const result = await publishToLinkedInAction(draftId);
-      alert('Post publicado com sucesso no LinkedIn!');
-      window.location.reload();
-    } catch (err: any) {
-      alert(`Erro ao publicar no LinkedIn: ${err.message}`);
-    } finally {
-      setIsPublishing(false);
-    }
-  };
-
-  const handlePublishInstagram = async (draftId: string) => {
-    if (!confirm('Publicar este post/Reels imediatamente no seu Instagram?')) return;
-    setIsPublishing(true);
-    try {
-      await publishToInstagramAction(draftId);
-      alert('Post publicado com sucesso no Instagram!');
-      window.location.reload();
-    } catch (err: any) {
-      alert(`Erro ao publicar no Instagram: ${err.message}`);
-    } finally {
-      setIsPublishing(false);
-    }
+    const imageUrl = `https://pollinations.ai/p/${topic}?width=1080&height=1080&seed=${Math.floor(Math.random() * 1000)}&nologo=true`;
+    setDraftForm((prev) => ({
+      ...prev,
+      media_url: imageUrl,
+    }));
+    addToast('Imagem artística gerada por IA!', 'success');
   };
 
   const handleDisconnect = async () => {
-    if (confirm('Tem certeza de que deseja desconectar sua conta do Instagram? As automações pararão de funcionar.')) {
+    if (confirm('Tem certeza de que deseja desconectar o Instagram?')) {
       setLoading(true);
       try {
         await disconnectInstagramAction();
+        window.location.reload();
       } catch (e: any) {
-        alert(e.message);
+        addToast(`Erro ao desconectar: ${e.message}`, 'error');
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Tem certeza de que deseja excluir esta automação?')) {
+      setLoading(true);
+      try {
+        await deleteAutomationAction(id);
+        addToast('Automação excluída.', 'info');
+      } catch (e: any) {
+        addToast(`Erro ao excluir: ${e.message}`, 'error');
       } finally {
         setLoading(false);
       }
@@ -789,20 +825,14 @@ export default function Dashboard({
   };
 
   const handleToggle = async (id: string, active: boolean) => {
+    setLoading(true);
     try {
       await toggleAutomationAction(id, active);
+      addToast(`Automação ${active ? 'ativada' : 'pausada'}!`, 'info');
     } catch (e: any) {
-      alert(e.message);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (confirm('Excluir esta automação permanentemente?')) {
-      try {
-        await deleteAutomationAction(id);
-      } catch (e: any) {
-        alert(e.message);
-      }
+      addToast(`Erro ao alternar: ${e.message}`, 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -869,23 +899,76 @@ export default function Dashboard({
       };
       await saveAutomationAction(payload);
       setIsModalOpen(false);
+      addToast('Automação salva com sucesso!', 'success');
     } catch (e: any) {
-      alert(`Erro ao salvar: ${e.message}`);
+      addToast(`Erro ao salvar: ${e.message}`, 'error');
     } finally {
       setLoading(false);
     }
   };
 
+  // Filtragens Reativas
+  const filteredIdeas = ideas.filter((idea) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return idea.title.toLowerCase().includes(q) || (idea.description && idea.description.toLowerCase().includes(q)) || (idea.pillar && idea.pillar.toLowerCase().includes(q));
+  });
+
+  const filteredDrafts = drafts.filter((draft) => {
+    const matchesPlatform = filterPlatform === 'all' || draft.platform === filterPlatform;
+    const matchesStatus = filterStatus === 'all' || draft.status === filterStatus;
+    if (!matchesPlatform || !matchesStatus) return false;
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return draft.title.toLowerCase().includes(q) || (draft.content && draft.content.toLowerCase().includes(q));
+  });
+
+  const filteredAutomations = automations.filter((auto) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return auto.name.toLowerCase().includes(q) || auto.keywords.some((k) => k.toLowerCase().includes(q)) || auto.welcome_dm.toLowerCase().includes(q);
+  });
+
   return (
-    <div className="flex min-h-screen bg-[#0c0c0e] text-zinc-100 font-sans selection:bg-indigo-500 selection:text-white relative overflow-x-hidden">
+    <div className="flex min-h-screen bg-[#0a0a0c] text-zinc-100 font-sans selection:bg-indigo-500 selection:text-white relative overflow-x-hidden">
       
+      {/* FLOATING TOAST NOTIFICATIONS (FRAMER MOTION) */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2.5 pointer-events-none">
+        <AnimatePresence>
+          {toasts.map((t) => (
+            <motion.div
+              key={t.id}
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.9 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+              className={`pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl border shadow-2xl backdrop-blur-xl text-xs font-mono font-medium ${
+                t.type === 'error'
+                  ? 'bg-rose-950/90 border-rose-500/40 text-rose-200'
+                  : t.type === 'info'
+                  ? 'bg-indigo-950/90 border-indigo-500/40 text-indigo-200'
+                  : 'bg-emerald-950/90 border-emerald-500/40 text-emerald-200'
+              }`}
+            >
+              <Sparkles className="h-4 w-4 shrink-0 text-current" />
+              <span>{t.message}</span>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
       {/* BACKDROP MOBILE DRAWER */}
-      {isMobileSidebarOpen && (
-        <div
-          onClick={() => setIsMobileSidebarOpen(false)}
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-30 lg:hidden transition-opacity"
-        />
-      )}
+      <AnimatePresence>
+        {isMobileSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileSidebarOpen(false)}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-30 lg:hidden"
+          />
+        )}
+      </AnimatePresence>
 
       {/* LEFT SIDEBAR BARRA NAVEGAÇÃO FIXA / RESPONSIVA */}
       <aside className={`w-64 border-r border-zinc-800/70 bg-[#09090b] flex flex-col justify-between h-screen fixed lg:sticky top-0 left-0 shrink-0 select-none z-40 transition-transform duration-300 ${
@@ -896,9 +979,12 @@ export default function Dashboard({
           {/* BRAND LOGO E BOTAO FECHAR MOBILE */}
           <div className="flex items-center justify-between px-2 py-1">
             <div className="flex items-center gap-3">
-              <div className="bg-indigo-600/20 border border-indigo-500/30 p-2 rounded-xl text-indigo-400">
+              <motion.div 
+                whileHover={{ rotate: 15, scale: 1.05 }}
+                className="bg-indigo-600/20 border border-indigo-500/30 p-2 rounded-xl text-indigo-400"
+              >
                 <Sparkles className="h-5 w-5" />
-              </div>
+              </motion.div>
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="font-extrabold text-sm tracking-tight text-white">CreateFlow</span>
@@ -919,16 +1005,28 @@ export default function Dashboard({
           <div className="relative">
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar... ⌘K"
               className="w-full bg-[#141416] border border-zinc-800/80 rounded-xl px-3 py-2 text-xs text-zinc-300 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition font-mono"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-2.5 text-zinc-500 hover:text-zinc-300"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
 
           {/* MENU PRINCIPAL */}
           <div className="space-y-1">
             <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-2 block mb-2 font-mono">Plataforma</span>
             
-            <button
+            <motion.button
+              whileHover={{ x: 3 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => { setActiveMainTab('creator_studio'); setActiveStudioTab('chat'); setIsMobileSidebarOpen(false); }}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition ${
                 activeMainTab === 'creator_studio' && activeStudioTab === 'chat'
@@ -940,9 +1038,11 @@ export default function Dashboard({
                 <Brain className="h-4 w-4 text-indigo-400" />
                 <span>Segundo Cérebro</span>
               </div>
-            </button>
+            </motion.button>
 
-            <button
+            <motion.button
+              whileHover={{ x: 3 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => { setActiveMainTab('creator_studio'); setActiveStudioTab('ideas'); setIsMobileSidebarOpen(false); }}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition ${
                 activeMainTab === 'creator_studio' && activeStudioTab === 'ideas'
@@ -954,14 +1054,16 @@ export default function Dashboard({
                 <Layers className="h-4 w-4 text-emerald-400" />
                 <span>Banco de Ideias</span>
               </div>
-              {ideas.filter(i => i.status === 'idea').length > 0 && (
-                <span className="text-[10px] bg-zinc-800 text-zinc-300 px-1.5 py-0.5 rounded font-mono">
-                  {ideas.filter(i => i.status === 'idea').length}
+              {ideas.length > 0 && (
+                <span className="text-[10px] bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded font-mono font-bold">
+                  {ideas.length}
                 </span>
               )}
-            </button>
+            </motion.button>
 
-            <button
+            <motion.button
+              whileHover={{ x: 3 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => { setActiveMainTab('creator_studio'); setActiveStudioTab('drafts'); setIsMobileSidebarOpen(false); }}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition ${
                 activeMainTab === 'creator_studio' && activeStudioTab === 'drafts'
@@ -974,13 +1076,15 @@ export default function Dashboard({
                 <span>Roteiros & Rascunhos</span>
               </div>
               {drafts.length > 0 && (
-                <span className="text-[10px] bg-zinc-800 text-zinc-300 px-1.5 py-0.5 rounded font-mono">
+                <span className="text-[10px] bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded font-mono font-bold">
                   {drafts.length}
                 </span>
               )}
-            </button>
+            </motion.button>
 
-            <button
+            <motion.button
+              whileHover={{ x: 3 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => { setActiveMainTab('creator_studio'); setActiveStudioTab('trends'); setIsMobileSidebarOpen(false); }}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition ${
                 activeMainTab === 'creator_studio' && activeStudioTab === 'trends'
@@ -989,12 +1093,14 @@ export default function Dashboard({
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <Compass className="h-4 w-4 text-sky-400" />
+                <Compass className="h-4 w-4 text-cyan-400" />
                 <span>Tendências Virais</span>
               </div>
-            </button>
+            </motion.button>
 
-            <button
+            <motion.button
+              whileHover={{ x: 3 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => { setActiveMainTab('automations'); setIsMobileSidebarOpen(false); }}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition ${
                 activeMainTab === 'automations'
@@ -1011,23 +1117,27 @@ export default function Dashboard({
                   {automations.length}
                 </span>
               )}
-            </button>
+            </motion.button>
           </div>
 
           {/* MENU FERRAMENTAS E CONFIGURAÇÕES */}
           <div className="space-y-1 pt-3 border-t border-zinc-800/60">
             <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-2 block mb-2 font-mono">Estratégia</span>
             
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => { handleGenerateSchedulePlan(); setIsMobileSidebarOpen(false); }}
               disabled={isGeneratingSchedule}
               className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/20 transition"
             >
               <Sparkles className="h-4 w-4 text-indigo-400 animate-pulse" />
               <span>Cronograma (IA)</span>
-            </button>
+            </motion.button>
 
-            <button
+            <motion.button
+              whileHover={{ x: 3 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => { setActiveMainTab('creator_studio'); setActiveStudioTab('profile'); setIsMobileSidebarOpen(false); }}
               className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${
                 activeMainTab === 'creator_studio' && activeStudioTab === 'profile'
@@ -1037,16 +1147,15 @@ export default function Dashboard({
             >
               <Settings className="h-4 w-4 text-zinc-400" />
               <span>Marca & Conexões</span>
-            </button>
+            </motion.button>
           </div>
-
         </div>
 
-        {/* FOOTER SIDEBAR COM CONEXÃO E CRÉDITOS */}
-        <div className="p-4 border-t border-zinc-800/70 space-y-3 bg-[#09090b]">
-          <div className="bg-[#141416] border border-zinc-800/80 p-3 rounded-xl space-y-2">
-            <div className="flex items-center justify-between text-[11px] font-mono">
-              <span className="text-zinc-400">Motor IA</span>
+        {/* STATUS DO MOTOR IA & INSTAGRAM NO FOOTER DA SIDEBAR */}
+        <div className="p-4 border-t border-zinc-800/60 bg-[#09090b] space-y-3">
+          <div className="bg-[#121215] border border-zinc-800/80 rounded-xl p-2.5 space-y-1.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-zinc-400 font-mono">Motor IA</span>
               <span className="text-emerald-400 font-bold flex items-center gap-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                 Gemini Pro
@@ -1077,21 +1186,23 @@ export default function Dashboard({
               </button>
             </div>
           ) : (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={handleConnect}
               className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow"
             >
               <Instagram className="h-3.5 w-3.5" />
               Conectar Insta
-            </button>
+            </motion.button>
           )}
         </div>
       </aside>
 
-      {/* ÁREA PRINCIPAL DE CONTEÚDO (100% RESPONSIVA - PREENCHE O MONITOR SEM GAPS) */}
+      {/* ÁREA PRINCIPAL DE CONTEÚDO */}
       <main className="flex-1 w-full min-w-0 p-4 sm:p-6 lg:p-8 overflow-y-auto space-y-6 bg-[#0a0a0c]">
         
-        {/* TOP BAR HEADER REPLICADO 1:1 DA REFERÊNCIA (SEARCH + HAMBURGER MOBILE + CTA BUTTON) */}
+        {/* TOP BAR HEADER REPLICADO 1:1 DA REFERÊNCIA */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-2 border-b border-zinc-800/60 w-full">
           <div className="flex items-center gap-3 w-full sm:w-auto">
             {/* BOTAO HAMBURGER MOBILE */}
@@ -1106,17 +1217,29 @@ export default function Dashboard({
             <div className="relative w-full sm:w-96">
               <input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search ideas, scripts, automations..."
-                className="w-full bg-[#121215] border border-zinc-800/80 rounded-xl pl-9 pr-4 py-2 text-xs text-zinc-300 placeholder-zinc-500 focus:outline-none focus:border-zinc-700 transition font-mono"
+                className="w-full bg-[#121215] border border-zinc-800/80 rounded-xl pl-9 pr-4 py-2 text-xs text-zinc-300 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition font-mono"
               />
               <Compass className="h-4 w-4 text-zinc-500 absolute left-3 top-2.5" />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-2.5 text-zinc-500 hover:text-zinc-300 text-xs"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.03, borderColor: 'rgba(99, 102, 241, 0.6)' }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => {
-                if (activeStudioTab === 'ideas') handleGenerateIdeasWithAI();
+                if (activeStudioTab === 'ideas') setIsIdeaModalOpen(true);
                 else if (activeStudioTab === 'drafts') handleOpenNewDraft();
                 else if (activeMainTab === 'automations') handleOpenNew();
                 else handleCreateSession();
@@ -1129,2014 +1252,1807 @@ export default function Dashboard({
                  activeStudioTab === 'drafts' ? '+ Create script' :
                  activeMainTab === 'automations' ? '+ Create automation' : '+ New session'}
               </span>
-            </button>
+            </motion.button>
           </div>
         </div>
 
-        {activeMainTab === 'automations' ? (
-          <>
-            {/* PARAMS NOTIFICATIONS */}
-            {connectedParam && (
-              <div className="bg-emerald-950/30 border border-emerald-800/50 text-emerald-400 p-4 rounded-xl flex items-center gap-3 animate-fade-in">
-                <CheckCircle className="h-5 w-5 shrink-0" />
-                <p className="text-sm font-medium">CreateFlow conectado com sucesso ao seu Instagram!</p>
-              </div>
-            )}
-            {errorParam && (
-              <div className="bg-red-950/30 border border-red-800/50 text-red-400 p-4 rounded-xl flex items-center gap-3 animate-fade-in">
-                <AlertTriangle className="h-5 w-5 shrink-0" />
-                <p className="text-sm font-medium">Ocorreu um erro: {decodeURIComponent(errorParam)}</p>
-              </div>
-            )}
+        {/* TRANSIÇÃO SUAVE ENTRE AS TELAS PRINCIPAIS */}
+        <AnimatePresence mode="wait">
+          {activeMainTab === 'automations' ? (
+            <motion.div
+              key="automations-tab"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-6"
+            >
+              {/* PARAMS NOTIFICATIONS */}
+              {connectedParam && (
+                <div className="bg-emerald-950/30 border border-emerald-800/50 text-emerald-400 p-4 rounded-xl flex items-center gap-3">
+                  <CheckCircle className="h-5 w-5 shrink-0" />
+                  <p className="text-sm font-medium">CreateFlow conectado com sucesso ao seu Instagram!</p>
+                </div>
+              )}
+              {errorParam && (
+                <div className="bg-red-950/30 border border-red-800/50 text-red-400 p-4 rounded-xl flex items-center gap-3">
+                  <AlertTriangle className="h-5 w-5 shrink-0" />
+                  <p className="text-sm font-medium">Ocorreu um erro: {decodeURIComponent(errorParam)}</p>
+                </div>
+              )}
 
-            {/* STATUS CARD */}
-            {config && (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-                <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-6 flex flex-col justify-between shadow-sm">
-                  <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Janela de 24h</span>
-                  <div className="mt-4 flex items-baseline gap-2">
-                    <span className="text-3xl font-extrabold text-white">{stats.totalContacts}</span>
-                    <span className="text-slate-500 text-xs">Contatos activos</span>
-                  </div>
-                </div>
-                <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-6 flex flex-col justify-between shadow-sm">
-                  <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Fila Pendente</span>
-                  <div className="mt-4 flex items-baseline gap-2">
-                    <span className="text-3xl font-extrabold text-indigo-400">{stats.pendingQueue}</span>
-                    <span className="text-slate-500 text-xs">Aguardando envio</span>
-                  </div>
-                </div>
-                <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-6 flex flex-col justify-between shadow-sm">
-                  <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Mensagens Enviadas</span>
-                  <div className="mt-4 flex items-baseline gap-2">
-                    <span className="text-3xl font-extrabold text-emerald-400">{stats.sentMessages}</span>
-                    <span className="text-slate-500 text-xs">DMs processadas</span>
-                  </div>
-                </div>
-                <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-6 flex flex-col justify-between shadow-sm">
-                  <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Falhas</span>
-                  <div className="mt-4 flex items-baseline gap-2">
-                    <span className="text-3xl font-extrabold text-rose-400">{stats.failedMessages}</span>
-                    <span className="text-slate-500 text-xs">Erros registrados</span>
-                  </div>
-                </div>
-              </div>
-            )}
+              {/* STATUS CARD */}
+              {config && (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+                  <motion.div whileHover={{ y: -2 }} className="bg-[#111114] border border-zinc-800/80 rounded-2xl p-6 flex flex-col justify-between shadow-sm">
+                    <span className="text-zinc-400 text-xs font-semibold uppercase tracking-wider font-mono">Janela de 24h</span>
+                    <div className="mt-4 flex items-baseline gap-2">
+                      <span className="text-3xl font-extrabold text-white">{stats.totalContacts}</span>
+                      <span className="text-zinc-500 text-xs font-mono">Contatos activos</span>
+                    </div>
+                  </motion.div>
 
-            {/* MAIN AUTOMATIONS PANEL */}
-            <div className="bg-slate-900/30 border border-slate-900 rounded-2xl p-6 md:p-8 space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-xl font-bold text-white">Minhas Automações</h2>
-                  <p className="text-slate-400 text-sm">Gerencie os gatilhos e fluxos do seu assistente do Instagram.</p>
+                  <motion.div whileHover={{ y: -2 }} className="bg-[#111114] border border-zinc-800/80 rounded-2xl p-6 flex flex-col justify-between shadow-sm">
+                    <span className="text-zinc-400 text-xs font-semibold uppercase tracking-wider font-mono">Fila Pendente</span>
+                    <div className="mt-4 flex items-baseline gap-2">
+                      <span className="text-3xl font-extrabold text-indigo-400">{stats.pendingQueue}</span>
+                      <span className="text-zinc-500 text-xs font-mono">Aguardando envio</span>
+                    </div>
+                  </motion.div>
+
+                  <motion.div whileHover={{ y: -2 }} className="bg-[#111114] border border-zinc-800/80 rounded-2xl p-6 flex flex-col justify-between shadow-sm">
+                    <span className="text-zinc-400 text-xs font-semibold uppercase tracking-wider font-mono">Mensagens Enviadas</span>
+                    <div className="mt-4 flex items-baseline gap-2">
+                      <span className="text-3xl font-extrabold text-emerald-400">{stats.sentMessages}</span>
+                      <span className="text-zinc-500 text-xs font-mono">DMs processadas</span>
+                    </div>
+                  </motion.div>
+
+                  <motion.div whileHover={{ y: -2 }} className="bg-[#111114] border border-zinc-800/80 rounded-2xl p-6 flex flex-col justify-between shadow-sm">
+                    <span className="text-zinc-400 text-xs font-semibold uppercase tracking-wider font-mono">Falhas</span>
+                    <div className="mt-4 flex items-baseline gap-2">
+                      <span className="text-3xl font-extrabold text-rose-400">{stats.failedMessages}</span>
+                      <span className="text-zinc-500 text-xs font-mono">Erros registrados</span>
+                    </div>
+                  </motion.div>
                 </div>
-                
-                {config && (
-                  <button
+              )}
+
+              {/* LISTA DE AUTOMAÇÕES COM PATTERN BENTO */}
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="text-left">
+                    <h3 className="text-base font-bold text-white tracking-tight">Minhas Automações</h3>
+                    <p className="text-xs text-zinc-400">Gerencie os gatilhos e fluxos do seu assistente do Instagram.</p>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={handleOpenNew}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm px-4 py-2.5 rounded-xl shadow-lg flex items-center justify-center gap-2 transition active:scale-95 self-start"
+                    className="py-2.5 px-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 shrink-0"
                   >
                     <Plus className="h-4 w-4" />
                     Nova Automação
-                  </button>
-                )}
-              </div>
-
-              {!config ? (
-                <div className="border border-dashed border-slate-800 rounded-2xl p-12 text-center flex flex-col items-center justify-center space-y-4">
-                  <div className="bg-slate-900 p-4 rounded-full text-indigo-500">
-                    <Instagram className="h-8 w-8" />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-200">Instagram Não Conectado</h3>
-                  <p className="text-slate-400 text-sm max-w-md mx-auto">
-                    Para começar a automatizar seus comentários, Stories e DMs, você precisa conectar sua conta do Instagram Profissional.
-                  </p>
-                  <button
-                    onClick={handleConnect}
-                    disabled={loading}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm px-6 py-3 rounded-xl transition shadow-lg active:scale-95"
-                  >
-                    Conectar agora
-                  </button>
+                  </motion.button>
                 </div>
-              ) : automations.length === 0 ? (
-                <div className="border border-dashed border-slate-800 rounded-2xl p-12 text-center flex flex-col items-center justify-center space-y-4">
-                  <div className="bg-slate-900 p-4 rounded-full text-slate-500">
-                    <Settings className="h-8 w-8" />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-200">Nenhuma Automação Criada</h3>
-                  <p className="text-slate-400 text-sm max-w-md mx-auto">
-                    Crie sua primeira automação para que as pessoas possam receber seu link ao comentar palavras-chave.
-                  </p>
-                  <button
-                    onClick={handleOpenNew}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition active:scale-95"
-                  >
-                    Criar Automação
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-8 text-left pt-2">
-                  
-                  {/* SEÇÃO 1: RECENT AUTOMATIONS [3] */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-zinc-400 font-mono">Recent automations</span>
-                      <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
-                        {Math.min(automations.length, 3)}
-                      </span>
+
+                {filteredAutomations.length === 0 ? (
+                  <div className="bg-[#111114] border border-zinc-800/80 rounded-2xl p-12 text-center space-y-4">
+                    <MessageSquare className="h-10 w-10 text-zinc-600 mx-auto" />
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-bold text-white">
+                        {searchQuery ? 'Nenhuma automação encontrada para a busca' : 'Nenhuma automação configurada'}
+                      </h4>
+                      <p className="text-xs text-zinc-400 max-w-sm mx-auto">
+                        {searchQuery ? 'Tente buscar com outro termo ou limpe a busca.' : 'Crie sua primeira regra de resposta automática para comentários e DMs.'}
+                      </p>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {automations.slice(0, 3).map((auto) => (
-                        <div
-                          key={auto.id}
-                          className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="h-8 w-8 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-xs font-mono font-bold">
-                              ⚡
-                            </div>
-                            <button
-                              onClick={() => handleOpenEdit(auto)}
-                              className="text-zinc-600 hover:text-zinc-300 font-mono text-sm p-1 transition"
-                              title="Edit"
-                            >
-                              •••
-                            </button>
-                          </div>
-
-                          <div className="space-y-1 my-auto">
-                            <h4 className="font-bold text-white text-sm tracking-tight truncate group-hover:text-indigo-300 transition">{auto.name}</h4>
-                            <p className="text-[11px] font-mono text-zinc-500 truncate">
-                              instagram • {auto.match_type === 'any' ? 'any msg' : auto.keywords.join(', ')} • DM
-                            </p>
-                          </div>
-
-                          <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
-                            <span className="text-zinc-500">Created Jun 12</span>
-                            <span className={`font-bold ${auto.active ? 'text-emerald-400' : 'text-zinc-500'}`}>
-                              {auto.active ? 'Active' : 'Disabled'}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* SEÇÃO 2: ALL AUTOMATIONS [N] */}
-                  <div className="space-y-4 pt-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-zinc-400 font-mono">All automations</span>
-                      <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
-                        {automations.length}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {automations.map((auto) => (
-                        <div
-                          key={auto.id}
-                          className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="h-8 w-8 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-xs font-mono font-bold">
-                              ⚡
-                            </div>
-                            <button
-                              onClick={() => handleOpenEdit(auto)}
-                              className="text-zinc-600 hover:text-zinc-300 font-mono text-sm p-1 transition"
-                              title="Edit"
-                            >
-                              •••
-                            </button>
-                          </div>
-
-                          <div className="space-y-1 my-auto">
-                            <h4 className="font-bold text-white text-sm tracking-tight truncate group-hover:text-indigo-300 transition">{auto.name}</h4>
-                            <p className="text-[11px] font-mono text-zinc-500 truncate">
-                              instagram • {auto.match_type === 'any' ? 'any msg' : auto.keywords.join(', ')} • DM
-                            </p>
-                          </div>
-
-                          <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
-                            <span className="text-zinc-500">Created Jun 12</span>
-                            <span className={`font-bold ${auto.active ? 'text-emerald-400' : 'text-zinc-500'}`}>
-                              {auto.active ? 'Active' : 'Disabled'}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                </div>
-              )}
-            </div>
-          </>
-        ) : (
-          /* ESTÚDIO DE CRIAÇÃO UI PREMIUM */
-          <div className="space-y-6 animate-fade-in">
-            
-            {/* SUB-ABAS DO ESTÚDIO */}
-            <div className="flex flex-wrap items-center gap-2 p-1.5 bg-[#121215] border border-zinc-800/80 rounded-2xl w-full shadow-sm">
-              <button
-                onClick={() => setActiveStudioTab('chat')}
-                className={`py-2.5 px-4 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${
-                  activeStudioTab === 'chat'
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
-                }`}
-              >
-                <Brain className="h-4 w-4 shrink-0" />
-                Segundo Cérebro
-              </button>
-              <button
-                onClick={() => setActiveStudioTab('trends')}
-                className={`py-2.5 px-4 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${
-                  activeStudioTab === 'trends'
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
-                }`}
-              >
-                <Compass className="h-4 w-4 shrink-0" />
-                Analisar Tendências
-              </button>
-              <button
-                onClick={() => setActiveStudioTab('ideas')}
-                className={`py-2.5 px-4 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${
-                  activeStudioTab === 'ideas'
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
-                }`}
-              >
-                <Layers className="h-4 w-4 shrink-0" />
-                Banco de Ideias
-              </button>
-              <button
-                onClick={() => setActiveStudioTab('drafts')}
-                className={`py-2.5 px-4 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${
-                  activeStudioTab === 'drafts'
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
-                }`}
-              >
-                <FileText className="h-4 w-4 shrink-0" />
-                Roteiros & Rascunhos
-              </button>
-              <button
-                onClick={() => setActiveStudioTab('profile')}
-                className={`py-2.5 px-4 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${
-                  activeStudioTab === 'profile'
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
-                }`}
-              >
-                <Settings className="h-4 w-4 shrink-0" />
-                Marca & Conexões
-              </button>
-
-              <button
-                type="button"
-                onClick={handleGenerateSchedulePlan}
-                disabled={isGeneratingSchedule}
-                className="ml-auto py-2 px-3.5 rounded-xl text-xs font-semibold bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 transition flex items-center gap-2 whitespace-nowrap disabled:opacity-50"
-              >
-                <Sparkles className="h-4 w-4 text-indigo-400 animate-pulse" />
-                {isGeneratingSchedule ? 'Gerando Plano...' : '📅 Cronograma Semanal (IA)'}
-              </button>
-            </div>
-
-            {/* CONTEÚDO DE ACORDO COM A SUB-ABA */}
-            
-            {/* 1. SEGUNDO CÉREBRO (CHAT) */}
-            {activeStudioTab === 'chat' && (
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 bg-[#121215]/90 border border-zinc-800/80 rounded-3xl p-6 min-h-[640px] shadow-2xl backdrop-blur-xl">
-                {/* BARRA LATERAL: BRAINSTORMS */}
-                <div className="lg:col-span-1 border-r border-zinc-800/80 pr-4 flex flex-col space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-zinc-300 uppercase tracking-wider">Brainstorms</span>
-                    <button
-                      onClick={handleCreateSession}
-                      className="px-2.5 py-1 bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/20 text-indigo-400 rounded-xl transition flex items-center gap-1 text-xs font-semibold"
-                      title="Nova sessão"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      Novo
-                    </button>
-                  </div>
-                  
-                  <div className="space-y-1.5 overflow-y-auto max-h-[520px] scrollbar-thin">
-                    {sessions.length === 0 ? (
-                      <div className="text-center p-6 text-zinc-500 text-xs italic">Nenhuma conversa iniciada</div>
+                    {searchQuery ? (
+                      <button onClick={() => setSearchQuery('')} className="px-4 py-2 bg-zinc-800 text-white text-xs font-mono rounded-xl">
+                        Limpar busca
+                      </button>
                     ) : (
-                      sessions.map((s) => (
-                        <div
-                          key={s.id}
-                          onClick={() => setActiveSessionId(s.id)}
-                          className={`w-full text-left p-3 rounded-xl cursor-pointer transition flex items-center justify-between gap-2 group border ${
-                            activeSessionId === s.id
-                              ? 'bg-indigo-600/10 text-indigo-300 border-indigo-500/30 shadow-sm'
-                              : 'hover:bg-zinc-800/50 text-zinc-400 border-transparent hover:text-zinc-200'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 truncate">
-                            <MessageSquare className="h-4 w-4 shrink-0 text-zinc-500 group-hover:text-indigo-400" />
-                            <span className="text-xs font-semibold truncate">{s.title}</span>
-                          </div>
-                          <button
-                            onClick={(e) => handleDeleteSession(s.id, e)}
-                            className="text-zinc-500 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition p-1 rounded-lg hover:bg-rose-500/10"
-                            title="Excluir"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      ))
+                      <button
+                        onClick={handleOpenNew}
+                        className="py-2 px-4 bg-indigo-600 text-white rounded-xl text-xs font-bold inline-flex items-center gap-2"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Criar Automação
+                      </button>
                     )}
                   </div>
-                </div>
-
-                {/* PAINEL CENTRAL DO CHAT */}
-                <div className="lg:col-span-3 flex flex-col justify-between min-h-[560px]">
-                  {!activeSessionId ? (
-                    <div className="flex flex-col items-center justify-center flex-1 text-center p-6 space-y-6">
-                      <div className="p-5 bg-indigo-500/10 border border-indigo-500/20 rounded-3xl text-indigo-400 shadow-inner">
-                        <Brain className="h-12 w-12 animate-pulse text-indigo-400" />
-                      </div>
-                      <div className="space-y-2 max-w-md">
-                        <h4 className="text-lg font-bold text-white tracking-tight">Segundo Cérebro Digital</h4>
-                        <p className="text-xs text-zinc-400 leading-relaxed">
-                          Alimentado com o **Nicho, Público-Alvo e Tom de Voz** da sua marca. Clique em um dos atalhos abaixo ou inicie uma conversa para criar posts estratégicos.
-                        </p>
+                ) : (
+                  <div className="space-y-8">
+                    {/* SEÇÃO 1: RECENT AUTOMATIONS */}
+                    <div className="space-y-4 text-left">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-zinc-400 font-mono">Recent automations</span>
+                        <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
+                          {Math.min(filteredAutomations.length, 3)}
+                        </span>
                       </div>
 
-                      {/* PROMPTS INICIAIS RÁPIDOS */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-xl text-left">
-                        {[
-                          { title: '🚀 3 Ganchos Virais', prompt: 'Crie 3 ganchos virais irresistíveis para o meu nicho de mercado.' },
-                          { title: '📝 Post para LinkedIn', prompt: 'Escreva um post estruturado e autêntico para o meu LinkedIn sobre superação de desafios.' },
-                          { title: '🎬 Roteiro de Reels/TikTok', prompt: 'Escreva um roteiro dinâmico de Reels em 3 cenas com falas e indicações visuais.' },
-                          { title: '📅 Estratégia da Semana', prompt: 'Qual é a melhor ordem de postagens para esta semana baseada no meu público?' }
-                        ].map((starter, i) => (
-                          <button
-                            key={i}
-                            onClick={async () => {
-                              try {
-                                const newSession = await createChatSessionAction(starter.title);
-                                setSessions((prev) => [newSession, ...prev]);
-                                setActiveSessionId(newSession.id);
-                                setInputMessage(starter.prompt);
-                              } catch (e: any) {
-                                alert(e.message);
-                              }
-                            }}
-                            className="p-3.5 bg-[#18181c] border border-zinc-800 hover:border-indigo-500/50 rounded-2xl text-left transition hover:bg-zinc-800/40 group space-y-1"
+                      <motion.div 
+                        variants={cardGridVariants}
+                        initial="hidden"
+                        animate="show"
+                        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                      >
+                        {filteredAutomations.slice(0, 3).map((auto) => (
+                          <motion.div
+                            key={auto.id}
+                            variants={cardItemVariants}
+                            whileHover={{ y: -3, borderColor: 'rgba(99, 102, 241, 0.45)' }}
+                            className="bg-[#111114] border border-zinc-800/80 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
                           >
-                            <span className="text-xs font-bold text-zinc-200 group-hover:text-indigo-400 transition block">{starter.title}</span>
-                            <span className="text-[11px] text-zinc-500 line-clamp-1 block">{starter.prompt}</span>
-                          </button>
+                            <div className="flex items-center justify-between">
+                              <div className="h-8 w-8 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-xs font-mono font-bold">
+                                ⚡
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleToggle(auto.id!, !auto.active)}
+                                  className="text-zinc-500 hover:text-zinc-300 font-mono text-xs p-1"
+                                  title={auto.active ? 'Pausar' : 'Ativar'}
+                                >
+                                  <Power className={`h-3.5 w-3.5 ${auto.active ? 'text-emerald-400' : 'text-zinc-600'}`} />
+                                </button>
+                                <button
+                                  onClick={() => handleOpenEdit(auto)}
+                                  className="text-zinc-600 hover:text-zinc-300 font-mono text-sm p-1 transition"
+                                  title="Edit"
+                                >
+                                  •••
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="space-y-1 my-auto">
+                              <h4 className="font-bold text-white text-sm tracking-tight truncate group-hover:text-indigo-300 transition">{auto.name}</h4>
+                              <p className="text-[11px] font-mono text-zinc-500 truncate">
+                                instagram • {auto.match_type === 'any' ? 'any msg' : auto.keywords.join(', ')} • DM
+                              </p>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
+                              <span className="text-zinc-500">Created Jun 12</span>
+                              <span className={`font-bold flex items-center gap-1 ${auto.active ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                                <span className={`h-1.5 w-1.5 rounded-full ${auto.active ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'}`}></span>
+                                {auto.active ? 'Active' : 'Disabled'}
+                              </span>
+                            </div>
+                          </motion.div>
                         ))}
-                      </div>
+                      </motion.div>
                     </div>
-                  ) : (
-                    <>
-                      {/* HISTÓRICO DE MENSAGENS */}
-                      <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4 scrollbar-thin flex flex-col">
-                        {messages.length === 0 ? (
-                          <div className="text-center p-12 text-zinc-500 text-xs italic my-auto space-y-3">
-                            <Sparkles className="h-8 w-8 mx-auto text-indigo-400 animate-bounce" />
-                            <p>O cérebro está pronto. O que você gostaria de criar ou analisar agora?</p>
-                          </div>
+
+                    {/* SEÇÃO 2: ALL AUTOMATIONS */}
+                    <div className="space-y-4 pt-2 text-left">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-zinc-400 font-mono">All automations</span>
+                        <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
+                          {filteredAutomations.length}
+                        </span>
+                      </div>
+
+                      <motion.div 
+                        variants={cardGridVariants}
+                        initial="hidden"
+                        animate="show"
+                        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                      >
+                        {filteredAutomations.map((auto) => (
+                          <motion.div
+                            key={auto.id}
+                            variants={cardItemVariants}
+                            whileHover={{ y: -3, borderColor: 'rgba(99, 102, 241, 0.45)' }}
+                            className="bg-[#111114] border border-zinc-800/80 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="h-8 w-8 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-xs font-mono font-bold">
+                                ⚡
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleToggle(auto.id!, !auto.active)}
+                                  className="text-zinc-500 hover:text-zinc-300 font-mono text-xs p-1"
+                                  title={auto.active ? 'Pausar' : 'Ativar'}
+                                >
+                                  <Power className={`h-3.5 w-3.5 ${auto.active ? 'text-emerald-400' : 'text-zinc-600'}`} />
+                                </button>
+                                <button
+                                  onClick={() => handleOpenEdit(auto)}
+                                  className="text-zinc-600 hover:text-zinc-300 font-mono text-sm p-1 transition"
+                                  title="Edit"
+                                >
+                                  •••
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="space-y-1 my-auto">
+                              <h4 className="font-bold text-white text-sm tracking-tight truncate group-hover:text-indigo-300 transition">{auto.name}</h4>
+                              <p className="text-[11px] font-mono text-zinc-500 truncate">
+                                instagram • {auto.match_type === 'any' ? 'any msg' : auto.keywords.join(', ')} • DM
+                              </p>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
+                              <span className="text-zinc-500">Created Jun 12</span>
+                              <span className={`font-bold flex items-center gap-1 ${auto.active ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                                <span className={`h-1.5 w-1.5 rounded-full ${auto.active ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'}`}></span>
+                                {auto.active ? 'Active' : 'Disabled'}
+                              </span>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </motion.div>
+                    </div>
+
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          ) : (
+            /* ESTÚDIO DE CRIAÇÃO UI PREMIUM COM FRAMER MOTION */
+            <motion.div
+              key="creator-studio-tab"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-6"
+            >
+              
+              {/* SUB-ABAS DO ESTÚDIO COM SLIDING PILL INDICATOR */}
+              <div className="flex flex-wrap items-center gap-2 p-1.5 bg-[#121215] border border-zinc-800/80 rounded-2xl w-full shadow-sm relative">
+                {[
+                  { key: 'chat', label: 'Segundo Cérebro', icon: Brain },
+                  { key: 'trends', label: 'Analisar Tendências', icon: Compass },
+                  { key: 'ideas', label: 'Banco de Ideias', icon: Layers },
+                  { key: 'drafts', label: 'Roteiros & Rascunhos', icon: FileText },
+                  { key: 'profile', label: 'Marca & Conexões', icon: Settings },
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = activeStudioTab === tab.key;
+                  return (
+                    <button
+                      key={tab.key}
+                      onClick={() => setActiveStudioTab(tab.key as any)}
+                      className={`relative py-2.5 px-4 rounded-xl text-xs font-semibold transition-colors duration-200 flex items-center gap-2 whitespace-nowrap z-10 ${
+                        isActive ? 'text-white' : 'text-zinc-400 hover:text-zinc-200'
+                      }`}
+                    >
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeSubTabIndicator"
+                          className="absolute inset-0 bg-indigo-600 rounded-xl shadow-md shadow-indigo-600/30 -z-10"
+                          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        />
+                      )}
+                      <Icon className="h-4 w-4 shrink-0" />
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="button"
+                  onClick={handleGenerateSchedulePlan}
+                  disabled={isGeneratingSchedule}
+                  className="ml-auto py-2 px-3.5 rounded-xl text-xs font-semibold bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 transition flex items-center gap-2 whitespace-nowrap disabled:opacity-50"
+                >
+                  <Sparkles className="h-4 w-4 text-indigo-400 animate-pulse" />
+                  {isGeneratingSchedule ? 'Gerando Plano...' : '📅 Cronograma Semanal (IA)'}
+                </motion.button>
+              </div>
+
+              {/* CONTEÚDO DE ACORDO COM A SUB-ABA (COM TRANSIÇÃO ANIMADA) */}
+              <AnimatePresence mode="wait">
+                
+                {/* 1. SEGUNDO CÉREBRO (CHAT) */}
+                {activeStudioTab === 'chat' && (
+                  <motion.div
+                    key="studio-chat"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.18 }}
+                    className="grid grid-cols-1 lg:grid-cols-4 gap-6 bg-[#121215]/90 border border-zinc-800/80 rounded-3xl p-6 min-h-[640px] shadow-2xl backdrop-blur-xl"
+                  >
+                    {/* BARRA LATERAL: BRAINSTORMS */}
+                    <div className="lg:col-span-1 border-r border-zinc-800/80 pr-4 flex flex-col space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-zinc-300 uppercase tracking-wider font-mono">Brainstorms</span>
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handleCreateSession}
+                          className="px-2.5 py-1 bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/20 text-indigo-400 rounded-xl transition flex items-center gap-1 text-xs font-semibold"
+                          title="Nova sessão"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                          Novo
+                        </motion.button>
+                      </div>
+                      
+                      <div className="space-y-1.5 overflow-y-auto max-h-[520px] scrollbar-thin">
+                        {sessions.length === 0 ? (
+                          <div className="text-center p-6 text-zinc-500 text-xs italic">Nenhuma conversa iniciada</div>
                         ) : (
-                          messages.map((m) => (
-                            <div
-                              key={m.id}
-                              className={`flex gap-3 max-w-[88%] ${
-                                m.role === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto'
+                          sessions.map((s) => (
+                            <motion.div
+                              key={s.id}
+                              whileHover={{ x: 2 }}
+                              onClick={() => setActiveSessionId(s.id)}
+                              className={`w-full text-left p-3 rounded-xl cursor-pointer transition flex items-center justify-between gap-2 group border ${
+                                activeSessionId === s.id
+                                  ? 'bg-indigo-600/10 text-indigo-300 border-indigo-500/30 shadow-sm'
+                                  : 'hover:bg-zinc-800/50 text-zinc-400 border-transparent hover:text-zinc-200'
                               }`}
                             >
-                              <div
-                                className={`h-8 w-8 rounded-full shrink-0 flex items-center justify-center text-xs font-bold border ${
-                                  m.role === 'user'
-                                    ? 'bg-zinc-800 text-zinc-200 border-zinc-700'
-                                    : 'bg-indigo-600/20 text-indigo-300 border-indigo-500/30'
-                                }`}
+                              <div className="flex items-center gap-2 truncate">
+                                <MessageSquare className="h-4 w-4 shrink-0 text-zinc-500 group-hover:text-indigo-400" />
+                                <span className="text-xs font-semibold truncate">{s.title}</span>
+                              </div>
+                              <button
+                                onClick={(e) => handleDeleteSession(s.id, e)}
+                                className="text-zinc-500 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition p-1 rounded-lg hover:bg-rose-500/10"
+                                title="Excluir"
                               >
-                                {m.role === 'user' ? 'U' : 'IA'}
-                              </div>
-                              <div className="space-y-2 text-left">
-                                <div
-                                  className={`p-4 rounded-2xl text-xs leading-relaxed shadow-md ${
-                                    m.role === 'user'
-                                      ? 'bg-indigo-600 text-white rounded-tr-none font-medium'
-                                      : 'bg-[#18181c] border border-zinc-800 text-zinc-200 rounded-tl-none whitespace-pre-wrap'
-                                  }`}
-                                >
-                                  {m.content}
-                                </div>
-                                {m.role === 'model' && (
-                                  <div className="flex items-center gap-3 text-[11px] text-zinc-400 font-medium ml-1">
-                                    <button
-                                      onClick={() => handleSaveChatMessageAsIdea(m.content)}
-                                      className="flex items-center gap-1 hover:text-indigo-400 transition"
-                                    >
-                                      <Brain className="h-3.5 w-3.5 text-indigo-400" />
-                                      Salvar como Ideia
-                                    </button>
-                                    <span className="text-zinc-700">•</span>
-                                    <button
-                                      onClick={() => handleSaveChatMessageAsDraft(m.content)}
-                                      className="flex items-center gap-1 hover:text-indigo-400 transition"
-                                    >
-                                      <FileText className="h-3.5 w-3.5 text-indigo-400" />
-                                      Escrever Post
-                                    </button>
-                                    <span className="text-zinc-700">•</span>
-                                    <button
-                                      onClick={() => copyToClipboard(m.content)}
-                                      className="flex items-center gap-1 hover:text-indigo-400 transition"
-                                    >
-                                      <Copy className="h-3.5 w-3.5" />
-                                      Copiar
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </motion.div>
                           ))
                         )}
-                        {isSendingMessage && (
-                          <div className="flex gap-3 max-w-[85%] mr-auto">
-                            <div className="h-8 w-8 rounded-full bg-indigo-600/20 text-indigo-300 flex items-center justify-center text-xs font-bold border border-indigo-500/30 animate-pulse">
-                              IA
-                            </div>
-                            <div className="bg-[#18181c] border border-zinc-800 text-zinc-400 p-4 rounded-2xl rounded-tl-none text-xs flex items-center gap-2">
-                              <span className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                              <span className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                              <span className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce"></span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* ENTRADA DE MENSAGEM */}
-                      <form onSubmit={handleSendMessage} className="flex gap-2 bg-[#09090b] border border-zinc-800 p-2 rounded-2xl focus-within:border-indigo-500/80 focus-within:ring-2 focus-within:ring-indigo-500/10 transition">
-                        <input
-                          type="text"
-                          value={inputMessage}
-                          onChange={(e) => setInputMessage(e.target.value)}
-                          placeholder="Fale com o seu segundo cérebro (Ex: Crie um roteiro em 3 passos para Reels)..."
-                          className="flex-1 bg-transparent px-3 text-xs text-white focus:outline-none placeholder-zinc-500"
-                        />
-                        <button
-                          type="submit"
-                          disabled={!inputMessage.trim() || isSendingMessage}
-                          className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-md shadow-indigo-600/20"
-                        >
-                          <Sparkles className="h-3.5 w-3.5" />
-                          Enviar
-                        </button>
-                      </form>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* 2. ANALISADOR DE TENDÊNCIAS (PADRÃO OBSIDIAN DESIGN.MD) */}
-            {activeStudioTab === 'trends' && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
-                {/* COLUNA ESQUERDA: DESCONSTRUTOR */}
-                <div className="lg:col-span-1 space-y-6">
-                  <div className="bg-[#121215] border border-zinc-800/80 rounded-2xl p-6 space-y-4 shadow-sm text-left">
-                    <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider font-mono flex items-center gap-2">
-                      <Compass className="h-4 w-4 text-indigo-400" />
-                      Engenharia Reversa de Posts
-                    </h3>
-                    <p className="text-xs text-zinc-400 leading-relaxed">
-                      Cole um post viral do LinkedIn ou Instagram. A IA analisará o gancho, a retenção e extrairá um template reutilizável.
-                    </p>
-                    <form onSubmit={handleAnalyzeTrend} className="space-y-4">
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Post de Sucesso original</label>
-                        <textarea
-                          rows={8}
-                          value={trendText}
-                          onChange={(e) => setTrendText(e.target.value)}
-                          placeholder="Cole o texto bruto do post aqui..."
-                          className="w-full bg-[#09090b] border border-zinc-800 rounded-xl p-4 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition font-sans leading-relaxed"
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        disabled={isAnalyzingTrend || !trendText.trim()}
-                        className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white rounded-xl text-xs font-mono font-bold transition flex items-center justify-center gap-2"
-                      >
-                        {isAnalyzingTrend ? (
-                          <>
-                            <RefreshCw className="h-4 w-4 animate-spin" />
-                            Decompondo Estrutura...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="h-4 w-4" />
-                            Analisar e Decompor
-                          </>
-                        )}
-                      </button>
-                    </form>
-                  </div>
-                </div>
-
-                {/* COLUNA CENTRAL/DIREITA: RESULTADOS & TEMPLATES */}
-                <div className="lg:col-span-2 space-y-6">
-                  {/* RESULTADO DA ANÁLISE ATUAL */}
-                  {analyzedResult && (
-                    <div className="bg-[#121215] border border-indigo-500/30 rounded-2xl p-6 space-y-5 animate-fade-in shadow-sm text-left">
-                      <div className="flex items-center justify-between border-b border-zinc-800/80 pb-4">
-                        <h4 className="text-xs font-bold text-indigo-400 font-mono flex items-center gap-2">
-                          <Sparkles className="h-4 w-4 text-indigo-400" />
-                          {analyzedResult.title}
-                        </h4>
-                        <button
-                          onClick={handleSaveTemplate}
-                          className="py-1.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-mono font-bold transition flex items-center gap-1 shadow-sm"
-                        >
-                          <Check className="h-3.5 w-3.5" />
-                          Salvar Template
-                        </button>
-                      </div>
-
-                      <div className="space-y-4 text-xs">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/80 text-left">
-                            <span className="font-bold text-zinc-400 uppercase tracking-widest text-[9px] font-mono block mb-1">🪝 O Gancho (Hook)</span>
-                            <p className="text-zinc-300 leading-relaxed font-sans">{analyzedResult.hook}</p>
-                          </div>
-                          <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/80 text-left">
-                            <span className="font-bold text-zinc-400 uppercase tracking-widest text-[9px] font-mono block mb-1">🏗️ Estrutura de Retenção</span>
-                            <p className="text-zinc-300 leading-relaxed font-sans">{analyzedResult.structure}</p>
-                          </div>
-                        </div>
-                        <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/80 text-left">
-                          <span className="font-bold text-zinc-400 uppercase tracking-widest text-[9px] font-mono block mb-1">💡 Aprendizados Chave</span>
-                          <p className="text-zinc-300 leading-relaxed font-sans">{analyzedResult.key_takeaways}</p>
-                        </div>
-                        <div className="space-y-1.5 text-left">
-                          <span className="font-bold text-zinc-400 uppercase tracking-widest text-[9px] font-mono block ml-1">📝 Template Reutilizável com Placeholders</span>
-                          <div className="bg-[#09090b] border border-zinc-800 p-4 rounded-xl font-mono text-[11px] text-emerald-400 whitespace-pre-wrap leading-relaxed">
-                            {analyzedResult.reusable_template}
-                          </div>
-                        </div>
                       </div>
                     </div>
-                  )}
 
-                  {/* BIBLIOTECA DE TEMPLATES */}
-                  <div className="space-y-4">
-                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-1">
-                      <Layers className="h-4 w-4 text-indigo-400" />
-                      Modelos Desconstruídos Salvos ({localTemplates.length})
-                    </h4>
-                    
-                    {localTemplates.length === 0 ? (
-                      <div className="bg-slate-900/10 border border-slate-900 rounded-3xl p-10 text-center text-xs text-slate-500 italic">
-                        Nenhum modelo de escrita na biblioteca de tendências. Cole um post à esquerda para começar.
+                    {/* PAINEL CENTRAL DO CHAT */}
+                    <div className="lg:col-span-3 flex flex-col justify-between min-h-[560px]">
+                      {!activeSessionId ? (
+                        <div className="flex flex-col items-center justify-center flex-1 text-center p-6 space-y-6">
+                          <motion.div 
+                            animate={{ scale: [1, 1.05, 1] }}
+                            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                            className="p-5 bg-indigo-500/10 border border-indigo-500/20 rounded-3xl text-indigo-400 shadow-inner"
+                          >
+                            <Brain className="h-12 w-12 text-indigo-400" />
+                          </motion.div>
+                          <div className="space-y-2 max-w-md">
+                            <h4 className="text-lg font-bold text-white tracking-tight">Segundo Cérebro Digital</h4>
+                            <p className="text-xs text-zinc-400 leading-relaxed">
+                              Alimentado com o <strong>Nicho, Público-Alvo e Tom de Voz</strong> da sua marca. Clique em um dos atalhos abaixo ou inicie uma conversa para criar posts estratégicos.
+                            </p>
+                          </div>
+
+                          {/* PROMPTS INICIAIS RÁPIDOS */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-xl text-left">
+                            {[
+                              { title: '🚀 3 Ganchos Virais', prompt: 'Crie 3 ganchos virais irresistíveis para o meu nicho de mercado.' },
+                              { title: '📝 Post para LinkedIn', prompt: 'Escreva um post estruturado e autêntico para o meu LinkedIn sobre superação de desafios.' },
+                              { title: '🎬 Roteiro de Reels/TikTok', prompt: 'Escreva um roteiro dinâmico de Reels em 3 cenas com falas e indicações visuais.' },
+                              { title: '📅 Estratégia da Semana', prompt: 'Qual é a melhor ordem de postagens para esta semana baseada no meu público?' }
+                            ].map((starter, i) => (
+                              <motion.button
+                                key={i}
+                                whileHover={{ scale: 1.02, borderColor: 'rgba(99, 102, 241, 0.5)' }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={async () => {
+                                  try {
+                                    const newSession = await createChatSessionAction(starter.title);
+                                    setSessions((prev) => [newSession, ...prev]);
+                                    setActiveSessionId(newSession.id);
+                                    setInputMessage(starter.prompt);
+                                  } catch (e: any) {
+                                    addToast(e.message, 'error');
+                                  }
+                                }}
+                                className="p-3.5 bg-[#18181c] border border-zinc-800 hover:border-indigo-500/50 rounded-2xl text-left transition hover:bg-zinc-800/40 group space-y-1"
+                              >
+                                <span className="text-xs font-bold text-zinc-200 group-hover:text-indigo-400 transition block">{starter.title}</span>
+                                <span className="text-[11px] text-zinc-500 line-clamp-1 block">{starter.prompt}</span>
+                              </motion.button>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          {/* HISTÓRICO DE MENSAGENS */}
+                          <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4 scrollbar-thin flex flex-col">
+                            {messages.length === 0 ? (
+                              <div className="text-center p-12 text-zinc-500 text-xs italic my-auto space-y-3">
+                                <Sparkles className="h-8 w-8 mx-auto text-indigo-400 animate-bounce" />
+                                <p>O cérebro está pronto. O que você gostaria de criar ou analisar agora?</p>
+                              </div>
+                            ) : (
+                              messages.map((m) => (
+                                <motion.div
+                                  key={m.id}
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  className={`flex gap-3 max-w-[88%] ${
+                                    m.role === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto'
+                                  }`}
+                                >
+                                  <div
+                                    className={`h-8 w-8 rounded-full shrink-0 flex items-center justify-center text-xs font-bold border ${
+                                      m.role === 'user'
+                                        ? 'bg-zinc-800 text-zinc-200 border-zinc-700'
+                                        : 'bg-indigo-600/20 text-indigo-300 border-indigo-500/30'
+                                    }`}
+                                  >
+                                    {m.role === 'user' ? 'U' : 'IA'}
+                                  </div>
+                                  <div className="space-y-2 text-left">
+                                    <div
+                                      className={`p-4 rounded-2xl text-xs leading-relaxed shadow-md ${
+                                        m.role === 'user'
+                                          ? 'bg-indigo-600 text-white rounded-tr-none font-medium'
+                                          : 'bg-[#18181c] border border-zinc-800 text-zinc-200 rounded-tl-none whitespace-pre-wrap'
+                                      }`}
+                                    >
+                                      {m.content}
+                                    </div>
+                                    {m.role === 'model' && (
+                                      <div className="flex items-center gap-3 text-[11px] text-zinc-400 font-medium ml-1">
+                                        <button
+                                          onClick={() => handleSaveChatMessageAsIdea(m.content)}
+                                          className="flex items-center gap-1 hover:text-indigo-400 transition"
+                                        >
+                                          <Brain className="h-3.5 w-3.5 text-indigo-400" />
+                                          Salvar como Ideia
+                                        </button>
+                                        <span className="text-zinc-700">•</span>
+                                        <button
+                                          onClick={() => handleSaveChatMessageAsDraft(m.content)}
+                                          className="flex items-center gap-1 hover:text-indigo-400 transition"
+                                        >
+                                          <FileText className="h-3.5 w-3.5 text-indigo-400" />
+                                          Escrever Post
+                                        </button>
+                                        <span className="text-zinc-700">•</span>
+                                        <button
+                                          onClick={() => copyToClipboard(m.content)}
+                                          className="flex items-center gap-1 hover:text-indigo-400 transition"
+                                        >
+                                          <Copy className="h-3.5 w-3.5" />
+                                          Copiar
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </motion.div>
+                              ))
+                            )}
+                            {isSendingMessage && (
+                              <div className="flex gap-3 max-w-[85%] mr-auto">
+                                <div className="h-8 w-8 rounded-full bg-indigo-600/20 text-indigo-300 flex items-center justify-center text-xs font-bold border border-indigo-500/30 animate-pulse">
+                                  IA
+                                </div>
+                                <div className="bg-[#18181c] border border-zinc-800 text-zinc-400 p-4 rounded-2xl rounded-tl-none text-xs flex items-center gap-2">
+                                  <span className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                                  <span className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                                  <span className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce"></span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* ENTRADA DE MENSAGEM */}
+                          <form onSubmit={handleSendMessage} className="flex gap-2 bg-[#09090b] border border-zinc-800 p-2 rounded-2xl focus-within:border-indigo-500/80 focus-within:ring-2 focus-within:ring-indigo-500/10 transition">
+                            <input
+                              type="text"
+                              value={inputMessage}
+                              onChange={(e) => setInputMessage(e.target.value)}
+                              placeholder="Fale com o seu segundo cérebro (Ex: Crie um roteiro em 3 passos para Reels)..."
+                              className="flex-1 bg-transparent px-3 text-xs text-white focus:outline-none placeholder-zinc-500"
+                            />
+                            <motion.button
+                              whileHover={{ scale: 1.03 }}
+                              whileTap={{ scale: 0.97 }}
+                              type="submit"
+                              disabled={!inputMessage.trim() || isSendingMessage}
+                              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-md shadow-indigo-600/20"
+                            >
+                              <Sparkles className="h-3.5 w-3.5" />
+                              Enviar
+                            </motion.button>
+                          </form>
+                        </>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* 2. ANALISADOR DE TENDÊNCIAS */}
+                {activeStudioTab === 'trends' && (
+                  <motion.div
+                    key="studio-trends"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.18 }}
+                    className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+                  >
+                    {/* COLUNA ESQUERDA: DESCONSTRUTOR */}
+                    <div className="lg:col-span-1 space-y-6">
+                      <div className="bg-[#121215] border border-zinc-800/80 rounded-2xl p-6 space-y-4 shadow-sm text-left">
+                        <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider font-mono flex items-center gap-2">
+                          <Compass className="h-4 w-4 text-indigo-400" />
+                          Engenharia Reversa de Posts
+                        </h3>
+                        <p className="text-xs text-zinc-400 leading-relaxed">
+                          Cole um post viral do LinkedIn ou Instagram. A IA analisará o gancho, a retenção e extrairá um template reutilizável.
+                        </p>
+                        <form onSubmit={handleAnalyzeTrend} className="space-y-4">
+                          <div>
+                            <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Post de Sucesso original</label>
+                            <textarea
+                              rows={8}
+                              value={trendText}
+                              onChange={(e) => setTrendText(e.target.value)}
+                              placeholder="Cole o texto bruto do post aqui..."
+                              className="w-full bg-[#09090b] border border-zinc-800 rounded-xl p-4 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition font-sans leading-relaxed"
+                            />
+                          </div>
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            type="submit"
+                            disabled={isAnalyzingTrend || !trendText.trim()}
+                            className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white rounded-xl text-xs font-mono font-bold transition flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20"
+                          >
+                            {isAnalyzingTrend ? (
+                              <>
+                                <RefreshCw className="h-4 w-4 animate-spin" />
+                                Decompondo Estrutura...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="h-4 w-4" />
+                                Analisar e Decompor
+                              </>
+                            )}
+                          </motion.button>
+                        </form>
                       </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {localTemplates.map((t) => (
-                          <div key={t.id} className="bg-slate-900/20 border border-slate-900/60 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-slate-800 transition duration-300 group">
-                            <div className="space-y-2 text-left">
-                              <div className="flex items-start justify-between gap-2">
-                                <h5 className="text-xs font-bold text-white truncate">{t.title}</h5>
+                    </div>
+
+                    {/* COLUNA CENTRAL/DIREITA: RESULTADOS & TEMPLATES */}
+                    <div className="lg:col-span-2 space-y-6">
+                      {/* RESULTADO DA ANÁLISE ATUAL */}
+                      {analyzedResult && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.98 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="bg-[#121215] border border-indigo-500/30 rounded-2xl p-6 space-y-5 shadow-sm text-left"
+                        >
+                          <div className="flex items-center justify-between border-b border-zinc-800/80 pb-4">
+                            <h4 className="text-xs font-bold text-indigo-400 font-mono flex items-center gap-2">
+                              <Sparkles className="h-4 w-4 text-indigo-400" />
+                              {analyzedResult.title}
+                            </h4>
+                            <motion.button
+                              whileTap={{ scale: 0.95 }}
+                              onClick={handleSaveTemplate}
+                              className="py-1.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-mono font-bold transition flex items-center gap-1 shadow-sm"
+                            >
+                              <Check className="h-3.5 w-3.5" />
+                              Salvar Template
+                            </motion.button>
+                          </div>
+
+                          <div className="space-y-4 text-xs">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/80 text-left">
+                                <span className="font-bold text-zinc-400 uppercase tracking-widest text-[9px] font-mono block mb-1">🪝 O Gancho (Hook)</span>
+                                <p className="text-zinc-300 leading-relaxed font-sans">{analyzedResult.hook}</p>
+                              </div>
+                              <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/80 text-left">
+                                <span className="font-bold text-zinc-400 uppercase tracking-widest text-[9px] font-mono block mb-1">🏗️ Estrutura de Retenção</span>
+                                <p className="text-zinc-300 leading-relaxed font-sans">{analyzedResult.structure}</p>
+                              </div>
+                            </div>
+                            <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/80 text-left">
+                              <span className="font-bold text-zinc-400 uppercase tracking-widest text-[9px] font-mono block mb-1">💡 Aprendizados Chave</span>
+                              <p className="text-zinc-300 leading-relaxed font-sans">{analyzedResult.key_takeaways}</p>
+                            </div>
+                            <div className="space-y-1.5 text-left">
+                              <span className="font-bold text-zinc-400 uppercase tracking-widest text-[9px] font-mono block ml-1">📝 Template Reutilizável com Placeholders</span>
+                              <div className="bg-[#09090b] border border-zinc-800 p-4 rounded-xl font-mono text-[11px] text-emerald-400 whitespace-pre-wrap leading-relaxed">
+                                {analyzedResult.reusable_template}
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* BIBLIOTECA DE TEMPLATES */}
+                      <div className="space-y-4 text-left">
+                        <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2 ml-1 font-mono">
+                          <Layers className="h-4 w-4 text-indigo-400" />
+                          Modelos Desconstruídos Salvos ({localTemplates.length})
+                        </h4>
+                        
+                        {localTemplates.length === 0 ? (
+                          <div className="bg-[#111114] border border-zinc-800/80 rounded-2xl p-10 text-center text-xs text-zinc-500 italic">
+                            Nenhum modelo de escrita na biblioteca de tendências. Cole um post à esquerda para começar.
+                          </div>
+                        ) : (
+                          <motion.div 
+                            variants={cardGridVariants}
+                            initial="hidden"
+                            animate="show"
+                            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                          >
+                            {localTemplates.map((t) => (
+                              <motion.div 
+                                key={t.id}
+                                variants={cardItemVariants}
+                                whileHover={{ y: -3, borderColor: 'rgba(99, 102, 241, 0.45)' }}
+                                className="bg-[#111114] border border-zinc-800/80 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-zinc-700 transition duration-300 group"
+                              >
+                                <div className="space-y-2 text-left">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <h5 className="text-xs font-bold text-white truncate">{t.title}</h5>
+                                    <button
+                                      onClick={() => handleDeleteTemplate(t.id)}
+                                      className="text-zinc-500 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition duration-300 p-1.5 rounded-lg hover:bg-rose-500/10"
+                                      title="Deletar modelo"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </button>
+                                  </div>
+                                  <p className="text-[10px] text-zinc-400 line-clamp-3 bg-[#09090b] p-3 rounded-xl font-mono leading-relaxed border border-zinc-800">
+                                    {t.reusable_template}
+                                  </p>
+                                </div>
+                                <motion.button
+                                  whileTap={{ scale: 0.97 }}
+                                  onClick={() => handleOpenDraftFromTemplate(t)}
+                                  className="w-full py-2 bg-indigo-600/10 hover:bg-indigo-600/25 border border-indigo-500/20 text-indigo-400 rounded-xl text-[10px] font-bold transition duration-300 flex items-center justify-center gap-1.5 shadow-sm"
+                                >
+                                  <FileText className="h-3.5 w-3.5" />
+                                  Usar este Modelo
+                                </motion.button>
+                              </motion.div>
+                            ))}
+                          </motion.div>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* 3. BANCO DE IDEIAS */}
+                {activeStudioTab === 'ideas' && (
+                  <motion.div
+                    key="studio-ideas"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.18 }}
+                    className="space-y-8"
+                  >
+                    
+                    {/* BARRA SUPERIOR E FORMULARIO DE INGESTÃO RÁPIDA */}
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-[#121215] border border-zinc-800/80 p-4 rounded-2xl">
+                      <div className="text-left">
+                        <h3 className="text-sm font-bold text-white font-mono flex items-center gap-2">
+                          <Layers className="h-4 w-4 text-emerald-400" />
+                          Captura & Ingestão de Ideias
+                        </h3>
+                        <p className="text-xs text-zinc-400">Digite um insight rápido ou peça sugestões ao Segundo Cérebro.</p>
+                      </div>
+
+                      <form onSubmit={handleSaveIdea} className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                        <input
+                          type="text"
+                          required
+                          value={ideaForm.title}
+                          onChange={(e) => setIdeaForm({ ...ideaForm, title: e.target.value })}
+                          placeholder="Título ou insight..."
+                          className="bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 font-mono w-full sm:w-72"
+                        />
+                        <input
+                          type="text"
+                          value={ideaForm.pillar}
+                          onChange={(e) => setIdeaForm({ ...ideaForm, pillar: e.target.value })}
+                          placeholder="Pilar/Canal"
+                          className="bg-[#09090b] border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 font-mono w-28"
+                        />
+                        <motion.button
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          type="submit"
+                          disabled={studioLoading}
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs px-4 py-2 rounded-xl font-bold transition shrink-0 shadow-md shadow-emerald-600/20"
+                        >
+                          + Save Idea
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          type="button"
+                          onClick={handleGenerateIdeasWithAI}
+                          className="bg-indigo-600 hover:bg-indigo-500 text-white font-mono text-xs px-4 py-2 rounded-xl font-bold transition flex items-center gap-1 shrink-0 shadow-md shadow-indigo-600/20"
+                        >
+                          <Sparkles className="h-3.5 w-3.5" />
+                          + AI Brainstorm
+                        </motion.button>
+                      </form>
+                    </div>
+
+                    {/* SEÇÃO 1: RECENT IDEAS */}
+                    <div className="space-y-4 text-left">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-zinc-400 font-mono">Recent ideas</span>
+                        <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
+                          {Math.min(filteredIdeas.filter(i => i.status === 'idea').length, 3)}
+                        </span>
+                      </div>
+
+                      <motion.div 
+                        variants={cardGridVariants}
+                        initial="hidden"
+                        animate="show"
+                        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                      >
+                        {filteredIdeas.filter(i => i.status === 'idea').slice(0, 3).map((idea) => (
+                          <motion.div
+                            key={idea.id}
+                            variants={cardItemVariants}
+                            whileHover={{ y: -3, borderColor: 'rgba(99, 102, 241, 0.45)' }}
+                            className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="h-8 w-8 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-mono font-bold">
+                                💡
+                              </div>
+                              <div className="flex items-center gap-1">
                                 <button
-                                  onClick={() => handleDeleteTemplate(t.id)}
-                                  className="text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition duration-300 p-1.5 rounded-lg hover:bg-red-500/10"
-                                  title="Deletar modelo"
+                                  onClick={() => handleOpenDraftFromIdea(idea)}
+                                  className="text-zinc-500 hover:text-indigo-400 font-mono text-xs p-1"
+                                  title="Criar Roteiro"
+                                >
+                                  <FileText className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteIdea(idea.id)}
+                                  className="text-zinc-600 hover:text-rose-400 font-mono text-sm p-1 transition"
+                                  title="Excluir"
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </button>
                               </div>
-                              <p className="text-[10px] text-slate-400 line-clamp-3 bg-slate-950/40 p-3 rounded-xl font-mono leading-relaxed border border-slate-950">
-                                {t.reusable_template}
+                            </div>
+
+                            <div className="space-y-1 my-auto">
+                              <h4 className="font-bold text-white text-sm tracking-tight truncate group-hover:text-indigo-300 transition">{idea.title}</h4>
+                              <p className="text-[11px] font-mono text-zinc-500 truncate">
+                                {idea.pillar ? `${idea.pillar} • ` : ''}ideia
                               </p>
                             </div>
-                            <button
-                              onClick={() => handleOpenDraftFromTemplate(t)}
-                              className="w-full py-2 bg-indigo-600/10 hover:bg-indigo-600/25 border border-indigo-500/20 text-indigo-400 rounded-xl text-[10px] font-bold transition duration-300 flex items-center justify-center gap-1.5 shadow-sm"
-                            >
-                              <FileText className="h-3.5 w-3.5" />
-                              Usar este Modelo
-                            </button>
-                          </div>
+
+                            <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
+                              <span className="text-zinc-500">Created Jun 12</span>
+                              <span className="font-bold text-emerald-400">Active</span>
+                            </div>
+                          </motion.div>
                         ))}
+                      </motion.div>
+                    </div>
+
+                    {/* SEÇÃO 2: ALL IDEAS */}
+                    <div className="space-y-4 pt-2 text-left">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-zinc-400 font-mono">All ideas</span>
+                        <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
+                          {filteredIdeas.length}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
 
-            {/* 3. BANCO DE IDEIAS (1:1 RÉPLICA DO PAINEL DE AGENTES DA REFERÊNCIA) */}
-            {activeStudioTab === 'ideas' && (
-              <div className="space-y-8 animate-fade-in">
-                
-                {/* BARRA SUPERIOR E FORMULARIO DE INGESTÃO RÁPIDA */}
-                <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-[#121215] border border-zinc-800/80 p-4 rounded-2xl">
-                  <div className="text-left">
-                    <h3 className="text-sm font-bold text-white font-mono flex items-center gap-2">
-                      <Layers className="h-4 w-4 text-emerald-400" />
-                      Captura & Ingestão de Ideias
-                    </h3>
-                    <p className="text-xs text-zinc-400">Digite um insight rápido ou peça sugestões ao Segundo Cérebro.</p>
-                  </div>
-
-                  <form onSubmit={handleSaveIdea} className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-                    <input
-                      type="text"
-                      required
-                      value={ideaForm.title}
-                      onChange={(e) => setIdeaForm({ ...ideaForm, title: e.target.value })}
-                      placeholder="Título ou insight..."
-                      className="bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 font-mono w-full sm:w-72"
-                    />
-                    <input
-                      type="text"
-                      value={ideaForm.pillar}
-                      onChange={(e) => setIdeaForm({ ...ideaForm, pillar: e.target.value })}
-                      placeholder="Pilar/Canal"
-                      className="bg-[#09090b] border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 font-mono w-28"
-                    />
-                    <button
-                      type="submit"
-                      disabled={studioLoading}
-                      className="bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs px-4 py-2 rounded-xl font-bold transition shrink-0"
-                    >
-                      + Save Idea
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleGenerateIdeasWithAI}
-                      className="bg-indigo-600 hover:bg-indigo-500 text-white font-mono text-xs px-4 py-2 rounded-xl font-bold transition flex items-center gap-1 shrink-0"
-                    >
-                      <Sparkles className="h-3.5 w-3.5" />
-                      + AI Brainstorm
-                    </button>
-                  </form>
-                </div>
-
-                {/* SEÇÃO 1: RECENT IDEAS [3] */}
-                <div className="space-y-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-zinc-400 font-mono">Recent ideas</span>
-                    <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
-                      {Math.min(ideas.filter(i => i.status === 'idea').length, 3)}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {ideas.filter(i => i.status === 'idea').slice(0, 3).map((idea) => (
-                      <div
-                        key={idea.id}
-                        className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
+                      <motion.div 
+                        variants={cardGridVariants}
+                        initial="hidden"
+                        animate="show"
+                        className="grid grid-cols-1 md:grid-cols-3 gap-4"
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-mono font-bold">
-                            💡
-                          </div>
-                          <button
-                            onClick={() => handleDeleteIdea(idea.id)}
-                            className="text-zinc-600 hover:text-rose-400 font-mono text-sm p-1 transition"
-                            title="Excluir"
+                        {filteredIdeas.map((idea) => (
+                          <motion.div
+                            key={idea.id}
+                            variants={cardItemVariants}
+                            whileHover={{ y: -3, borderColor: 'rgba(99, 102, 241, 0.45)' }}
+                            className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
                           >
-                            •••
-                          </button>
-                        </div>
-
-                        <div className="space-y-1 my-auto">
-                          <h4 className="font-bold text-white text-sm tracking-tight truncate group-hover:text-emerald-300 transition">{idea.title}</h4>
-                          <p className="text-[11px] font-mono text-zinc-500 truncate">
-                            {idea.pillar ? `${creatorProfile?.niche?.toLowerCase() || 'nicho'} • ${idea.pillar.toLowerCase()} • ideia` : 'nicho • geral • ideia'}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
-                          <span className="text-zinc-500">Created {new Date(idea.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}</span>
-                          <button
-                            onClick={() => handleOpenDraftFromIdea(idea)}
-                            className="text-emerald-400 font-bold hover:underline"
-                          >
-                            Active
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* SEÇÃO 2: ALL IDEAS [N] */}
-                <div className="space-y-4 text-left pt-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-zinc-400 font-mono">All ideas</span>
-                    <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
-                      {ideas.filter(i => i.status === 'idea').length}
-                    </span>
-                  </div>
-
-                  {ideas.filter(i => i.status === 'idea').length === 0 ? (
-                    <div className="bg-[#111114] border border-zinc-800/80 rounded-xl p-16 text-center text-xs text-zinc-500 font-mono">
-                      No ideas captured yet. Use the bar above to add your first idea!
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {ideas.filter(i => i.status === 'idea').map((idea) => (
-                        <div
-                          key={idea.id}
-                          className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-mono font-bold">
-                              💡
+                            <div className="flex items-center justify-between">
+                              <div className="h-8 w-8 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-mono font-bold">
+                                💡
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleOpenDraftFromIdea(idea)}
+                                  className="text-zinc-500 hover:text-indigo-400 font-mono text-xs p-1"
+                                  title="Criar Roteiro"
+                                >
+                                  <FileText className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteIdea(idea.id)}
+                                  className="text-zinc-600 hover:text-rose-400 font-mono text-sm p-1 transition"
+                                  title="Excluir"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
                             </div>
-                            <button
-                              onClick={() => handleDeleteIdea(idea.id)}
-                              className="text-zinc-600 hover:text-rose-400 font-mono text-sm p-1 transition"
-                              title="Excluir"
-                            >
-                              •••
-                            </button>
-                          </div>
 
-                          <div className="space-y-1 my-auto">
-                            <h4 className="font-bold text-white text-sm tracking-tight truncate group-hover:text-emerald-300 transition">{idea.title}</h4>
-                            <p className="text-[11px] font-mono text-zinc-500 truncate">
-                              {idea.pillar ? `${creatorProfile?.niche?.toLowerCase() || 'nicho'} • ${idea.pillar.toLowerCase()} • ideia` : 'nicho • geral • ideia'}
-                            </p>
-                          </div>
+                            <div className="space-y-1 my-auto">
+                              <h4 className="font-bold text-white text-sm tracking-tight truncate group-hover:text-indigo-300 transition">{idea.title}</h4>
+                              <p className="text-[11px] font-mono text-zinc-500 truncate">
+                                {idea.pillar ? `${idea.pillar} • ` : ''}ideia
+                              </p>
+                            </div>
 
-                          <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
-                            <span className="text-zinc-500">Created {new Date(idea.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}</span>
-                            <button
-                              onClick={() => handleOpenDraftFromIdea(idea)}
-                              className="text-emerald-400 font-bold hover:underline"
-                            >
-                              Active
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                            <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
+                              <span className="text-zinc-500">Created Jun 12</span>
+                              <span className="font-bold text-emerald-400">Active</span>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </motion.div>
                     </div>
-                  )}
-                </div>
 
-              </div>
-            )}
+                  </motion.div>
+                )}
 
-            {/* 4. ROTEIROS & RASCUNHOS (1:1 RÉPLICA DA IMAGEM DE REFERÊNCIA) */}
-            {activeStudioTab === 'drafts' && (
-              <div className="space-y-8 animate-fade-in">
-                
-                {/* CONTROLES E FILTROS */}
-                <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-[#121215] border border-zinc-800/80 p-4 rounded-2xl">
-                  <div className="text-left">
-                    <h3 className="text-sm font-bold text-white font-mono flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-amber-400" />
-                      Filtro de Conteúdos & Roteiros
-                    </h3>
-                    <p className="text-xs text-zinc-400">Filtre por canal de publicação ou estado do post.</p>
-                  </div>
+                {/* 4. ROTEIROS & RASCUNHOS */}
+                {activeStudioTab === 'drafts' && (
+                  <motion.div
+                    key="studio-drafts"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.18 }}
+                    className="space-y-8"
+                  >
+                    
+                    {/* BARRA SUPERIOR E FILTROS */}
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-[#121215] border border-zinc-800/80 p-4 rounded-2xl">
+                      <div className="text-left">
+                        <h3 className="text-sm font-bold text-white font-mono flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-amber-400" />
+                          Filtro de Conteúdos & Roteiros
+                        </h3>
+                        <p className="text-xs text-zinc-400">Filtre por canal de publicação ou estado do post.</p>
+                      </div>
 
-                  <div className="flex flex-wrap items-center gap-2">
-                    <select
-                      value={filterPlatform}
-                      onChange={(e) => setFilterPlatform(e.target.value)}
-                      className="bg-[#09090b] border border-zinc-800 text-zinc-400 text-xs px-3 py-2 rounded-xl focus:outline-none focus:border-zinc-600 font-mono"
-                    >
-                      <option value="all">Todas as Redes</option>
-                      <option value="linkedin">LinkedIn</option>
-                      <option value="instagram">Instagram</option>
-                      <option value="tiktok">TikTok</option>
-                    </select>
+                      <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                        <select
+                          value={filterPlatform}
+                          onChange={(e) => setFilterPlatform(e.target.value)}
+                          className="bg-[#09090b] border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-300 focus:outline-none focus:border-zinc-600 font-mono"
+                        >
+                          <option value="all">Todas as Redes</option>
+                          <option value="instagram">Instagram</option>
+                          <option value="linkedin">LinkedIn</option>
+                          <option value="tiktok">TikTok</option>
+                        </select>
 
-                    <select
-                      value={filterStatus}
-                      onChange={(e) => setFilterStatus(e.target.value)}
-                      className="bg-[#09090b] border border-zinc-800 text-zinc-400 text-xs px-3 py-2 rounded-xl focus:outline-none focus:border-zinc-600 font-mono"
-                    >
-                      <option value="all">Todos os Status</option>
-                      <option value="draft">Rascunhos</option>
-                      <option value="ready">Prontos para Postar</option>
-                      <option value="published">Publicados</option>
-                    </select>
+                        <select
+                          value={filterStatus}
+                          onChange={(e) => setFilterStatus(e.target.value)}
+                          className="bg-[#09090b] border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-300 focus:outline-none focus:border-zinc-600 font-mono"
+                        >
+                          <option value="all">Todos os Status</option>
+                          <option value="draft">Rascunho</option>
+                          <option value="ready">Pronto</option>
+                          <option value="published">Publicado</option>
+                        </select>
 
-                    <button
-                      onClick={handleOpenNewDraft}
-                      className="bg-indigo-600 hover:bg-indigo-500 text-white font-mono text-xs px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      + Create script
-                    </button>
-                  </div>
-                </div>
+                        <motion.button
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          onClick={handleOpenNewDraft}
+                          className="bg-indigo-600 hover:bg-indigo-500 text-white font-mono text-xs px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 shrink-0 shadow-md shadow-indigo-600/20"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                          + Create script
+                        </motion.button>
+                      </div>
+                    </div>
 
-                {/* SEÇÃO 1: RECENT SCRIPTS [3] */}
-                <div className="space-y-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-zinc-400 font-mono">Recent scripts</span>
-                    <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
-                      {Math.min(drafts.filter(d => 
-                        (filterPlatform === 'all' || d.platform === filterPlatform) &&
-                        (filterStatus === 'all' || d.status === filterStatus)
-                      ).length, 3)}
-                    </span>
-                  </div>
+                    {/* SEÇÃO 1: RECENT SCRIPTS */}
+                    <div className="space-y-4 text-left">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-zinc-400 font-mono">Recent scripts</span>
+                        <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
+                          {Math.min(filteredDrafts.length, 3)}
+                        </span>
+                      </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {drafts.filter(d => 
-                      (filterPlatform === 'all' || d.platform === filterPlatform) &&
-                      (filterStatus === 'all' || d.status === filterStatus)
-                    ).slice(0, 3).map((draft) => (
-                      <div
-                        key={draft.id}
-                        className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
+                      <motion.div 
+                        variants={cardGridVariants}
+                        initial="hidden"
+                        animate="show"
+                        className="grid grid-cols-1 md:grid-cols-3 gap-4"
                       >
-                        <div className="flex items-center justify-between">
-                          <div className={`h-8 w-8 rounded-lg border flex items-center justify-center text-xs font-mono font-bold ${
-                            draft.platform === 'linkedin' ? 'bg-blue-600/10 text-blue-400 border-blue-500/20' :
-                            draft.platform === 'instagram' ? 'bg-pink-600/10 text-pink-400 border-pink-500/20' :
-                            'bg-purple-600/10 text-purple-400 border-purple-500/20'
-                          }`}>
-                            {draft.platform === 'linkedin' ? 'in' : draft.platform === 'instagram' ? 'ig' : 'tt'}
-                          </div>
-                          <button
-                            onClick={() => handleOpenEditDraft(draft)}
-                            className="text-zinc-600 hover:text-zinc-300 font-mono text-sm p-1 transition"
-                            title="Edit"
+                        {filteredDrafts.slice(0, 3).map((draft) => (
+                          <motion.div
+                            key={draft.id}
+                            variants={cardItemVariants}
+                            whileHover={{ y: -3, borderColor: 'rgba(99, 102, 241, 0.45)' }}
+                            className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
                           >
-                            •••
-                          </button>
-                        </div>
-
-                        <div className="space-y-1 my-auto">
-                          <h4 className="font-bold text-white text-sm tracking-tight truncate group-hover:text-indigo-300 transition">{draft.title}</h4>
-                          <p className="text-[11px] font-mono text-zinc-500 truncate">
-                            {draft.platform} • {draft.format} • {draft.status}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
-                          <span className="text-zinc-500">Created {new Date(draft.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}</span>
-                          <span className={`font-bold ${
-                            draft.status === 'published' ? 'text-emerald-400' :
-                            draft.status === 'ready' ? 'text-amber-400' : 'text-purple-400'
-                          }`}>
-                            {draft.status === 'published' ? 'Active' : draft.status === 'ready' ? 'Ready' : 'Draft'}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* SEÇÃO 2: ALL SCRIPTS [N] */}
-                <div className="space-y-4 text-left pt-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-zinc-400 font-mono">All scripts</span>
-                    <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
-                      {drafts.filter(d => 
-                        (filterPlatform === 'all' || d.platform === filterPlatform) &&
-                        (filterStatus === 'all' || d.status === filterStatus)
-                      ).length}
-                    </span>
-                  </div>
-
-                  {drafts.filter(d => 
-                    (filterPlatform === 'all' || d.platform === filterPlatform) &&
-                    (filterStatus === 'all' || d.status === filterStatus)
-                  ).length === 0 ? (
-                    <div className="bg-[#111114] border border-zinc-800/80 rounded-xl p-16 text-center text-xs text-zinc-500 font-mono">
-                      No scripts found. Click "+ Create script" above to create one!
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {drafts.filter(d => 
-                        (filterPlatform === 'all' || d.platform === filterPlatform) &&
-                        (filterStatus === 'all' || d.status === filterStatus)
-                      ).map((draft) => (
-                        <div
-                          key={draft.id}
-                          className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className={`h-8 w-8 rounded-lg border flex items-center justify-center text-xs font-mono font-bold ${
-                              draft.platform === 'linkedin' ? 'bg-blue-600/10 text-blue-400 border-blue-500/20' :
-                              draft.platform === 'instagram' ? 'bg-pink-600/10 text-pink-400 border-pink-500/20' :
-                              'bg-purple-600/10 text-purple-400 border-purple-500/20'
-                            }`}>
-                              {draft.platform === 'linkedin' ? 'in' : draft.platform === 'instagram' ? 'ig' : 'tt'}
+                            <div className="flex items-center justify-between">
+                              <div className="h-8 w-8 rounded-lg bg-pink-500/10 border border-pink-500/20 text-pink-400 flex items-center justify-center text-xs font-mono font-bold">
+                                {draft.platform === 'linkedin' ? 'in' : draft.platform === 'instagram' ? 'ig' : 'tt'}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => copyToClipboard(draft.content)}
+                                  className="text-zinc-500 hover:text-zinc-300 font-mono text-xs p-1"
+                                  title="Copiar texto"
+                                >
+                                  <Copy className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleEditDraft(draft)}
+                                  className="text-zinc-600 hover:text-zinc-300 font-mono text-sm p-1 transition"
+                                  title="Edit"
+                                >
+                                  •••
+                                </button>
+                              </div>
                             </div>
-                            <button
-                              onClick={() => handleOpenEditDraft(draft)}
-                              className="text-zinc-600 hover:text-zinc-300 font-mono text-sm p-1 transition"
-                              title="Edit"
-                            >
-                              •••
-                            </button>
-                          </div>
 
-                          <div className="space-y-1 my-auto">
-                            <h4 className="font-bold text-white text-sm tracking-tight truncate group-hover:text-indigo-300 transition">{draft.title}</h4>
-                            <p className="text-[11px] font-mono text-zinc-500 truncate">
-                              {draft.platform} • {draft.format} • {draft.status}
-                            </p>
-                          </div>
+                            <div className="space-y-1 my-auto">
+                              <h4 className="font-bold text-white text-sm tracking-tight truncate group-hover:text-indigo-300 transition">{draft.title}</h4>
+                              <p className="text-[11px] font-mono text-zinc-500 truncate">
+                                {draft.platform} • {draft.format} • {draft.status}
+                              </p>
+                            </div>
 
-                          <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
-                            <span className="text-zinc-500">Created {new Date(draft.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}</span>
-                            <span className={`font-bold ${
-                              draft.status === 'published' ? 'text-emerald-400' :
-                              draft.status === 'ready' ? 'text-amber-400' : 'text-purple-400'
-                            }`}>
-                              {draft.status === 'published' ? 'Active' : draft.status === 'ready' ? 'Ready' : 'Draft'}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-              </div>
-            )}
-
-            {/* 5. MARCA, NICHO & CONEXÕES (PADRÃO OBSIDIAN DESIGN.MD) */}
-            {activeStudioTab === 'profile' && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
-                {/* DEFINIÇÕES DE PERSONA */}
-                <div className="lg:col-span-2">
-                  <div className="bg-[#121215] border border-zinc-800/80 rounded-2xl p-6 space-y-6 shadow-sm">
-                    <div className="text-left">
-                      <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider font-mono">Identidade de Marca</h3>
-                      <p className="text-xs text-zinc-400">Personalize o contexto estratégico usado na criação inteligente de conteúdo.</p>
+                            <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
+                              <span className="text-zinc-500">Created Jun 12</span>
+                              <span className={`font-bold ${
+                                draft.status === 'published' ? 'text-emerald-400' :
+                                draft.status === 'ready' ? 'text-amber-400' : 'text-purple-400'
+                              }`}>
+                                {draft.status === 'published' ? 'Published' : draft.status === 'ready' ? 'Ready' : 'Draft'}
+                              </span>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </motion.div>
                     </div>
 
-                    <form onSubmit={handleSaveProfile} className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-1 text-left">
-                          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest font-mono">Nicho de Atuação *</label>
+                    {/* SEÇÃO 2: ALL SCRIPTS */}
+                    <div className="space-y-4 pt-2 text-left">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-zinc-400 font-mono">All scripts</span>
+                        <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
+                          {filteredDrafts.length}
+                        </span>
+                      </div>
+
+                      <motion.div 
+                        variants={cardGridVariants}
+                        initial="hidden"
+                        animate="show"
+                        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                      >
+                        {filteredDrafts.map((draft) => (
+                          <motion.div
+                            key={draft.id}
+                            variants={cardItemVariants}
+                            whileHover={{ y: -3, borderColor: 'rgba(99, 102, 241, 0.45)' }}
+                            className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="h-8 w-8 rounded-lg bg-pink-500/10 border border-pink-500/20 text-pink-400 flex items-center justify-center text-xs font-mono font-bold">
+                                {draft.platform === 'linkedin' ? 'in' : draft.platform === 'instagram' ? 'ig' : 'tt'}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => copyToClipboard(draft.content)}
+                                  className="text-zinc-500 hover:text-zinc-300 font-mono text-xs p-1"
+                                  title="Copiar texto"
+                                >
+                                  <Copy className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleEditDraft(draft)}
+                                  className="text-zinc-600 hover:text-zinc-300 font-mono text-sm p-1 transition"
+                                  title="Edit"
+                                >
+                                  •••
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="space-y-1 my-auto">
+                              <h4 className="font-bold text-white text-sm tracking-tight truncate group-hover:text-indigo-300 transition">{draft.title}</h4>
+                              <p className="text-[11px] font-mono text-zinc-500 truncate">
+                                {draft.platform} • {draft.format} • {draft.status}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
+                              <span className="text-zinc-500">Created Jun 12</span>
+                              <span className={`font-bold ${
+                                draft.status === 'published' ? 'text-emerald-400' :
+                                draft.status === 'ready' ? 'text-amber-400' : 'text-purple-400'
+                              }`}>
+                                {draft.status === 'published' ? 'Published' : draft.status === 'ready' ? 'Ready' : 'Draft'}
+                              </span>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </motion.div>
+                    </div>
+
+                  </motion.div>
+                )}
+
+                {/* 5. PERFIL DE MARCA & CONEXÕES */}
+                {activeStudioTab === 'profile' && (
+                  <motion.div
+                    key="studio-profile"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.18 }}
+                    className="grid grid-cols-1 lg:grid-cols-2 gap-8 text-left"
+                  >
+                    
+                    {/* FORMULÁRIO DE MARCA */}
+                    <div className="bg-[#121215] border border-zinc-800/80 rounded-3xl p-6 space-y-6 shadow-sm">
+                      <div className="border-b border-zinc-800/80 pb-4">
+                        <h4 className="text-base font-bold text-white flex items-center gap-2">
+                          <Settings className="h-5 w-5 text-indigo-400" />
+                          Perfil de Marca & Voz do Criador
+                        </h4>
+                        <p className="text-xs text-zinc-400 mt-1">
+                          Essas diretrizes orientam o <strong>Google Gemini Pro</strong> a criar cópias autênticas e alinhadas ao seu posicionamento.
+                        </p>
+                      </div>
+
+                      <form onSubmit={handleSaveProfile} className="space-y-4">
+                        <div>
+                          <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-2 font-mono">Nicho de Atuação</label>
                           <input
                             type="text"
-                            required
                             value={profileForm.niche}
                             onChange={(e) => setProfileForm({ ...profileForm, niche: e.target.value })}
-                            placeholder="Ex: Marketing para PMEs, Nutrição Esportiva"
-                            className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition font-sans"
+                            placeholder="Ex: Inteligência Artificial, Finanças, Produtividade..."
+                            className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 transition"
                           />
                         </div>
-                        <div className="space-y-1 text-left">
-                          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest font-mono">Público-Alvo *</label>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-2 font-mono">Público-Alvo Ideal</label>
                           <input
                             type="text"
-                            required
                             value={profileForm.target_audience}
                             onChange={(e) => setProfileForm({ ...profileForm, target_audience: e.target.value })}
-                            placeholder="Ex: Empreendedores que faturam até R$ 50k"
-                            className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition font-sans"
+                            placeholder="Ex: Founders, Profissionais de Tech, Estudantes..."
+                            className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 transition"
                           />
                         </div>
-                      </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-1 text-left">
-                          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest font-mono">Objetivos do Perfil *</label>
+                        <div>
+                          <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-2 font-mono">Tom de Voz</label>
                           <input
                             type="text"
-                            required
-                            value={profileForm.objectives}
-                            onChange={(e) => setProfileForm({ ...profileForm, objectives: e.target.value })}
-                            placeholder="Ex: Obter leads para mentoria, criar autoridade"
-                            className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition font-sans"
-                          />
-                        </div>
-                        <div className="space-y-1 text-left">
-                          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest font-mono">Tom de Voz *</label>
-                          <input
-                            type="text"
-                            required
                             value={profileForm.voice_tone}
                             onChange={(e) => setProfileForm({ ...profileForm, voice_tone: e.target.value })}
-                            placeholder="Ex: Prático, enérgico, direto ao ponto, sincero"
-                            className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition font-sans"
+                            placeholder="Ex: Direto, inspirador, técnico sem jargões excessivos..."
+                            className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 transition"
                           />
                         </div>
-                      </div>
 
-                      <div className="space-y-1 text-left">
-                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest font-mono">Pilares de Conteúdo (Separados por vírgula)</label>
-                        <input
-                          type="text"
-                          value={profileForm.content_pillars}
-                          onChange={(e) => setProfileForm({ ...profileForm, content_pillars: e.target.value })}
-                          placeholder="Ex: Estratégias de Vendas, Cases de Sucesso, Hacks de Produtividade"
-                          className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition font-sans"
-                        />
-                      </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-2 font-mono">Pilares de Conteúdo (separados por vírgula)</label>
+                          <input
+                            type="text"
+                            value={profileForm.content_pillars}
+                            onChange={(e) => setProfileForm({ ...profileForm, content_pillars: e.target.value })}
+                            placeholder="Ex: Ferramentas de IA, Automação No-Code, Carreira Tech"
+                            className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 transition"
+                          />
+                        </div>
 
-                      <div className="pt-2 text-left">
-                        <button
+                        <div>
+                          <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-2 font-mono">Objetivos com o Conteúdo</label>
+                          <textarea
+                            rows={3}
+                            value={profileForm.objectives}
+                            onChange={(e) => setProfileForm({ ...profileForm, objectives: e.target.value })}
+                            placeholder="Ex: Gerar leads para consultoria, construir autoridade, atrair seguidores qualificados..."
+                            className="w-full bg-[#09090b] border border-zinc-800 rounded-xl p-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 transition"
+                          />
+                        </div>
+
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
                           type="submit"
                           disabled={studioLoading}
-                          className="bg-indigo-600 hover:bg-indigo-500 text-white font-mono text-xs px-5 py-2.5 rounded-xl transition font-bold shadow-sm"
+                          className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold font-mono transition shadow-lg shadow-indigo-600/20"
                         >
-                          {studioLoading ? 'Salvando...' : 'Salvar Diretrizes de Marca'}
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-
-                {/* CONEXÕES COM REDES SOCIAIS */}
-                <div className="lg:col-span-1 space-y-6">
-                  <div className="bg-[#121215] border border-zinc-800/80 rounded-2xl p-6 space-y-4 shadow-sm">
-                    <div className="text-left">
-                      <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider font-mono flex items-center gap-1.5">
-                        <Link className="h-4 w-4 text-indigo-400" />
-                        Conectar Redes Sociais
-                      </h3>
-                      <p className="text-xs text-zinc-400 leading-relaxed">
-                        Habilite a postagem direta dos seus roteiros de conteúdo aprovados do estúdio de criação.
-                      </p>
+                          {studioLoading ? 'Salvando...' : 'Salvar Perfil de Marca'}
+                        </motion.button>
+                      </form>
                     </div>
 
-                    <div className="space-y-3">
-                      {/* INSTAGRAM BUSINESS CONNECTION */}
-                      <div className="p-4 bg-[#09090b] rounded-xl border border-zinc-800 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Image className="h-4.5 w-4.5 text-pink-400" />
-                          <div className="text-left">
-                            <p className="text-xs font-bold text-white">Instagram Business</p>
-                            <p className="text-[10px] font-mono text-zinc-500">
-                              {config?.instagram_username ? `@${config.instagram_username}` : 'Desconectado'}
-                            </p>
-                          </div>
-                        </div>
-                        {config?.instagram_username ? (
-                          <span className="text-[9px] font-mono font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-500/20 px-2 py-0.5 rounded-md uppercase tracking-wider">Ativo</span>
-                        ) : (
-                          <span className="text-[9px] font-mono font-bold text-zinc-500 bg-[#141416] border border-zinc-800 px-2 py-0.5 rounded-md uppercase tracking-wider">Pendente</span>
-                        )}
-                      </div>
+                    {/* REDES SOCIAIS CONECTADAS & OAUTH */}
+                    <div className="space-y-6">
+                      <div className="bg-[#121215] border border-zinc-800/80 rounded-3xl p-6 space-y-4 shadow-sm">
+                        <h4 className="text-base font-bold text-white flex items-center gap-2">
+                          <Link className="h-5 w-5 text-indigo-400" />
+                          Canais de Distribuição & Redes Conectadas
+                        </h4>
+                        <p className="text-xs text-zinc-400">
+                          Conecte suas contas para habilitar automações de DM e publicação com 1 clique direto do seu estúdio.
+                        </p>
 
-                      {/* LINKEDIN PROFILE CONNECTION */}
-                      <div className="p-4 bg-[#09090b] rounded-xl border border-zinc-800 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4.5 w-4.5 text-blue-450" />
-                          <div className="text-left">
-                            <p className="text-xs font-bold text-white">LinkedIn Perfil</p>
-                            <p className="text-[10px] text-slate-500">
-                              {config?.linkedin_name ? config.linkedin_name : 'Desconectado'}
-                            </p>
+                        {/* INSTAGRAM STATUS */}
+                        <div className="p-4 bg-[#09090b] border border-zinc-800 rounded-2xl flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2.5 bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 rounded-xl text-white">
+                              <Instagram className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <span className="text-xs font-bold text-white block">Instagram Graph API</span>
+                              <span className="text-[10px] text-zinc-400">Automações de DM & Publicação de Posts/Reels</span>
+                            </div>
                           </div>
+                          {config ? (
+                            <span className="text-xs text-emerald-400 font-bold px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                              Conectado
+                            </span>
+                          ) : (
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={handleConnect}
+                              className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-sm"
+                            >
+                              Conectar
+                            </motion.button>
+                          )}
                         </div>
-                        {config?.linkedin_name ? (
-                          <span className="text-[9px] font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-500/20 px-2 py-0.5 rounded-md uppercase tracking-wider">Ativo</span>
-                        ) : (
-                          <button
+
+                        {/* LINKEDIN STATUS */}
+                        <div className="p-4 bg-[#09090b] border border-zinc-800 rounded-2xl flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2.5 bg-blue-600 rounded-xl text-white">
+                              <ExternalLink className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <span className="text-xs font-bold text-white block">LinkedIn Community API</span>
+                              <span className="text-[10px] text-zinc-400">Publicação de Artigos e Posts com 1 clique</span>
+                            </div>
+                          </div>
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={handleConnectLinkedIn}
-                            className="text-[9px] font-bold bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded-lg transition duration-300 uppercase tracking-wider shadow-sm shadow-blue-500/10"
+                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition shadow-sm"
                           >
                             Conectar
-                          </button>
-                        )}
+                          </motion.button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
 
-              </div>
-            )}
+                  </motion.div>
+                )}
 
-          </div>
-        )}
+              </AnimatePresence>
 
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
-      {/* FORM DRAWER/MODAL */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-end bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-2xl bg-slate-900 border-l border-slate-800 h-full overflow-y-auto p-6 md:p-8 flex flex-col justify-between shadow-2xl space-y-6">
-            
-            <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-                <div>
-                  <h3 className="text-xl font-bold text-white">
-                    {formState.id ? 'Editar Automação' : 'Criar Automação'}
-                  </h3>
-                  <p className="text-xs text-slate-400">Configure os gatilhos e a resposta da sua campanha.</p>
+      {/* MODAL NOVA AUTOMAÇÃO (FRAMER MOTION) */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsModalOpen(false)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-md"
+            />
+            <motion.div
+              variants={modalSpringVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="bg-[#121215] border border-zinc-800/90 rounded-3xl w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl z-10 overflow-hidden relative"
+            >
+              <div className="p-5 border-b border-zinc-800 flex items-center justify-between">
+                <div className="flex items-center gap-2.5 text-left">
+                  <div className="h-8 w-8 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
+                    ⚡
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Configurar Automação</h4>
+                    <p className="text-xs text-zinc-400">Disparo automático para comentários e DMs.</p>
+                  </div>
                 </div>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="text-slate-400 hover:text-white transition p-1 bg-slate-800 rounded-lg"
+                  className="text-zinc-500 hover:text-white p-1 rounded-lg bg-zinc-800/50"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                
-                {/* 1. Nome */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Nome da Automação *
-                  </label>
+              <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 flex-1 text-left">
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Nome da Regra</label>
                   <input
                     type="text"
                     required
                     value={formState.name}
                     onChange={(e) => setFormState({ ...formState, name: e.target.value })}
-                    placeholder="Ex: Campanha de Lançamento Ebook"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition"
+                    placeholder="Ex: Enviar Ebook ao comentar QUERO"
+                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 font-mono"
                   />
                 </div>
 
-                {/* 2. Gatilhos */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Gatilhos de Disparo
-                  </label>
-                  <div className="grid grid-cols-3 gap-3">
-                    <label
-                      className={`flex flex-col items-center gap-2 p-3 border rounded-xl cursor-pointer select-none transition ${
-                        formState.trigger_comment
-                          ? 'border-indigo-500 bg-indigo-500/5 text-indigo-400'
-                          : 'border-slate-800 bg-slate-950/40 text-slate-500 hover:border-slate-700'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formState.trigger_comment}
-                        onChange={(e) =>
-                          setFormState({ ...formState, trigger_comment: e.target.checked })
-                        }
-                        className="hidden"
-                      />
-                      <MessageSquare className="h-5 w-5" />
-                      <span className="text-xs font-medium">Comentário</span>
-                    </label>
-
-                    <label
-                      className={`flex flex-col items-center gap-2 p-3 border rounded-xl cursor-pointer select-none transition ${
-                        formState.trigger_story
-                          ? 'border-indigo-500 bg-indigo-500/5 text-indigo-400'
-                          : 'border-slate-800 bg-slate-950/40 text-slate-500 hover:border-slate-700'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formState.trigger_story}
-                        onChange={(e) =>
-                          setFormState({ ...formState, trigger_story: e.target.checked })
-                        }
-                        className="hidden"
-                      />
-                      <Image className="h-5 w-5" />
-                      <span className="text-xs font-medium">Stories</span>
-                    </label>
-
-                    <label
-                      className={`flex flex-col items-center gap-2 p-3 border rounded-xl cursor-pointer select-none transition ${
-                        formState.trigger_dm
-                          ? 'border-indigo-500 bg-indigo-500/5 text-indigo-400'
-                          : 'border-slate-800 bg-slate-950/40 text-slate-500 hover:border-slate-700'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formState.trigger_dm}
-                        onChange={(e) =>
-                          setFormState({ ...formState, trigger_dm: e.target.checked })
-                        }
-                        className="hidden"
-                      />
-                      <Instagram className="h-5 w-5" />
-                      <span className="text-xs font-medium">Mensagem</span>
-                    </label>
-                  </div>
-                </div>
-
-                {/* 3. Seletor de post específico se Comentário ativo */}
-                {formState.trigger_comment && (
-                  <div className="space-y-2 p-4 bg-slate-950/40 border border-slate-800 rounded-xl">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                        Restringir a um Post específico?
-                      </span>
-                      {formState.post_id ? (
-                        <button
-                          type="button"
-                          onClick={handleClearMedia}
-                          className="text-xs text-rose-400 hover:underline"
-                        >
-                          Limpar seleção
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => setIsMediaSelectorOpen(true)}
-                          className="text-xs text-indigo-400 hover:underline flex items-center gap-1"
-                        >
-                          <Search className="h-3 w-3" />
-                          Selecionar Post
-                        </button>
-                      )}
-                    </div>
-
-                    {formState.post_id ? (
-                      <div className="flex items-center gap-3 bg-slate-900 p-2.5 rounded-lg border border-slate-800 mt-2">
-                        {formState.post_media_url ? (
-                          <img
-                            src={formState.post_media_url}
-                            alt="Post selecionado"
-                            className="h-12 w-12 rounded object-cover"
-                          />
-                        ) : (
-                          <div className="h-12 w-12 bg-slate-800 flex items-center justify-center rounded">
-                            <Image className="h-5 w-5 text-slate-500" />
-                          </div>
-                        )}
-                        <div className="flex-1 overflow-hidden">
-                          <span className="text-xs text-slate-400 block font-semibold">Post Selecionado</span>
-                          <span className="text-xs text-slate-500 truncate block">
-                            ID: {formState.post_id}
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-xs text-slate-500 mt-1">
-                        Deixe vazio para acionar em qualquer publicação da sua conta.
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* 4. Palavras-chave */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                      Palavras-chave *
-                    </label>
-                    <select
-                      value={formState.match_type}
-                      onChange={(e: any) =>
-                        setFormState({ ...formState, match_type: e.target.value })
-                      }
-                      className="bg-slate-950 border border-slate-800 text-xs rounded-lg px-2 py-1 text-slate-300"
-                    >
-                      <option value="contains">Contém</option>
-                      <option value="exact">Exato</option>
-                      <option value="any">Qualquer mensagem</option>
-                    </select>
-                  </div>
-                  {formState.match_type !== 'any' && (
-                    <input
-                      type="text"
-                      required
-                      value={rawKeywords}
-                      onChange={(e) => setRawKeywords(e.target.value)}
-                      placeholder="Ex: ebook, quero, link (separadas por vírgula)"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition"
-                    />
-                  )}
-                </div>
-
-                {/* 5. Mensagem de boas-vindas */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Mensagem de Boas-vindas (DM) *
-                  </label>
-                  <textarea
-                    required
-                    rows={3}
-                    value={formState.welcome_dm}
-                    onChange={(e) => setFormState({ ...formState, welcome_dm: e.target.value })}
-                    placeholder="Olá! Obrigado pelo interesse. Toque no botão abaixo para receber o material."
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition resize-none"
-                  />
-                </div>
-
-                {/* 6. Botão de resposta rápida */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Rótulo do Botão de Resposta Rápida (Abre a janela de 24h)
-                  </label>
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Palavras-Chave (separadas por vírgula)</label>
                   <input
                     type="text"
-                    value={formState.quick_reply_button || ''}
-                    onChange={(e) =>
-                      setFormState({ ...formState, quick_reply_button: e.target.value })
-                    }
-                    placeholder="Ex: Enviar link!"
-                    maxLength={20}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition"
+                    required
+                    value={rawKeywords}
+                    onChange={(e) => setRawKeywords(e.target.value)}
+                    placeholder="QUERO, LINK, MATERIAL, EU"
+                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 font-mono"
                   />
-                  <p className="text-xs text-slate-500">
-                    Importante: A Meta exige que o usuário responda/interaja para podermos enviar links. O clique neste botão conta como resposta.
-                  </p>
                 </div>
 
-                {/* 7. Link de Destino (Texto + Rótulo + URL) */}
-                <div className="bg-slate-950/40 border border-slate-800 rounded-xl p-4 space-y-4">
-                  <h4 className="text-sm font-bold text-slate-300 flex items-center gap-1.5">
-                    <Link className="h-4 w-4 text-indigo-400" />
-                    Mensagem subsequente com Link
-                  </h4>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-2 space-y-1">
-                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                        Texto da mensagem
-                      </label>
-                      <input
-                        type="text"
-                        value={formState.link_text || ''}
-                        onChange={(e) => setFormState({ ...formState, link_text: e.target.value })}
-                        placeholder="Ex: Aqui está seu link especial de acesso!"
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                        Rótulo do botão
-                      </label>
-                      <input
-                        type="text"
-                        value={formState.link_button_label || ''}
-                        onChange={(e) =>
-                          setFormState({ ...formState, link_button_label: e.target.value })
-                        }
-                        placeholder="Ex: Baixar Ebook"
-                        maxLength={20}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                        URL do link
-                      </label>
-                      <input
-                        type="url"
-                        value={formState.link_url || ''}
-                        onChange={(e) => setFormState({ ...formState, link_url: e.target.value })}
-                        placeholder="https://meusite.com/download"
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition"
-                      />
-                    </div>
-                  </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Mensagem de Boas-Vindas (DM)</label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={formState.welcome_dm}
+                    onChange={(e) => setFormState({ ...formState, welcome_dm: e.target.value })}
+                    placeholder="Olá! Aqui está o link que você pediu..."
+                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl p-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 font-sans"
+                  />
                 </div>
 
-                {/* 8. Lembrete (Reminder) */}
-                <div className="bg-slate-950/40 border border-slate-800 rounded-xl p-4 space-y-4">
-                  <h4 className="text-sm font-bold text-slate-300 flex items-center gap-1.5">
-                    <Clock className="h-4 w-4 text-indigo-400" />
-                    Lembrete de Acompanhamento (Opcional)
-                  </h4>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-2 space-y-1">
-                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                        Mensagem do lembrete
-                      </label>
-                      <textarea
-                        rows={2}
-                        value={formState.reminder_text || ''}
-                        onChange={(e) => setFormState({ ...formState, reminder_text: e.target.value })}
-                        placeholder="Ex: Vi que você ainda não baixou o ebook. Caso tenha dúvidas, me mande uma mensagem!"
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition resize-none"
-                      />
-                    </div>
-                    <div className="col-span-2 space-y-1">
-                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                        Atraso para envio (minutos)
-                      </label>
-                      <input
-                        type="number"
-                        value={formState.reminder_delay_minutes || ''}
-                        onChange={(e) =>
-                          setFormState({
-                            ...formState,
-                            reminder_delay_minutes: e.target.value ? parseInt(e.target.value, 10) : null,
-                          })
-                        }
-                        placeholder="Ex: 15"
-                        min={1}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* 9. Respostas Públicas de Comentários */}
-                {formState.trigger_comment && (
-                  <div className="space-y-2">
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                      Variações de Resposta Pública (Uma por linha)
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={rawPublicReplies}
-                      onChange={(e) => setRawPublicReplies(e.target.value)}
-                      placeholder="Te enviei o link no direct!&#10;Dá uma olhada nas suas DMs!&#10;Acabei de enviar, confere o direct!"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition resize-none"
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Texto do Link</label>
+                    <input
+                      type="text"
+                      value={formState.link_text || ''}
+                      onChange={(e) => setFormState({ ...formState, link_text: e.target.value })}
+                      placeholder="Acesse aqui"
+                      className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white font-mono"
                     />
-                    <p className="text-xs text-slate-500">
-                      O sistema sorteará uma dessas respostas de forma aleatória para responder ao comentário de forma natural no seu post.
-                    </p>
                   </div>
-                )}
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">URL de Destino</label>
+                    <input
+                      type="url"
+                      value={formState.link_url || ''}
+                      onChange={(e) => setFormState({ ...formState, link_url: e.target.value })}
+                      placeholder="https://..."
+                      className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white font-mono"
+                    />
+                  </div>
+                </div>
 
-                {/* SUBMIT BUTTON */}
-                <div className="border-t border-slate-800 pt-6 flex items-center justify-end gap-4">
+                <div className="border-t border-zinc-800 pt-4 flex items-center justify-end gap-3">
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-5 py-2.5 rounded-xl border border-slate-800 text-slate-400 hover:text-white transition text-sm font-semibold"
+                    className="px-4 py-2 border border-zinc-800 text-zinc-400 hover:text-white rounded-xl text-xs font-mono font-semibold"
                   >
                     Cancelar
                   </button>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     type="submit"
                     disabled={loading}
-                    className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition text-sm active:scale-95 disabled:opacity-50"
+                    className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-mono font-bold shadow-md shadow-indigo-600/20"
                   >
                     {loading ? 'Salvando...' : 'Salvar Automação'}
-                  </button>
+                  </motion.button>
                 </div>
-
               </form>
-            </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
-      {/* 1. MODAL DE SUGESTÕES DE IDEIAS DA IA */}
-      {showAiSuggestionsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm animate-fade-in p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
-            
-            <div className="p-5 border-b border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-indigo-400" />
-                <div>
-                  <h4 className="text-base font-bold text-white">Ideias Sugeridas por IA</h4>
-                  <p className="text-xs text-slate-500">Adicione as ideias que gostar ao seu banco de ideias.</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowAiSuggestionsModal(false)}
-                className="text-slate-400 hover:text-white transition p-1 bg-slate-800 rounded-lg"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="p-6 flex-1 overflow-y-auto space-y-4">
-              {isAiSuggestionsLoading ? (
-                <div className="text-center py-12 space-y-4">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto"></div>
-                  <p className="text-sm text-slate-400">Analisando sua estratégia e gerando ideias inovadoras...</p>
-                </div>
-              ) : aiSuggestions.length === 0 ? (
-                <p className="text-center text-slate-500 py-6 text-sm">Nenhuma sugestão encontrada.</p>
-              ) : (
-                <div className="space-y-4">
-                  {aiSuggestions.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-slate-950 border border-slate-900 rounded-xl p-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4"
-                    >
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-[10px] px-1.5 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full font-semibold uppercase">
-                            {item.platform}
-                          </span>
-                          <span className="text-[10px] px-1.5 py-0.5 bg-slate-900 text-slate-400 border border-slate-800 rounded-full font-medium">
-                            {item.format}
-                          </span>
-                          {item.pillar && (
-                            <span className="text-[10px] text-slate-500">
-                              • Pilar: {item.pillar}
-                            </span>
-                          )}
-                        </div>
-                        <h5 className="font-bold text-white text-sm">{item.title}</h5>
-                        <p className="text-xs text-slate-400 leading-relaxed">{item.description}</p>
-                      </div>
-                      <button
-                        onClick={() => handleAddAiIdeaToBacklog(item)}
-                        className="sm:self-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-1.5 px-3 rounded-lg shrink-0 transition"
-                      >
-                        + Salvar
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="p-4 bg-slate-950/50 border-t border-slate-800 text-right">
-              <button
-                onClick={() => setShowAiSuggestionsModal(false)}
-                className="px-4 py-2 border border-slate-800 text-slate-400 hover:text-white transition rounded-lg text-xs font-semibold"
-              >
-                Fechar
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
-
-      {/* 2. DRAWER/MODAL DE EDITAR RASCUNHO & GERAR SCRIPT IA */}
-      {isDraftModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-end bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-3xl bg-slate-900 border-l border-slate-800 h-full overflow-y-auto p-6 md:p-8 flex flex-col justify-between shadow-2xl space-y-6">
-            
-            <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-                <div>
-                  <h3 className="text-xl font-bold text-white">
-                    {draftForm.id ? 'Editar Roteiro/Post' : 'Escrever Roteiro/Post'}
-                  </h3>
-                  <p className="text-xs text-slate-400">Estruture o conteúdo para suas redes sociais.</p>
+      {/* MODAL DE CRIAÇÃO DE IDEIA (FRAMER MOTION) */}
+      <AnimatePresence>
+        {isIdeaModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsIdeaModalOpen(false)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-md"
+            />
+            <motion.div
+              variants={modalSpringVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="bg-[#121215] border border-zinc-800/90 rounded-3xl w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl z-10 overflow-hidden relative text-left"
+            >
+              <div className="p-5 border-b border-zinc-800 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                    💡
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Criar Nova Ideia</h4>
+                    <p className="text-xs text-zinc-400">Capture um insight para seu Segundo Cérebro.</p>
+                  </div>
                 </div>
                 <button
-                  onClick={() => setIsDraftModalOpen(false)}
-                  className="text-slate-400 hover:text-white transition p-1 bg-slate-800 rounded-lg"
+                  onClick={() => setIsIdeaModalOpen(false)}
+                  className="text-zinc-500 hover:text-white p-1 rounded-lg bg-zinc-800/50"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
 
-              <form onSubmit={handleSaveDraft} className="space-y-6">
-                
-                {/* Título */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Título do Post *
-                  </label>
+              <form onSubmit={handleSaveIdea} className="p-6 overflow-y-auto space-y-4 flex-1">
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Título ou Insight</label>
                   <input
                     type="text"
                     required
-                    value={draftForm.title}
-                    onChange={(e) => setDraftForm({ ...draftForm, title: e.target.value })}
-                    placeholder="Ex: Guia rápido de automação para Instagram"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-700 focus:outline-none focus:border-indigo-500 transition"
+                    value={ideaForm.title}
+                    onChange={(e) => setIdeaForm({ ...ideaForm, title: e.target.value })}
+                    placeholder="Ex: 5 erros fatais de quem cria conteúdo com IA..."
+                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 font-mono"
                   />
                 </div>
 
-                {/* Plataforma e Formato */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                      Rede Social *
-                    </label>
-                    <select
-                      value={draftForm.platform}
-                      onChange={(e) => handlePlatformChange(e.target.value as any)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition"
-                    >
-                      <option value="instagram">Instagram</option>
-                      <option value="linkedin">LinkedIn</option>
-                      <option value="tiktok">TikTok</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                      Formato *
-                    </label>
-                    <select
-                      value={draftForm.format}
-                      onChange={(e) => setDraftForm({ ...draftForm, format: e.target.value as any })}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition"
-                    >
-                      {draftForm.platform === 'instagram' && (
-                        <>
-                          <option value="reels">🎥 Reels / Vídeo Curto</option>
-                          <option value="carousel">📚 Carrossel (Imagens/Slides)</option>
-                          <option value="post">🖼️ Post de Imagem Única</option>
-                        </>
-                      )}
-                      {draftForm.platform === 'linkedin' && (
-                        <>
-                          <option value="text">✍️ Post de Texto (Formatado)</option>
-                          <option value="carousel">📚 Carrossel (PDF/Slides)</option>
-                        </>
-                      )}
-                      {draftForm.platform === 'tiktok' && (
-                        <option value="reels">🎥 Vídeo Curto (TikTok)</option>
-                      )}
-                    </select>
-                  </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Pilar / Canal</label>
+                  <input
+                    type="text"
+                    value={ideaForm.pillar}
+                    onChange={(e) => setIdeaForm({ ...ideaForm, pillar: e.target.value })}
+                    placeholder="Ex: Inteligência Artificial, Finanças, Carreira"
+                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 font-mono"
+                  />
                 </div>
 
-                {/* Bloco Auxiliar de Geração por IA */}
-                <div className="bg-gradient-to-tr from-indigo-950/20 to-slate-950/40 border border-indigo-950/40 rounded-xl p-4 space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-4.5 w-4.5 text-indigo-400 animate-pulse" />
-                    <div>
-                      <h4 className="text-xs font-bold text-white">Assistente de Copywriting</h4>
-                      <p className="text-[10px] text-slate-500">Deixe que o Gemini escreva a primeira versão do roteiro para você.</p>
-                    </div>
-                  </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Descrição ou Notas (Opcional)</label>
+                  <textarea
+                    rows={4}
+                    value={ideaForm.description}
+                    onChange={(e) => setIdeaForm({ ...ideaForm, description: e.target.value })}
+                    placeholder="Detalhes ou referências que você pensou para este tema..."
+                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl p-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 font-sans"
+                  />
+                </div>
 
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-semibold text-slate-500 uppercase">Instruções Extras ou Conceito (Opcional)</label>
-                    <textarea
-                      value={customPrompt}
-                      onChange={(e) => setCustomPrompt(e.target.value)}
-                      placeholder="Ex: Quero focar em profissionais de TI, adicione um call to action forte dizendo para comentar 'QUERO'..."
-                      rows={2}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-700 focus:outline-none focus:border-indigo-500 transition"
-                    />
-                  </div>
-
+                <div className="border-t border-zinc-800 pt-4 flex items-center justify-end gap-3">
                   <button
                     type="button"
-                    onClick={handleGenerateScriptWithAI}
-                    disabled={isGeneratingScript}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2 px-4 rounded-lg flex items-center justify-center gap-2 shadow transition active:scale-95 disabled:opacity-50"
-                  >
-                    {isGeneratingScript ? (
-                      <>
-                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                        Criando roteiro magnético...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-3.5 w-3.5" />
-                        Gerar Conteúdo e Roteiro com IA
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {/* Campos do Editor */}
-                <div className="space-y-4">
-                  
-                  {/* Legenda / Conteúdo Escrito */}
-                  <div className="space-y-2 text-left">
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                      {draftForm.format === 'reels' ? 'Legenda do Reels' : 
-                       draftForm.format === 'carousel' ? 'Legenda do Post' : 
-                       'Texto Principal / Copy do Post *'}
-                    </label>
-                    <textarea
-                      required
-                      rows={8}
-                      value={draftForm.content}
-                      onChange={(e) => setDraftForm({ ...draftForm, content: e.target.value })}
-                      placeholder="Escreva a legenda ou o post final aqui..."
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-800 focus:outline-none focus:border-indigo-500 transition font-sans"
-                    />
-
-                    {/* AI REFINEMENT TOOLBAR */}
-                    <div className="flex flex-wrap items-center gap-2 pt-1">
-                      <span className="text-[9px] font-bold text-slate-500 uppercase mr-1">Refinar com IA:</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRefineDraft('humanize')}
-                        disabled={isGeneratingScript || !draftForm.content}
-                        className="py-1 px-2.5 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 rounded-lg text-[10px] font-bold transition flex items-center gap-1 disabled:opacity-50"
-                      >
-                        <Sparkles className="h-3 w-3 text-indigo-400 animate-pulse" />
-                        🤖 Humanizar Texto
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleRefineDraft('shorten')}
-                        disabled={isGeneratingScript || !draftForm.content}
-                        className="py-1 px-2.5 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 rounded-lg text-[10px] font-bold transition flex items-center gap-1 disabled:opacity-50"
-                      >
-                        ✂️ Encurtar
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleRefineDraft('simplify')}
-                        disabled={isGeneratingScript || !draftForm.content}
-                        className="py-1 px-2.5 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 rounded-lg text-[10px] font-bold transition flex items-center gap-1 disabled:opacity-50"
-                      >
-                        💡 Simplificar
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleRefineDraft('engagement')}
-                        disabled={isGeneratingScript || !draftForm.content}
-                        className="py-1 px-2.5 bg-indigo-600/10 hover:bg-indigo-650/20 text-indigo-400 border border-indigo-500/20 rounded-lg text-[10px] font-bold transition flex items-center gap-1 disabled:opacity-50"
-                      >
-                        🔥 Mais Engajamento
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Roteiro Visual (Cenas / Slides) */}
-                  {(draftForm.format === 'carousel' || draftForm.format === 'reels') && (
-                    <div className="space-y-2 text-left">
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                        {draftForm.format === 'carousel' ? 'Roteiro dos Slides (Carrossel)' : 'Roteiro de Cenas (Reels/Vídeo)'}
-                      </label>
-                      <textarea
-                        rows={6}
-                        value={draftForm.visual_script}
-                        onChange={(e) => setDraftForm({ ...draftForm, visual_script: e.target.value })}
-                        placeholder={
-                          draftForm.format === 'carousel'
-                            ? "Slide 1:\n[Título] O Segredo da Automação\n[Visual] Imagem de um robô simpático no celular\n[Texto] Veja como automatizar o Insta...\n\nSlide 2:..."
-                            : "Cena 1 (0-3s):\n[Ação] Apontando para o texto flutuante na tela com cara de surpresa.\n[Áudio] Sabia que dá para programar respostas automáticas de graça?"
-                        }
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-850 focus:outline-none focus:border-indigo-500 transition font-sans"
-                      />
-                    </div>
-                  )}
-
-                  {/* Mídia e Imagens */}
-                  <div className="space-y-3 text-left bg-slate-950/60 border border-slate-800/80 p-4 rounded-2xl">
-                    <div className="flex items-center justify-between">
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
-                        Mídia do Post (Imagem / Vídeo)
-                      </label>
-                      <span className="text-[10px] text-slate-500">
-                        {draftForm.platform === 'instagram' ? 'Obrigatório no Insta' : 'Opcional no LinkedIn'}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <input
-                        type="text"
-                        value={draftForm.media_url || ''}
-                        onChange={(e) => setDraftForm({ ...draftForm, media_url: e.target.value })}
-                        placeholder="https://exemplo.com/sua-imagem.jpg"
-                        className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-700 focus:outline-none focus:border-indigo-500 transition"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleGenerateAIImage}
-                        className="py-2 px-3 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shrink-0"
-                      >
-                        <Sparkles className="h-3.5 w-3.5" />
-                        {draftForm.media_url ? '🔄 Regenerar Imagem' : '🎨 Gerar Imagem por IA'}
-                      </button>
-                    </div>
-
-                    {/* Preview da Imagem Anexada */}
-                    {draftForm.media_url ? (
-                      <div className="relative group rounded-xl overflow-hidden border border-slate-800 bg-slate-900 max-h-48 flex items-center justify-center">
-                        <img
-                          src={draftForm.media_url}
-                          alt="Preview do Post"
-                          className="w-full h-48 object-cover rounded-xl"
-                          onError={(e) => {
-                            (e.target as HTMLElement).style.display = 'none';
-                          }}
-                        />
-                        <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition">
-                          <button
-                            type="button"
-                            onClick={handleGenerateAIImage}
-                            className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold shadow hover:bg-indigo-500 transition"
-                          >
-                            🔄 Regenerar IA
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setDraftForm({ ...draftForm, media_url: '' })}
-                            className="px-3 py-1.5 bg-rose-600 text-white rounded-lg text-xs font-bold shadow hover:bg-rose-500 transition"
-                          >
-                            <Trash2 className="h-3.5 w-3.5 inline mr-1" /> Remover
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      config && (
-                        <button
-                          type="button"
-                          onClick={() => setIsMediaSelectorOpen(true)}
-                          className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1.5 transition"
-                        >
-                          <Image className="h-3.5 w-3.5" />
-                          Selecionar foto/vídeo das suas mídias do Instagram
-                        </button>
-                      )
-                    )}
-                  </div>
-
-                  {/* Agendamento Automático */}
-                  <div className="space-y-2 text-left">
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                      Agendamento Automático de Publicação (Opcional)
-                    </label>
-                    <input
-                      type="datetime-local"
-                      value={draftForm.scheduled_at ? new Date(draftForm.scheduled_at).toISOString().slice(0, 16) : ''}
-                      onChange={(e) => setDraftForm({ ...draftForm, scheduled_at: e.target.value ? new Date(e.target.value).toISOString() : '' })}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-700 focus:outline-none focus:border-indigo-500 transition"
-                    />
-                    <p className="text-[10px] text-slate-500">
-                      Se definido e o status for "Pronto para Postar", a publicação será disparada automaticamente no horário agendado.
-                    </p>
-                  </div>
-
-                </div>
-
-                {/* SUBMIT BUTTON */}
-                <div className="border-t border-slate-800 pt-6 flex items-center justify-end gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setIsDraftModalOpen(false)}
-                    className="px-5 py-2.5 rounded-xl border border-slate-800 text-slate-400 hover:text-white transition text-sm font-semibold"
+                    onClick={() => setIsIdeaModalOpen(false)}
+                    className="px-4 py-2 border border-zinc-800 text-zinc-400 hover:text-white rounded-xl text-xs font-mono font-semibold"
                   >
                     Cancelar
                   </button>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     type="submit"
                     disabled={studioLoading}
-                    className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition text-sm active:scale-95 disabled:opacity-50"
+                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-mono font-bold shadow-md shadow-emerald-600/20"
                   >
-                    {studioLoading ? 'Salvando...' : 'Salvar no Estúdio'}
-                  </button>
+                    {studioLoading ? 'Salvando...' : 'Salvar Ideia'}
+                  </motion.button>
                 </div>
-
               </form>
-            </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
-      {/* INSTAGRAM MEDIA SELECTOR MODAL */}
-      {isMediaSelectorOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm animate-fade-in p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl max-h-[80vh] flex flex-col shadow-2xl overflow-hidden">
-            
-            <div className="p-5 border-b border-slate-800 flex items-center justify-between">
-              <div>
-                <h4 className="text-base font-bold text-white">Selecionar Publicação</h4>
-                <p className="text-xs text-slate-500">Escolha o post ou reels em que deseja ativar o gatilho.</p>
-              </div>
-              <button
-                onClick={() => setIsMediaSelectorOpen(false)}
-                className="text-slate-400 hover:text-white transition p-1 bg-slate-800 rounded-lg"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="p-5 flex-1 overflow-y-auto">
-              {currentMediaList.length === 0 ? (
-                <div className="text-center py-10 space-y-2">
-                  <Instagram className="h-8 w-8 text-slate-600 mx-auto" />
-                  <p className="text-sm text-slate-400">Nenhum post recente encontrado ou conta desconectada.</p>
+      {/* MODAL DE CRIAÇÃO E EDIÇÃO DE RASCUNHO (FRAMER MOTION) */}
+      <AnimatePresence>
+        {isDraftModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsDraftModalOpen(false)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-md"
+            />
+            <motion.div
+              variants={modalSpringVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="bg-[#121215] border border-zinc-800/90 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl z-10 overflow-hidden relative"
+            >
+              <div className="p-5 border-b border-zinc-800 flex items-center justify-between">
+                <div className="flex items-center gap-2.5 text-left">
+                  <div className="h-8 w-8 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
+                    ✍️
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Estúdio de Criação de Conteúdo</h4>
+                    <p className="text-xs text-zinc-400">Escreva, humanize e gere roteiros completos com IA.</p>
+                  </div>
                 </div>
-              ) : (
-                <div className="grid grid-cols-3 gap-3">
-                  {currentMediaList.map((media) => (
-                    <div
-                      key={media.id}
-                      onClick={() => handleSelectMedia(media)}
-                      className="group aspect-square relative rounded-xl overflow-hidden border border-slate-800 cursor-pointer bg-slate-950 hover:border-indigo-500 transition"
-                    >
-                      {media.thumbnail_url || media.media_url ? (
-                        <img
-                          src={media.thumbnail_url || media.media_url}
-                          alt={media.caption || 'Instagram Post'}
-                          className="h-full w-full object-cover group-hover:scale-105 transition duration-300"
-                        />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center text-slate-500">
-                          <Image className="h-6 w-6" />
-                        </div>
-                      )}
-                      
-                      {/* CAPTION HOVER */}
-                      <div className="absolute inset-0 bg-slate-950/80 opacity-0 group-hover:opacity-100 flex flex-col justify-end p-2 transition duration-200">
-                        <p className="text-[10px] text-white line-clamp-3 leading-tight font-medium">
-                          {media.caption || '(Sem legenda)'}
-                        </p>
-                      </div>
+                <button
+                  onClick={() => setIsDraftModalOpen(false)}
+                  className="text-zinc-500 hover:text-white p-1 rounded-lg bg-zinc-800/50"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveDraft} className="p-6 overflow-y-auto space-y-6 flex-1 text-left">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Título do Conteúdo</label>
+                    <input
+                      type="text"
+                      required
+                      value={draftForm.title}
+                      onChange={(e) => setDraftForm({ ...draftForm, title: e.target.value })}
+                      placeholder="Ex: Como economizar 10 horas semanais com IA..."
+                      className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Plataforma & Formato</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <select
+                        value={draftForm.platform}
+                        onChange={(e) => setDraftForm({ ...draftForm, platform: e.target.value as any })}
+                        className="bg-[#09090b] border border-zinc-800 rounded-xl px-2.5 py-2.5 text-xs text-white font-mono"
+                      >
+                        <option value="instagram">Instagram</option>
+                        <option value="linkedin">LinkedIn</option>
+                        <option value="tiktok">TikTok</option>
+                      </select>
+                      <select
+                        value={draftForm.format}
+                        onChange={(e) => setDraftForm({ ...draftForm, format: e.target.value as any })}
+                        className="bg-[#09090b] border border-zinc-800 rounded-xl px-2.5 py-2.5 text-xs text-white font-mono"
+                      >
+                        <option value="post">Post</option>
+                        <option value="reels">Reels</option>
+                        <option value="carousel">Carrossel</option>
+                        <option value="text">Texto</option>
+                      </select>
                     </div>
+                  </div>
+                </div>
+
+                {/* BOTÕES DE REFINAMENTO RÁPIDO COM IA */}
+                <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-[#09090b] border border-zinc-800/80 rounded-2xl">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="h-4 w-4 text-indigo-400" />
+                    <span className="text-[11px] font-bold text-zinc-300 font-mono">Refinador de IA:</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      type="button"
+                      onClick={() => handleRefineDraft('humanize')}
+                      className="px-2.5 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 rounded-lg text-[10px] font-bold font-mono transition"
+                    >
+                      🌿 Humanizar
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      type="button"
+                      onClick={() => handleRefineDraft('engagement')}
+                      className="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 rounded-lg text-[10px] font-bold font-mono transition"
+                    >
+                      🔥 Mais Gancho
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      type="button"
+                      onClick={() => handleRefineDraft('shorten')}
+                      className="px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 rounded-lg text-[10px] font-bold font-mono transition"
+                    >
+                      ✂️ Encurtar
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      type="button"
+                      onClick={handleGenerateScript}
+                      disabled={isGeneratingScript}
+                      className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-bold font-mono transition flex items-center gap-1 shadow-sm"
+                    >
+                      {isGeneratingScript ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                      Gerar com IA
+                    </motion.button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Conteúdo do Post / Legenda</label>
+                  <textarea
+                    rows={8}
+                    required
+                    value={draftForm.content}
+                    onChange={(e) => setDraftForm({ ...draftForm, content: e.target.value })}
+                    placeholder="Escreva ou gere seu conteúdo aqui..."
+                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl p-4 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 leading-relaxed font-sans"
+                  />
+                </div>
+
+                {draftForm.format === 'reels' && (
+                  <div>
+                    <label className="block text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1.5 font-mono">Roteiro Visual & Cenas</label>
+                    <textarea
+                      rows={4}
+                      value={draftForm.visual_script}
+                      onChange={(e) => setDraftForm({ ...draftForm, visual_script: e.target.value })}
+                      placeholder="Cena 1: Mostrando a tela do computador..."
+                      className="w-full bg-[#09090b] border border-zinc-800 rounded-xl p-4 text-xs text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-indigo-500 font-mono text-[11px]"
+                    />
+                  </div>
+                )}
+
+                <div className="border-t border-zinc-800 pt-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {draftForm.media_url ? (
+                      <span className="text-[11px] text-emerald-400 font-mono flex items-center gap-1">
+                        <CheckCircle className="h-3.5 w-3.5" /> Imagem anexada
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleGenerateAIImage}
+                        className="text-xs text-indigo-400 hover:text-indigo-300 font-mono flex items-center gap-1 font-semibold"
+                      >
+                        <Image className="h-3.5 w-3.5" /> + Gerar Imagem com IA
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsDraftModalOpen(false)}
+                      className="px-4 py-2 border border-zinc-800 text-zinc-400 hover:text-white rounded-xl text-xs font-mono font-semibold"
+                    >
+                      Cancelar
+                    </button>
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      type="submit"
+                      disabled={studioLoading}
+                      className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-mono font-bold shadow-md shadow-indigo-600/20"
+                    >
+                      {studioLoading ? 'Salvando...' : 'Salvar no Estúdio'}
+                    </motion.button>
+                  </div>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL DE SUGESTÕES DE IA (BRAINSTORM) */}
+      <AnimatePresence>
+        {showAiSuggestionsModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowAiSuggestionsModal(false)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-md"
+            />
+            <motion.div
+              variants={modalSpringVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="bg-[#121215] border border-zinc-800/90 rounded-3xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl z-10 overflow-hidden relative"
+            >
+              <div className="p-5 border-b border-zinc-800 flex items-center justify-between">
+                <div className="flex items-center gap-2.5 text-left">
+                  <div className="h-8 w-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                    💡
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Brainstorm com Google Gemini Pro</h4>
+                    <p className="text-xs text-zinc-400">Sugestões de temas e ganchos personalizados para o seu nicho.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAiSuggestionsModal(false)}
+                  className="text-zinc-500 hover:text-white p-1 rounded-lg bg-zinc-800/50"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto space-y-4 flex-1 text-left">
+                {isAiSuggestionsLoading ? (
+                  <div className="py-12 text-center space-y-3">
+                    <RefreshCw className="h-8 w-8 text-indigo-400 animate-spin mx-auto" />
+                    <p className="text-xs text-zinc-400 font-mono">Gerando ideias estratégicas com IA...</p>
+                  </div>
+                ) : aiSuggestions.length === 0 ? (
+                  <div className="py-8 text-center text-xs text-zinc-500 italic">
+                    Nenhuma ideia retornada. Tente novamente.
+                  </div>
+                ) : (
+                  aiSuggestions.map((ai, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 bg-[#09090b] border border-zinc-800/80 rounded-2xl space-y-3"
+                    >
+                      <div>
+                        <span className="text-[9px] font-bold px-2 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded font-mono uppercase">
+                          {ai.pillar || 'Geral'}
+                        </span>
+                        <h5 className="font-bold text-white text-xs mt-1.5">{ai.title}</h5>
+                        <p className="text-[11px] text-zinc-400 mt-1 leading-relaxed">{ai.reasoning}</p>
+                      </div>
+
+                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-800/60">
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
+                          type="button"
+                          onClick={() => handleAddAiIdeaToBacklog(ai)}
+                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-mono font-bold transition shadow-sm"
+                        >
+                          + Salvar no Backlog
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL CRONOGRAMA ESTRATÉGICO DA SEMANA (FRAMER MOTION) */}
+      <AnimatePresence>
+        {isScheduleModalOpen && schedulePlan && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsScheduleModalOpen(false)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-md"
+            />
+            <motion.div
+              variants={modalSpringVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="bg-[#121215] border border-zinc-800/90 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl z-10 overflow-hidden relative text-left"
+            >
+              <div className="p-5 border-b border-zinc-800 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-indigo-500/10 border border-indigo-500/20 p-2 rounded-xl text-indigo-400">
+                    <Clock className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold text-white flex items-center gap-2">
+                      Cronograma Semanal Estratégico
+                      <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-semibold font-mono">
+                        {schedulePlan.weeklyFrequency}
+                      </span>
+                    </h4>
+                    <p className="text-xs text-zinc-400">Ordem, horários e pilares recomendados para maximizar alcance e conversão.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsScheduleModalOpen(false)}
+                  className="text-zinc-500 hover:text-white p-1 rounded-lg bg-zinc-800/50"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="p-6 flex-1 overflow-y-auto space-y-6">
+                {/* Resumo da Estratégia */}
+                <div className="bg-[#09090b] border border-zinc-800 p-4 rounded-2xl space-y-1">
+                  <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest font-mono">Estratégia Recomendada para o seu Nicho</span>
+                  <p className="text-xs text-zinc-300 leading-relaxed">{schedulePlan.strategySummary}</p>
+                </div>
+
+                {/* Lista de Dias e Horários */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {schedulePlan.items?.map((item: any, idx: number) => (
+                    <motion.div 
+                      key={idx} 
+                      whileHover={{ y: -2 }}
+                      className="bg-[#09090b] border border-zinc-800/80 rounded-2xl p-4 flex flex-col justify-between space-y-3 hover:border-zinc-700 transition"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-extrabold text-white flex items-center gap-1.5 font-mono">
+                            📅 {item.dayOfWeek} às {item.recommendedTime}
+                          </span>
+                          <span className="text-[9px] px-2 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-md font-bold uppercase font-mono">
+                            {item.platform} • {item.format}
+                          </span>
+                        </div>
+
+                        {item.pillar && (
+                          <span className="text-[10px] text-zinc-400 block font-semibold font-mono">
+                            Pilar: <span className="text-indigo-300">{item.pillar}</span>
+                          </span>
+                        )}
+
+                        <h5 className="font-bold text-white text-xs leading-snug">{item.suggestedTopic}</h5>
+                        <p className="text-[10px] text-zinc-400 leading-relaxed">{item.reasoning}</p>
+                      </div>
+
+                      <motion.button
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => {
+                          setIsScheduleModalOpen(false);
+                          handleOpenDraftFromIdea({
+                            id: '',
+                            title: item.suggestedTopic,
+                            description: item.reasoning,
+                            reference_url: null,
+                            pillar: item.pillar,
+                            status: 'idea',
+                            created_at: new Date().toISOString()
+                          });
+                        }}
+                        className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold font-mono transition flex items-center justify-center gap-1.5 shadow"
+                      >
+                        <Sparkles className="h-3.5 w-3.5" />
+                        + Rascunhar este Post
+                      </motion.button>
+                    </motion.div>
                   ))}
                 </div>
-              )}
-            </div>
+              </div>
 
-            <div className="p-4 bg-slate-950/50 border-t border-slate-800 text-right">
-              <button
-                onClick={() => setIsMediaSelectorOpen(false)}
-                className="px-4 py-2 border border-slate-800 text-slate-400 hover:text-white transition rounded-lg text-xs font-semibold"
-              >
-                Fechar
-              </button>
-            </div>
-
+              <div className="p-4 bg-[#09090b]/80 border-t border-zinc-800 text-right">
+                <button
+                  onClick={() => setIsScheduleModalOpen(false)}
+                  className="px-4 py-2 border border-zinc-800 text-zinc-400 hover:text-white transition rounded-xl text-xs font-semibold font-mono"
+                >
+                  Fechar
+                </button>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
-
-      {/* MODAL CRONOGRAMA ESTRATÉGICO DA SEMANA */}
-      {isScheduleModalOpen && schedulePlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm animate-fade-in p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-            
-            <div className="p-5 border-b border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="bg-indigo-500/10 border border-indigo-500/20 p-2 rounded-xl text-indigo-400">
-                  <Clock className="h-5 w-5" />
-                </div>
-                <div>
-                  <h4 className="text-base font-bold text-white flex items-center gap-2">
-                    Cronograma Semanal Estratégico
-                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-semibold">
-                      {schedulePlan.weeklyFrequency}
-                    </span>
-                  </h4>
-                  <p className="text-xs text-slate-400">Ordem, horários e pilares recomendados para maximizar seu alcance e conversão.</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsScheduleModalOpen(false)}
-                className="text-slate-400 hover:text-white transition p-1 bg-slate-800 rounded-lg"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="p-6 flex-1 overflow-y-auto space-y-6">
-              {/* Resumo da Estratégia */}
-              <div className="bg-slate-950/70 border border-slate-800 p-4 rounded-xl space-y-1 text-left">
-                <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Estratégia Recomendada para o seu Nicho</span>
-                <p className="text-xs text-slate-300 leading-relaxed">{schedulePlan.strategySummary}</p>
-              </div>
-
-              {/* Lista de Dias e Horários */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-                {schedulePlan.items?.map((item: any, idx: number) => (
-                  <div key={idx} className="bg-slate-950 border border-slate-800/80 rounded-xl p-4 flex flex-col justify-between space-y-3 hover:border-slate-700 transition">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-extrabold text-white flex items-center gap-1.5">
-                          📅 {item.dayOfWeek} às {item.recommendedTime}
-                        </span>
-                        <span className="text-[9px] px-2 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-md font-bold uppercase">
-                          {item.platform} • {item.format}
-                        </span>
-                      </div>
-
-                      {item.pillar && (
-                        <span className="text-[10px] text-slate-400 block font-semibold">
-                          Pilar: <span className="text-indigo-300">{item.pillar}</span>
-                        </span>
-                      )}
-
-                      <h5 className="font-bold text-white text-xs leading-snug">{item.suggestedTopic}</h5>
-                      <p className="text-[10px] text-slate-400 leading-relaxed">{item.reasoning}</p>
-                    </div>
-
-                    <button
-                      onClick={() => {
-                        setIsScheduleModalOpen(false);
-                        handleOpenDraftFromIdea({
-                          id: '',
-                          title: item.suggestedTopic,
-                          description: item.reasoning,
-                          reference_url: null,
-                          pillar: item.pillar,
-                          status: 'idea',
-                          created_at: new Date().toISOString()
-                        });
-                      }}
-                      className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 shadow"
-                    >
-                      <Sparkles className="h-3.5 w-3.5" />
-                      + Rascunhar este Post
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="p-4 bg-slate-950/50 border-t border-slate-800 text-right">
-              <button
-                onClick={() => setIsScheduleModalOpen(false)}
-                className="px-4 py-2 border border-slate-800 text-slate-400 hover:text-white transition rounded-lg text-xs font-semibold"
-              >
-                Fechar
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
     </div>
   );
