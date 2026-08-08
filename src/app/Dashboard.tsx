@@ -28,6 +28,15 @@ import {
   Video,
   Layers,
   Menu,
+  Zap,
+  Lightbulb,
+  PenLine,
+  Calendar,
+  Rocket,
+  Clapperboard,
+  Target,
+  Anchor,
+  BookOpen,
 } from 'lucide-react';
 
 const Instagram = (props: React.SVGProps<SVGSVGElement>) => (
@@ -152,49 +161,62 @@ interface DashboardProps {
   templates: any[];
 }
 
+// Reduced-motion: detect user preference for accessibility (impeccable skill)
+const prefersReducedMotion =
+  typeof window !== 'undefined'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    : false;
+
 const cardGridVariants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.04,
-    },
+    transition: prefersReducedMotion
+      ? { duration: 0 }
+      : { staggerChildren: 0.04 },
   },
 };
 
 const cardItemVariants = {
-  hidden: { opacity: 0, y: 12, scale: 0.98 },
+  hidden: { opacity: 0, y: prefersReducedMotion ? 0 : 12, scale: 1 },
   show: {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: {
-      type: 'spring' as const,
-      stiffness: 300,
-      damping: 24,
-    },
+    transition: prefersReducedMotion
+      ? { duration: 0 }
+      : {
+          type: 'spring' as const,
+          stiffness: 300,
+          damping: 24,
+        },
   },
 };
 
 const modalSpringVariants = {
-  hidden: { opacity: 0, scale: 0.95, y: 16 },
+  hidden: { opacity: 0, scale: prefersReducedMotion ? 1 : 0.96, y: prefersReducedMotion ? 0 : 12 },
   visible: {
     opacity: 1,
     scale: 1,
     y: 0,
-    transition: {
-      type: 'spring' as const,
-      stiffness: 320,
-      damping: 26,
-    },
+    transition: prefersReducedMotion
+      ? { duration: 0.1 }
+      : {
+          type: 'spring' as const,
+          stiffness: 320,
+          damping: 26,
+        },
   },
   exit: {
     opacity: 0,
-    scale: 0.95,
-    y: 12,
-    transition: { duration: 0.15 },
+    scale: prefersReducedMotion ? 1 : 0.96,
+    y: prefersReducedMotion ? 0 : 8,
+    transition: { duration: 0.12 },
   },
 };
+
+// Hover border color as hex (fixes oklab color warning from Framer Motion)
+const hoverBorderIndigo = '#6366f173';
 
 export default function Dashboard({
   config,
@@ -563,7 +585,7 @@ export default function Dashboard({
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    addToast('Copiado para a área de transferência! ✨', 'info');
+    addToast('Copiado para a área de transferência.', 'info');
   };
 
   const handlePublishLinkedIn = async (draft: Draft) => {
@@ -571,7 +593,7 @@ export default function Dashboard({
     setIsPublishing(true);
     try {
       await publishToLinkedInAction(draft.id);
-      addToast('Post publicado com sucesso no LinkedIn! 🚀', 'success');
+      addToast('Post publicado com sucesso no LinkedIn!', 'success');
     } catch (err: any) {
       addToast(`Erro ao publicar no LinkedIn: ${err.message}`, 'error');
     } finally {
@@ -584,7 +606,7 @@ export default function Dashboard({
     setIsPublishing(true);
     try {
       await publishToInstagramAction(draft.id);
-      addToast('Post publicado com sucesso no Instagram! 📸', 'success');
+      addToast('Post publicado com sucesso no Instagram!', 'success');
     } catch (err: any) {
       addToast(`Erro ao publicar no Instagram: ${err.message}`, 'error');
     } finally {
@@ -669,7 +691,7 @@ export default function Dashboard({
         reference_url: '',
         status: 'idea',
       });
-      addToast('Mensagem salva no Banco de Ideias! 💡', 'success');
+      addToast('Mensagem salva no Banco de Ideias!', 'success');
     } catch (err: any) {
       addToast(`Erro ao salvar: ${err.message}`, 'error');
     }
@@ -942,7 +964,7 @@ export default function Dashboard({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.9 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-              className={`pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl border shadow-2xl backdrop-blur-xl text-xs font-mono font-medium ${
+              className={`pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl border shadow-lg backdrop-blur-xl text-xs font-mono font-medium ${
                 t.type === 'error'
                   ? 'bg-rose-950/90 border-rose-500/40 text-rose-200'
                   : t.type === 'info'
@@ -972,7 +994,7 @@ export default function Dashboard({
 
       {/* LEFT SIDEBAR BARRA NAVEGAÇÃO FIXA / RESPONSIVA */}
       <aside className={`w-64 border-r border-zinc-800/70 bg-[#09090b] flex flex-col justify-between h-screen fixed lg:sticky top-0 left-0 shrink-0 select-none z-40 transition-transform duration-300 ${
-        isMobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'
+        isMobileSidebarOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full lg:translate-x-0'
       }`}>
         <div className="p-4 space-y-6 overflow-y-auto scrollbar-none">
           
@@ -1008,7 +1030,7 @@ export default function Dashboard({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar... ⌘K"
-              className="w-full bg-[#141416] border border-zinc-800/80 rounded-xl px-3 py-2 text-xs text-zinc-300 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition font-mono"
+              className="w-full bg-[#141416] border border-zinc-800/80 rounded-xl px-3 py-2 text-xs text-zinc-300 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 transition font-mono"
             />
             {searchQuery && (
               <button
@@ -1022,7 +1044,7 @@ export default function Dashboard({
 
           {/* MENU PRINCIPAL */}
           <div className="space-y-1">
-            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-2 block mb-2 font-mono">Plataforma</span>
+            <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest px-2 block mb-2 font-mono">Plataforma</span>
             
             <motion.button
               whileHover={{ x: 3 }}
@@ -1055,7 +1077,7 @@ export default function Dashboard({
                 <span>Banco de Ideias</span>
               </div>
               {ideas.length > 0 && (
-                <span className="text-[10px] bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded font-mono font-bold">
+                <span className="text-[11px] bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded font-mono font-bold">
                   {ideas.length}
                 </span>
               )}
@@ -1076,7 +1098,7 @@ export default function Dashboard({
                 <span>Roteiros & Rascunhos</span>
               </div>
               {drafts.length > 0 && (
-                <span className="text-[10px] bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded font-mono font-bold">
+                <span className="text-[11px] bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded font-mono font-bold">
                   {drafts.length}
                 </span>
               )}
@@ -1113,7 +1135,7 @@ export default function Dashboard({
                 <span>Automações de DM</span>
               </div>
               {automations.length > 0 && (
-                <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded font-mono border border-indigo-500/30">
+                <span className="text-[11px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded font-mono border border-indigo-500/30">
                   {automations.length}
                 </span>
               )}
@@ -1122,7 +1144,7 @@ export default function Dashboard({
 
           {/* MENU FERRAMENTAS E CONFIGURAÇÕES */}
           <div className="space-y-1 pt-3 border-t border-zinc-800/60">
-            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-2 block mb-2 font-mono">Estratégia</span>
+            <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest px-2 block mb-2 font-mono">Estratégia</span>
             
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -1178,7 +1200,7 @@ export default function Dashboard({
                 )}
                 <div className="truncate text-left">
                   <span className="text-xs font-bold text-zinc-200 block truncate">@{config.instagram_username}</span>
-                  <span className="text-[10px] text-emerald-400 block font-mono">Conectado</span>
+                  <span className="text-[11px] text-emerald-400 block font-mono">Conectado</span>
                 </div>
               </div>
               <button onClick={handleDisconnect} className="text-zinc-500 hover:text-rose-400 transition p-1">
@@ -1220,7 +1242,7 @@ export default function Dashboard({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search ideas, scripts, automations..."
-                className="w-full bg-[#121215] border border-zinc-800/80 rounded-xl pl-9 pr-4 py-2 text-xs text-zinc-300 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition font-mono"
+                className="w-full bg-[#121215] border border-zinc-800/80 rounded-xl pl-9 pr-4 py-2 text-xs text-zinc-300 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 transition font-mono"
               />
               <Compass className="h-4 w-4 text-zinc-500 absolute left-3 top-2.5" />
               {searchQuery && (
@@ -1236,7 +1258,7 @@ export default function Dashboard({
 
           <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
             <motion.button
-              whileHover={{ scale: 1.03, borderColor: 'rgba(99, 102, 241, 0.6)' }}
+              whileHover={{ scale: 1.03, borderColor: '#6366f199' }}
               whileTap={{ scale: 0.97 }}
               onClick={() => {
                 if (activeStudioTab === 'ideas') setIsIdeaModalOpen(true);
@@ -1367,7 +1389,7 @@ export default function Dashboard({
                     <div className="space-y-4 text-left">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-zinc-400 font-mono">Recent automations</span>
-                        <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
+                        <span className="text-[11px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
                           {Math.min(filteredAutomations.length, 3)}
                         </span>
                       </div>
@@ -1382,7 +1404,7 @@ export default function Dashboard({
                           <motion.div
                             key={auto.id}
                             variants={cardItemVariants}
-                            whileHover={{ y: -3, borderColor: 'rgba(99, 102, 241, 0.45)' }}
+                            whileHover={{ y: -3, borderColor: hoverBorderIndigo }}
                             className="bg-[#111114] border border-zinc-800/80 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
                           >
                             <div className="flex items-center justify-between">
@@ -1430,7 +1452,7 @@ export default function Dashboard({
                     <div className="space-y-4 pt-2 text-left">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-zinc-400 font-mono">All automations</span>
-                        <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
+                        <span className="text-[11px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
                           {filteredAutomations.length}
                         </span>
                       </div>
@@ -1445,7 +1467,7 @@ export default function Dashboard({
                           <motion.div
                             key={auto.id}
                             variants={cardItemVariants}
-                            whileHover={{ y: -3, borderColor: 'rgba(99, 102, 241, 0.45)' }}
+                            whileHover={{ y: -3, borderColor: hoverBorderIndigo }}
                             className="bg-[#111114] border border-zinc-800/80 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
                           >
                             <div className="flex items-center justify-between">
@@ -1545,7 +1567,7 @@ export default function Dashboard({
                   className="ml-auto py-2 px-3.5 rounded-xl text-xs font-semibold bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 transition flex items-center gap-2 whitespace-nowrap disabled:opacity-50"
                 >
                   <Sparkles className="h-4 w-4 text-indigo-400 animate-pulse" />
-                  {isGeneratingSchedule ? 'Gerando Plano...' : '📅 Cronograma Semanal (IA)'}
+                  {isGeneratingSchedule ? 'Gerando Plano...' : 'Cronograma Semanal (IA)'}
                 </motion.button>
               </div>
 
@@ -1560,7 +1582,7 @@ export default function Dashboard({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.18 }}
-                    className="grid grid-cols-1 lg:grid-cols-4 gap-6 bg-[#121215]/90 border border-zinc-800/80 rounded-3xl p-6 min-h-[640px] shadow-2xl backdrop-blur-xl"
+                    className="grid grid-cols-1 lg:grid-cols-4 gap-6 bg-[#121215]/90 border border-zinc-800/80 rounded-2xl p-6 min-h-[640px] shadow-[0_8px_30px_rgba(0,0,0,0.4)] backdrop-blur-xl"
                   >
                     {/* BARRA LATERAL: BRAINSTORMS */}
                     <div className="lg:col-span-1 border-r border-zinc-800/80 pr-4 flex flex-col space-y-4">
@@ -1616,7 +1638,7 @@ export default function Dashboard({
                           <motion.div 
                             animate={{ scale: [1, 1.05, 1] }}
                             transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                            className="p-5 bg-indigo-500/10 border border-indigo-500/20 rounded-3xl text-indigo-400 shadow-inner"
+                            className="p-5 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl text-indigo-400 shadow-inner"
                           >
                             <Brain className="h-12 w-12 text-indigo-400" />
                           </motion.div>
@@ -1630,14 +1652,14 @@ export default function Dashboard({
                           {/* PROMPTS INICIAIS RÁPIDOS */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-xl text-left">
                             {[
-                              { title: '🚀 3 Ganchos Virais', prompt: 'Crie 3 ganchos virais irresistíveis para o meu nicho de mercado.' },
-                              { title: '📝 Post para LinkedIn', prompt: 'Escreva um post estruturado e autêntico para o meu LinkedIn sobre superação de desafios.' },
-                              { title: '🎬 Roteiro de Reels/TikTok', prompt: 'Escreva um roteiro dinâmico de Reels em 3 cenas com falas e indicações visuais.' },
-                              { title: '📅 Estratégia da Semana', prompt: 'Qual é a melhor ordem de postagens para esta semana baseada no meu público?' }
+                              { title: '3 Ganchos Virais', prompt: 'Crie 3 ganchos virais irresistíveis para o meu nicho de mercado.' },
+                              { title: 'Post para LinkedIn', prompt: 'Escreva um post estruturado e autêntico para o meu LinkedIn sobre superação de desafios.' },
+                              { title: 'Roteiro de Reels/TikTok', prompt: 'Escreva um roteiro dinâmico de Reels em 3 cenas com falas e indicações visuais.' },
+                              { title: 'Estratégia da Semana', prompt: 'Qual é a melhor ordem de postagens para esta semana baseada no meu público?' }
                             ].map((starter, i) => (
                               <motion.button
                                 key={i}
-                                whileHover={{ scale: 1.02, borderColor: 'rgba(99, 102, 241, 0.5)' }}
+                                whileHover={{ scale: 1.02, borderColor: hoverBorderIndigo }}
                                 whileTap={{ scale: 0.98 }}
                                 onClick={async () => {
                                   try {
@@ -1788,13 +1810,13 @@ export default function Dashboard({
                         </p>
                         <form onSubmit={handleAnalyzeTrend} className="space-y-4">
                           <div>
-                            <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Post de Sucesso original</label>
+                            <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Post de Sucesso original</label>
                             <textarea
                               rows={8}
                               value={trendText}
                               onChange={(e) => setTrendText(e.target.value)}
                               placeholder="Cole o texto bruto do post aqui..."
-                              className="w-full bg-[#09090b] border border-zinc-800 rounded-xl p-4 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition font-sans leading-relaxed"
+                              className="w-full bg-[#09090b] border border-zinc-800 rounded-xl p-4 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700/30 transition font-sans leading-relaxed"
                             />
                           </div>
                           <motion.button
@@ -1847,20 +1869,20 @@ export default function Dashboard({
                           <div className="space-y-4 text-xs">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/80 text-left">
-                                <span className="font-bold text-zinc-400 uppercase tracking-widest text-[9px] font-mono block mb-1">🪝 O Gancho (Hook)</span>
+                                <span className="font-bold text-zinc-400 uppercase tracking-widest text-[11px] font-mono block mb-1"><Anchor className="h-3 w-3 inline mr-1 -mt-0.5" />O Gancho (Hook)</span>
                                 <p className="text-zinc-300 leading-relaxed font-sans">{analyzedResult.hook}</p>
                               </div>
                               <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/80 text-left">
-                                <span className="font-bold text-zinc-400 uppercase tracking-widest text-[9px] font-mono block mb-1">🏗️ Estrutura de Retenção</span>
+                                <span className="font-bold text-zinc-400 uppercase tracking-widest text-[11px] font-mono block mb-1"><Layers className="h-3 w-3 inline mr-1 -mt-0.5" />Estrutura de Retenção</span>
                                 <p className="text-zinc-300 leading-relaxed font-sans">{analyzedResult.structure}</p>
                               </div>
                             </div>
                             <div className="bg-[#09090b] p-4 rounded-xl border border-zinc-800/80 text-left">
-                              <span className="font-bold text-zinc-400 uppercase tracking-widest text-[9px] font-mono block mb-1">💡 Aprendizados Chave</span>
+                              <span className="font-bold text-zinc-400 uppercase tracking-widest text-[11px] font-mono block mb-1"><Lightbulb className="h-3 w-3 inline mr-1 -mt-0.5" />Aprendizados Chave</span>
                               <p className="text-zinc-300 leading-relaxed font-sans">{analyzedResult.key_takeaways}</p>
                             </div>
                             <div className="space-y-1.5 text-left">
-                              <span className="font-bold text-zinc-400 uppercase tracking-widest text-[9px] font-mono block ml-1">📝 Template Reutilizável com Placeholders</span>
+                              <span className="font-bold text-zinc-400 uppercase tracking-widest text-[11px] font-mono block ml-1"><FileText className="h-3 w-3 inline mr-1 -mt-0.5" />Template Reutilizável</span>
                               <div className="bg-[#09090b] border border-zinc-800 p-4 rounded-xl font-mono text-[11px] text-emerald-400 whitespace-pre-wrap leading-relaxed">
                                 {analyzedResult.reusable_template}
                               </div>
@@ -1891,7 +1913,7 @@ export default function Dashboard({
                               <motion.div 
                                 key={t.id}
                                 variants={cardItemVariants}
-                                whileHover={{ y: -3, borderColor: 'rgba(99, 102, 241, 0.45)' }}
+                                whileHover={{ y: -3, borderColor: hoverBorderIndigo }}
                                 className="bg-[#111114] border border-zinc-800/80 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-zinc-700 transition duration-300 group"
                               >
                                 <div className="space-y-2 text-left">
@@ -1905,14 +1927,14 @@ export default function Dashboard({
                                       <Trash2 className="h-3.5 w-3.5" />
                                     </button>
                                   </div>
-                                  <p className="text-[10px] text-zinc-400 line-clamp-3 bg-[#09090b] p-3 rounded-xl font-mono leading-relaxed border border-zinc-800">
+                                  <p className="text-[11px] text-zinc-400 line-clamp-3 bg-[#09090b] p-3 rounded-xl font-mono leading-relaxed border border-zinc-800">
                                     {t.reusable_template}
                                   </p>
                                 </div>
                                 <motion.button
                                   whileTap={{ scale: 0.97 }}
                                   onClick={() => handleOpenDraftFromTemplate(t)}
-                                  className="w-full py-2 bg-indigo-600/10 hover:bg-indigo-600/25 border border-indigo-500/20 text-indigo-400 rounded-xl text-[10px] font-bold transition duration-300 flex items-center justify-center gap-1.5 shadow-sm"
+                                  className="w-full py-2 bg-indigo-600/10 hover:bg-indigo-600/25 border border-indigo-500/20 text-indigo-400 rounded-xl text-[11px] font-bold transition duration-300 flex items-center justify-center gap-1.5 shadow-sm"
                                 >
                                   <FileText className="h-3.5 w-3.5" />
                                   Usar este Modelo
@@ -1954,7 +1976,7 @@ export default function Dashboard({
                           value={ideaForm.title}
                           onChange={(e) => setIdeaForm({ ...ideaForm, title: e.target.value })}
                           placeholder="Título ou insight..."
-                          className="bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 font-mono w-full sm:w-72"
+                          className="bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600/30 font-mono w-full sm:w-72"
                         />
                         <input
                           type="text"
@@ -1989,7 +2011,7 @@ export default function Dashboard({
                     <div className="space-y-4 text-left">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-zinc-400 font-mono">Recent ideas</span>
-                        <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
+                        <span className="text-[11px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
                           {Math.min(filteredIdeas.filter(i => i.status === 'idea').length, 3)}
                         </span>
                       </div>
@@ -2004,12 +2026,12 @@ export default function Dashboard({
                           <motion.div
                             key={idea.id}
                             variants={cardItemVariants}
-                            whileHover={{ y: -3, borderColor: 'rgba(99, 102, 241, 0.45)' }}
+                            whileHover={{ y: -3, borderColor: hoverBorderIndigo }}
                             className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
                           >
                             <div className="flex items-center justify-between">
                               <div className="h-8 w-8 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-mono font-bold">
-                                💡
+                                <Lightbulb className="h-4 w-4" />
                               </div>
                               <div className="flex items-center gap-1">
                                 <button
@@ -2049,7 +2071,7 @@ export default function Dashboard({
                     <div className="space-y-4 pt-2 text-left">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-zinc-400 font-mono">All ideas</span>
-                        <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
+                        <span className="text-[11px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
                           {filteredIdeas.length}
                         </span>
                       </div>
@@ -2064,12 +2086,12 @@ export default function Dashboard({
                           <motion.div
                             key={idea.id}
                             variants={cardItemVariants}
-                            whileHover={{ y: -3, borderColor: 'rgba(99, 102, 241, 0.45)' }}
+                            whileHover={{ y: -3, borderColor: hoverBorderIndigo }}
                             className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
                           >
                             <div className="flex items-center justify-between">
                               <div className="h-8 w-8 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-mono font-bold">
-                                💡
+                                <Lightbulb className="h-4 w-4" />
                               </div>
                               <div className="flex items-center gap-1">
                                 <button
@@ -2168,7 +2190,7 @@ export default function Dashboard({
                     <div className="space-y-4 text-left">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-zinc-400 font-mono">Recent scripts</span>
-                        <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
+                        <span className="text-[11px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
                           {Math.min(filteredDrafts.length, 3)}
                         </span>
                       </div>
@@ -2183,7 +2205,7 @@ export default function Dashboard({
                           <motion.div
                             key={draft.id}
                             variants={cardItemVariants}
-                            whileHover={{ y: -3, borderColor: 'rgba(99, 102, 241, 0.45)' }}
+                            whileHover={{ y: -3, borderColor: hoverBorderIndigo }}
                             className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
                           >
                             <div className="flex items-center justify-between">
@@ -2233,7 +2255,7 @@ export default function Dashboard({
                     <div className="space-y-4 pt-2 text-left">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-zinc-400 font-mono">All scripts</span>
-                        <span className="text-[10px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
+                        <span className="text-[11px] font-mono bg-[#141416] border border-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded font-bold">
                           {filteredDrafts.length}
                         </span>
                       </div>
@@ -2248,7 +2270,7 @@ export default function Dashboard({
                           <motion.div
                             key={draft.id}
                             variants={cardItemVariants}
-                            whileHover={{ y: -3, borderColor: 'rgba(99, 102, 241, 0.45)' }}
+                            whileHover={{ y: -3, borderColor: hoverBorderIndigo }}
                             className="bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-5 flex flex-col justify-between h-[185px] transition group relative shadow-sm text-left"
                           >
                             <div className="flex items-center justify-between">
@@ -2309,7 +2331,7 @@ export default function Dashboard({
                   >
                     
                     {/* FORMULÁRIO DE MARCA */}
-                    <div className="bg-[#121215] border border-zinc-800/80 rounded-3xl p-6 space-y-6 shadow-sm">
+                    <div className="bg-[#121215] border border-zinc-800/80 rounded-2xl p-6 space-y-6 shadow-sm">
                       <div className="border-b border-zinc-800/80 pb-4">
                         <h4 className="text-base font-bold text-white flex items-center gap-2">
                           <Settings className="h-5 w-5 text-indigo-400" />
@@ -2390,7 +2412,7 @@ export default function Dashboard({
 
                     {/* REDES SOCIAIS CONECTADAS & OAUTH */}
                     <div className="space-y-6">
-                      <div className="bg-[#121215] border border-zinc-800/80 rounded-3xl p-6 space-y-4 shadow-sm">
+                      <div className="bg-[#121215] border border-zinc-800/80 rounded-2xl p-6 space-y-4 shadow-sm">
                         <h4 className="text-base font-bold text-white flex items-center gap-2">
                           <Link className="h-5 w-5 text-indigo-400" />
                           Canais de Distribuição & Redes Conectadas
@@ -2407,7 +2429,7 @@ export default function Dashboard({
                             </div>
                             <div>
                               <span className="text-xs font-bold text-white block">Instagram Graph API</span>
-                              <span className="text-[10px] text-zinc-400">Automações de DM & Publicação de Posts/Reels</span>
+                              <span className="text-[11px] text-zinc-400">Automações de DM & Publicação de Posts/Reels</span>
                             </div>
                           </div>
                           {config ? (
@@ -2434,7 +2456,7 @@ export default function Dashboard({
                             </div>
                             <div>
                               <span className="text-xs font-bold text-white block">LinkedIn Community API</span>
-                              <span className="text-[10px] text-zinc-400">Publicação de Artigos e Posts com 1 clique</span>
+                              <span className="text-[11px] text-zinc-400">Publicação de Artigos e Posts com 1 clique</span>
                             </div>
                           </div>
                           <motion.button
@@ -2475,15 +2497,15 @@ export default function Dashboard({
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="bg-[#121215] border border-zinc-800/90 rounded-3xl w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl z-10 overflow-hidden relative"
+              className="bg-[#121215] border border-zinc-800/90 rounded-2xl w-full max-w-xl max-h-[90vh] flex flex-col shadow-[0_8px_30px_rgba(0,0,0,0.4)] z-10 overflow-hidden relative"
             >
               <div className="p-5 border-b border-zinc-800 flex items-center justify-between">
                 <div className="flex items-center gap-2.5 text-left">
                   <div className="h-8 w-8 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
-                    ⚡
+                    <Zap className="h-4 w-4" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-white">Configurar Automação</h4>
+                    <h4 className="text-sm font-semibold text-white tracking-tight">Configurar Automação</h4>
                     <p className="text-xs text-zinc-400">Disparo automático para comentários e DMs.</p>
                   </div>
                 </div>
@@ -2497,60 +2519,60 @@ export default function Dashboard({
 
               <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 flex-1 text-left">
                 <div>
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Nome da Regra</label>
+                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Nome da Regra</label>
                   <input
                     type="text"
                     required
                     value={formState.name}
                     onChange={(e) => setFormState({ ...formState, name: e.target.value })}
                     placeholder="Ex: Enviar Ebook ao comentar QUERO"
-                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 font-mono"
+                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Palavras-Chave (separadas por vírgula)</label>
+                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Palavras-Chave (separadas por vírgula)</label>
                   <input
                     type="text"
                     required
                     value={rawKeywords}
                     onChange={(e) => setRawKeywords(e.target.value)}
                     placeholder="QUERO, LINK, MATERIAL, EU"
-                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 font-mono"
+                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Mensagem de Boas-Vindas (DM)</label>
+                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Mensagem de Boas-Vindas (DM)</label>
                   <textarea
                     rows={3}
                     required
                     value={formState.welcome_dm}
                     onChange={(e) => setFormState({ ...formState, welcome_dm: e.target.value })}
                     placeholder="Olá! Aqui está o link que você pediu..."
-                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl p-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 font-sans"
+                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl p-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 font-sans"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Texto do Link</label>
+                    <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Texto do Link</label>
                     <input
                       type="text"
                       value={formState.link_text || ''}
                       onChange={(e) => setFormState({ ...formState, link_text: e.target.value })}
                       placeholder="Acesse aqui"
-                      className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white font-mono"
+                      className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">URL de Destino</label>
+                    <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">URL de Destino</label>
                     <input
                       type="url"
                       value={formState.link_url || ''}
                       onChange={(e) => setFormState({ ...formState, link_url: e.target.value })}
                       placeholder="https://..."
-                      className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white font-mono"
+                      className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20"
                     />
                   </div>
                 </div>
@@ -2595,15 +2617,15 @@ export default function Dashboard({
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="bg-[#121215] border border-zinc-800/90 rounded-3xl w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl z-10 overflow-hidden relative text-left"
+              className="bg-[#121215] border border-zinc-800/90 rounded-2xl w-full max-w-xl max-h-[90vh] flex flex-col shadow-[0_8px_30px_rgba(0,0,0,0.4)] z-10 overflow-hidden relative text-left"
             >
               <div className="p-5 border-b border-zinc-800 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="h-8 w-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                    💡
+                    <Lightbulb className="h-4 w-4" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-white">Criar Nova Ideia</h4>
+                    <h4 className="text-sm font-semibold text-white tracking-tight">Criar Nova Ideia</h4>
                     <p className="text-xs text-zinc-400">Capture um insight para seu Segundo Cérebro.</p>
                   </div>
                 </div>
@@ -2617,36 +2639,36 @@ export default function Dashboard({
 
               <form onSubmit={handleSaveIdea} className="p-6 overflow-y-auto space-y-4 flex-1">
                 <div>
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Título ou Insight</label>
+                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Título ou Insight</label>
                   <input
                     type="text"
                     required
                     value={ideaForm.title}
                     onChange={(e) => setIdeaForm({ ...ideaForm, title: e.target.value })}
                     placeholder="Ex: 5 erros fatais de quem cria conteúdo com IA..."
-                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 font-mono"
+                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Pilar / Canal</label>
+                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Pilar / Canal</label>
                   <input
                     type="text"
                     value={ideaForm.pillar}
                     onChange={(e) => setIdeaForm({ ...ideaForm, pillar: e.target.value })}
                     placeholder="Ex: Inteligência Artificial, Finanças, Carreira"
-                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 font-mono"
+                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Descrição ou Notas (Opcional)</label>
+                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Descrição ou Notas (Opcional)</label>
                   <textarea
                     rows={4}
                     value={ideaForm.description}
                     onChange={(e) => setIdeaForm({ ...ideaForm, description: e.target.value })}
                     placeholder="Detalhes ou referências que você pensou para este tema..."
-                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl p-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 font-sans"
+                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl p-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 font-sans"
                   />
                 </div>
 
@@ -2690,15 +2712,15 @@ export default function Dashboard({
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="bg-[#121215] border border-zinc-800/90 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl z-10 overflow-hidden relative"
+              className="bg-[#121215] border border-zinc-800/90 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-[0_8px_30px_rgba(0,0,0,0.4)] z-10 overflow-hidden relative"
             >
               <div className="p-5 border-b border-zinc-800 flex items-center justify-between">
                 <div className="flex items-center gap-2.5 text-left">
                   <div className="h-8 w-8 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
-                    ✍️
+                    <PenLine className="h-4 w-4" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-white">Estúdio de Criação de Conteúdo</h4>
+                    <h4 className="text-sm font-semibold text-white tracking-tight">Estúdio de Criação de Conteúdo</h4>
                     <p className="text-xs text-zinc-400">Escreva, humanize e gere roteiros completos com IA.</p>
                   </div>
                 </div>
@@ -2713,18 +2735,18 @@ export default function Dashboard({
               <form onSubmit={handleSaveDraft} className="p-6 overflow-y-auto space-y-6 flex-1 text-left">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="md:col-span-2">
-                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Título do Conteúdo</label>
+                    <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Título do Conteúdo</label>
                     <input
                       type="text"
                       required
                       value={draftForm.title}
                       onChange={(e) => setDraftForm({ ...draftForm, title: e.target.value })}
                       placeholder="Ex: Como economizar 10 horas semanais com IA..."
-                      className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 font-mono"
+                      className="w-full bg-[#09090b] border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 font-mono"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Plataforma & Formato</label>
+                    <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Plataforma & Formato</label>
                     <div className="grid grid-cols-2 gap-2">
                       <select
                         value={draftForm.platform}
@@ -2760,32 +2782,32 @@ export default function Dashboard({
                       whileTap={{ scale: 0.95 }}
                       type="button"
                       onClick={() => handleRefineDraft('humanize')}
-                      className="px-2.5 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 rounded-lg text-[10px] font-bold font-mono transition"
+                      className="px-2.5 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 rounded-lg text-[11px] font-bold font-mono transition"
                     >
-                      🌿 Humanizar
+                      Humanizar
                     </motion.button>
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       type="button"
                       onClick={() => handleRefineDraft('engagement')}
-                      className="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 rounded-lg text-[10px] font-bold font-mono transition"
+                      className="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 rounded-lg text-[11px] font-bold font-mono transition"
                     >
-                      🔥 Mais Gancho
+                      Mais Gancho
                     </motion.button>
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       type="button"
                       onClick={() => handleRefineDraft('shorten')}
-                      className="px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 rounded-lg text-[10px] font-bold font-mono transition"
+                      className="px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 rounded-lg text-[11px] font-bold font-mono transition"
                     >
-                      ✂️ Encurtar
+                      Encurtar
                     </motion.button>
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       type="button"
                       onClick={handleGenerateScript}
                       disabled={isGeneratingScript}
-                      className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-bold font-mono transition flex items-center gap-1 shadow-sm"
+                      className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[11px] font-bold font-mono transition flex items-center gap-1 shadow-sm"
                     >
                       {isGeneratingScript ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
                       Gerar com IA
@@ -2794,7 +2816,7 @@ export default function Dashboard({
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Conteúdo do Post / Legenda</label>
+                  <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 font-mono">Conteúdo do Post / Legenda</label>
                   <textarea
                     rows={8}
                     required
@@ -2807,7 +2829,7 @@ export default function Dashboard({
 
                 {draftForm.format === 'reels' && (
                   <div>
-                    <label className="block text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1.5 font-mono">Roteiro Visual & Cenas</label>
+                    <label className="block text-[11px] font-bold text-indigo-400 uppercase tracking-widest mb-1.5 font-mono">Roteiro Visual & Cenas</label>
                     <textarea
                       rows={4}
                       value={draftForm.visual_script}
@@ -2876,7 +2898,7 @@ export default function Dashboard({
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="bg-[#121215] border border-zinc-800/90 rounded-3xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl z-10 overflow-hidden relative"
+              className="bg-[#121215] border border-zinc-800/90 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-[0_8px_30px_rgba(0,0,0,0.4)] z-10 overflow-hidden relative"
             >
               <div className="p-5 border-b border-zinc-800 flex items-center justify-between">
                 <div className="flex items-center gap-2.5 text-left">
@@ -2957,7 +2979,7 @@ export default function Dashboard({
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="bg-[#121215] border border-zinc-800/90 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl z-10 overflow-hidden relative text-left"
+              className="bg-[#121215] border border-zinc-800/90 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-[0_8px_30px_rgba(0,0,0,0.4)] z-10 overflow-hidden relative text-left"
             >
               <div className="p-5 border-b border-zinc-800 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -2985,7 +3007,7 @@ export default function Dashboard({
               <div className="p-6 flex-1 overflow-y-auto space-y-6">
                 {/* Resumo da Estratégia */}
                 <div className="bg-[#09090b] border border-zinc-800 p-4 rounded-2xl space-y-1">
-                  <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest font-mono">Estratégia Recomendada para o seu Nicho</span>
+                  <span className="text-[11px] font-bold text-indigo-400 uppercase tracking-widest font-mono">Estratégia Recomendada para o seu Nicho</span>
                   <p className="text-xs text-zinc-300 leading-relaxed">{schedulePlan.strategySummary}</p>
                 </div>
 
@@ -3008,13 +3030,13 @@ export default function Dashboard({
                         </div>
 
                         {item.pillar && (
-                          <span className="text-[10px] text-zinc-400 block font-semibold font-mono">
+                          <span className="text-[11px] text-zinc-400 block font-semibold font-mono">
                             Pilar: <span className="text-indigo-300">{item.pillar}</span>
                           </span>
                         )}
 
                         <h5 className="font-bold text-white text-xs leading-snug">{item.suggestedTopic}</h5>
-                        <p className="text-[10px] text-zinc-400 leading-relaxed">{item.reasoning}</p>
+                        <p className="text-[11px] text-zinc-400 leading-relaxed">{item.reasoning}</p>
                       </div>
 
                       <motion.button
