@@ -588,21 +588,22 @@ Retorne um objeto JSON estritamente no seguinte formato:
 
 export async function saveAnalyzedTemplateAction(formData: any) {
   const { title, original_content, hook, structure, key_takeaways, reusable_template } = formData;
-  if (!title || !original_content || !reusable_template) {
-    throw new Error('Título, conteúdo original e template reutilizável são obrigatórios.');
+  if (!title || !reusable_template) {
+    throw new Error('Título e template reutilizável são obrigatórios.');
   }
 
   const payload = {
-    title,
-    original_content,
-    hook: hook || null,
-    structure: structure || null,
-    key_takeaways: key_takeaways || null,
+    title: title || 'Template Viral',
+    original_content: original_content || '',
+    hook: hook || '',
+    structure: structure || '',
+    key_takeaways: key_takeaways || '',
     reusable_template,
   };
 
-  await addDocData('analyzed_templates', payload);
+  const doc = await addDocData('analyzed_templates', payload);
   revalidatePath('/');
+  return doc;
 }
 
 export async function deleteAnalyzedTemplateAction(id: string) {

@@ -722,8 +722,16 @@ export default function Dashboard({
 
     try {
       const result: any = await analyzeTrendAction(trendText);
-      setAnalyzedResult(result);
-      addToast('Análise de estrutura viral concluída!', 'success');
+      if (result && result.error) {
+        addToast(`Erro na análise: ${result.error}`, 'error');
+        return;
+      }
+      if (result && (result.success || result.reusable_template)) {
+        setAnalyzedResult(result);
+        addToast('Análise de estrutura viral concluída!', 'success');
+      } else {
+        addToast('Não foi possível extrair a estrutura do post.', 'error');
+      }
     } catch (err: any) {
       addToast(`Erro na análise: ${err.message}`, 'error');
     } finally {
@@ -735,13 +743,16 @@ export default function Dashboard({
     if (!analyzedResult) return;
     try {
       const newTemplate = await saveAnalyzedTemplateAction({
-        title: analyzedResult.title,
-        hook: analyzedResult.hook,
-        structure: analyzedResult.structure,
-        key_takeaways: analyzedResult.key_takeaways,
-        reusable_template: analyzedResult.reusable_template,
+        title: analyzedResult.title || 'Template Viral',
+        original_content: trendText || 'Texto original',
+        hook: analyzedResult.hook || '',
+        structure: analyzedResult.structure || '',
+        key_takeaways: analyzedResult.key_takeaways || '',
+        reusable_template: analyzedResult.reusable_template || '',
       });
-      setLocalTemplates((prev) => [newTemplate, ...prev]);
+      if (newTemplate) {
+        setLocalTemplates((prev) => [newTemplate, ...prev]);
+      }
       addToast('Template salvo na sua biblioteca de tendências!', 'success');
     } catch (err: any) {
       addToast(`Erro ao salvar template: ${err.message}`, 'error');
