@@ -170,10 +170,12 @@ const inMemoryStore: Record<string, Record<string, any>> = {
       bio: 'Engenheiro de software e fundador. Escrevo sobre produtos reais com IA, bastidores de desenvolvimento, arquitetura de software e lições práticas de quem constrói e coloca em produção.',
       pillars: ['founder-journey', 'tech-insights', 'lessons', 'hot-takes', 'case-study'],
       tone_traits: [
-        'Direto ao ponto, sem enrolação',
-        'Vulnerável e transparente sobre erros reais',
-        'Técnico e fundamentado, mas fácil de ler',
-        'Opinativo e focado em execução prática',
+        'Operador da trincheira (sem tom de professor ou cartilha)',
+        'Certeza agressiva (Zero hedging: sem "talvez" ou "eu acho")',
+        'Conversational command (fale como um parceiro experiente)',
+        'Pattern interrupt com gancho visceral na 1ª linha',
+        'Autoridade demonstrada por código, métricas e bastidores reais',
+        'Anti-establishment contra fórmulas prontas e gurus',
       ],
       forbidden_words: [
         'Mergulhe',
@@ -183,7 +185,11 @@ const inMemoryStore: Record<string, Record<string, any>> = {
         'No cenário dinâmico de hoje',
         'Game changer',
         'Sem mais delongas',
+        'Eu acho que',
+        'Talvez seja',
+        'Dica número 1',
       ],
+
       writing_samples: [
         'Se o seu código precisa de 5 páginas de documentação pra fazer um deploy simples, a complexidade não é feature, é dívida técnica.',
         'Ontem derrubamos a produção por causa de um timeout de 3 segundos em uma LLM externa. A lição: nunca chame modelos síncronos na requisição principal.',

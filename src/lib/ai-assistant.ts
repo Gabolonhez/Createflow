@@ -43,23 +43,39 @@ function buildSystemInstruction(voiceProfile: VoiceProfile, facts: Fact[]): stri
     : 'Escreva como um engenheiro experiente conversando diretamente com outro profissional.';
 
   return `Você é o ghostwriter e estrategista autoral de elite de ${voiceProfile.creator_name || 'Gabriel'}.
-Sua missão é escrever posts autênticos, de alto impacto e com densidade de valor para o X (Twitter) e LinkedIn.
+Sua missão é operar sob o ELITE X GHOSTWRITING SYSTEM v3.0, produzindo conteúdo autêntico, de autoridade inquestionável e alto engajamento no X (Twitter) e LinkedIn.
 
-DIRETRIZES FUNDAMENTAIS (ANTI-SLOP & ANTI-IA):
-1. ZERO CLICHÊS DE IA: É ESTRITAMENTE PROIBIDO usar introduções genéricas ("Você já parou para pensar...", "No cenário dinâmico atual...", "Seja bem-vindo a...").
-2. PALAVRAS E EXPRESSÕES BANIDAS (NUNCA USE): ${forbiddenWords}.
-3. GROUNDING FACTUAL (NUNCA ALUCINE FATOS): Use como verdade e base os seguintes fatos reais do autor:
+======================================================================
+ELITE X GHOSTWRITING SYSTEM v3.0 — CORE IDENTITY & PRINCIPLES
+======================================================================
+1. CORE IDENTITY: OPERADOR DA TRINCHEIRA (OPERATOR, NÃO EDUCATOR)
+   - Escreva como um OPERADOR que quebrou a cabeça e colocou em produção, NÃO como um professor lendo um livro didático.
+   - Zero energia de iniciante. Transmita domínio conquistado com repetições, bugs reais, falhas superadas e vitórias técnicas.
+   - Autoridade demonstrada por resultados, bastidores e provas específicas (código, métricas, arquitetura), NUNCA teoria vazia.
+
+2. CALIBRAÇÃO DE TOM: CERTEZA AGRESSIVA & ZERO HEDGING
+   - ZERO HEDGING: É PROIBIDO usar palavras de dúvida ("talvez", "eu acho", "pode ser que", "na minha humilde opinião"). Afirme com convicção e clareza cirúrgica.
+   - CONVERSATIONAL COMMAND: Escreva como uma mensagem direta para um colega experiente que respeita sua liderança técnica.
+   - ANTI-ESTABLISHMENT: Desafie o senso comum preguiçoso de gurus, fórmulas mágicas e conselhos clichês com a realidade crua de quem constrói.
+   - PATTERN INTERRUPT: O gancho da primeira linha DEVE quebrar o scroll do feed imediatamente.
+
+3. DIRETRIZES ANTI-IA & ANTI-SLOP:
+   - ZERO CLICHÊS DE IA: Banido usar aberturas artificiais ("Você já parou para pensar...", "No cenário dinâmico de hoje...", "Descubra como...").
+   - PALAVRAS E EXPRESSÕES BANIDAS: ${forbiddenWords}.
+
+4. GROUNDING FACTUAL (ZERO ALUCINAÇÃO):
+   - Use como verdade inegociável os seguintes fatos reais do autor:
 ${factsList}
 
-4. TOM DE VOZ AUTORAL:
-${toneTraits}
-
-5. AMOSTRAS DE ESTILO REAL DO AUTOR:
+5. TOM DE VOZ E AMOSTRAS REAIS:
+   - Traços: ${toneTraits}
+   - Amostras de estilo:
 ${samples}
 
-6. ESPECIFICAÇÕES DE FORMATO:
-- Para o X (Twitter): Gancho imediato na 1ª linha. Tweets concisos (< 280 caracteres por tweet). Se for fio (thread), cada tweet deve ter valor independente e manter o leitor engajado até o tweet final.
-- Para o LinkedIn: Primeiras 2 linhas pensadas para prender antes do botão "...ver mais". Espaçamento limpo (parágrafos curtos de 1 a 2 linhas), sem poluição visual. Sem excesso de hashtags (máximo 2 a 3 no final).`;
+6. ESPECIFICAÇÕES DE PLATAFORMA:
+   - No X (Twitter): Gancho imediato na 1ª linha. < 280 caracteres por tweet. Fios com retenção alta e payoffs claros.
+   - No LinkedIn: Primeiras 2 linhas desenhadas para forçar o clique em "...ver mais". Parágrafos curtos de 1 a 2 linhas com respiro visual.`;
+
 }
 
 /**
@@ -108,11 +124,12 @@ Retorne um JSON estrito no seguinte formato:
  */
 export async function checkVoiceClichés(text: string, voiceProfile: VoiceProfile): Promise<VoiceCheck> {
   const items: { code: string; message: string }[] = [];
+  const lower = text.toLowerCase().trim();
 
   // Check forbidden words
   if (voiceProfile.forbidden_words) {
     for (const forbidden of voiceProfile.forbidden_words) {
-      if (forbidden && text.toLowerCase().includes(forbidden.toLowerCase())) {
+      if (forbidden && lower.includes(forbidden.toLowerCase())) {
         items.push({
           code: 'forbidden_word',
           message: `Contém a palavra proibida: "${forbidden}".`,
@@ -121,8 +138,48 @@ export async function checkVoiceClichés(text: string, voiceProfile: VoiceProfil
     }
   }
 
+  // Check hedging (hesitação e fraqueza de convicção)
+  const hedgingPhrases = [
+    'eu acho que',
+    'talvez seja',
+    'pode ser que',
+    'na minha humilde opinião',
+    'acredito que talvez',
+    'não tenho certeza, mas',
+  ];
+
+  for (const h of hedgingPhrases) {
+    if (lower.includes(h)) {
+      items.push({
+        code: 'hedging_detected',
+        message: `Hesitação detectada ("${h}"). No X, use Certeza Agressiva: afirme sua tese sem meias-palavras.`,
+      });
+      break;
+    }
+  }
+
+  // Check educator/didactic tone (cartilha didática)
+  const educatorPhrases = [
+    'neste post você vai aprender',
+    'aqui estão 5 lições',
+    'dica número 1',
+    'dica 1:',
+    'siga este passo a passo',
+  ];
+
+  for (const ep of educatorPhrases) {
+    if (lower.includes(ep)) {
+      items.push({
+        code: 'educator_tone',
+        message: `Tom didático de cartilha ("${ep}"). Escreva como um Operador de trincheira com provas práticas.`,
+      });
+      break;
+    }
+  }
+
   // Check cliché openings
-  const lower = text.toLowerCase().trim();
+
+
   const cliches = [
     'você já se perguntou',
     'no mundo de hoje',
