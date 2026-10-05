@@ -1,72 +1,162 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* PayPosts Ultra Dark Obsidian Background Palette */
+  --color-bg-base: #050505;
+  --color-bg-raised: #0a0a0d;
+  --color-bg-elevated: #111116;
+  --color-bg-overlay: #17171e;
+  --color-bg-card: rgba(255, 255, 255, 0.025);
+  --color-bg-card-hover: rgba(255, 255, 255, 0.05);
+
+  /* Text Hierarchy */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.72);
+  --color-text-tertiary: rgba(255, 255, 255, 0.40);
+  --color-text-disabled: rgba(255, 255, 255, 0.20);
+  --color-text-inverse: #050505;
+
+  /* Borders & Dividers */
+  --color-border-subtle: rgba(255, 255, 255, 0.06);
+  --color-border-default: rgba(255, 255, 255, 0.09);
+  --color-border-strong: rgba(255, 255, 255, 0.16);
+
+  /* Primary Accent - Muted Slate Slate/Indigo */
+  --color-accent: #94A3B8;
+  --color-accent-hover: #CBD5E1;
+  --color-accent-bg: rgba(148, 163, 184, 0.08);
+  --color-accent-border: rgba(148, 163, 184, 0.18);
+
+  /* AI Accent - Violet Glow */
+  --color-ai: #a78bfa;
+  --color-ai-hover: #c4b5fd;
+  --color-ai-bg: rgba(167, 139, 250, 0.10);
+  --color-ai-border: rgba(167, 139, 250, 0.25);
+
+  /* Network Accents */
+  --color-network-x: #ffffff;
+  --color-network-linkedin: #0A66C2;
+  --color-network-linkedin-bg: rgba(10, 102, 194, 0.12);
+
+  /* Status Colors */
+  --color-success: #22c55e;
+  --color-success-bg: rgba(34, 197, 94, 0.10);
+  --color-success-border: rgba(34, 197, 94, 0.22);
+  --color-danger: #ef4444;
+  --color-danger-bg: rgba(239, 68, 68, 0.10);
+  --color-danger-border: rgba(239, 68, 68, 0.22);
+  --color-warning: #f59e0b;
+  --color-warning-bg: rgba(245, 158, 11, 0.10);
+  --color-warning-border: rgba(245, 158, 11, 0.22);
+  --color-info: #38bdf8;
+  --color-info-bg: rgba(56, 189, 248, 0.10);
+  --color-info-border: rgba(56, 189, 248, 0.22);
+
+  /* Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+}
+
 @layer base {
   :root {
-    --background: #09090b;
-    --foreground: #f4f4f5;
-    --card: #121215;
-    --border: #27272a;
+    --background: #050505;
+    --foreground: #ffffff;
   }
 
   body {
-    background-color: var(--background);
-    color: var(--foreground);
-    font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: var(--color-bg-base);
+    color: var(--color-text-primary);
+    font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
   }
+}
+
+/* Monospace font class for metadata and timestamps */
+.font-mono,
+[data-numeric] {
+  font-family: var(--font-geist-mono), "JetBrains Mono", monospace;
+  font-feature-settings: "tnum", "zero";
 }
 
 /* Custom Sleek Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #09090b;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: rgba(255, 255, 255, 0.22);
 }
 
-/* Glassmorphism utility */
+/* PayPosts Sub-pixel Background Grain */
+.bg-grain {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+
+/* Glass Panels */
 .glass-panel {
-  background: rgba(18, 18, 21, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(17, 17, 22, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-input {
-  background: rgba(9, 9, 11, 0.6);
+  background: rgba(10, 10, 13, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: all 0.2s ease-in-out;
+  color: #fff;
+  transition: all 0.15s ease-in-out;
 }
 
 .glass-input:focus {
-  border-color: rgba(99, 102, 241, 0.6);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+  border-color: rgba(167, 139, 250, 0.45);
+  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.12);
+  outline: none;
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* AI Gradient Text & Glow */
+.gradient-ai-text {
+  background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 50%, #818cf8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.glow-ai {
+  box-shadow: 0 0 20px rgba(167, 139, 250, 0.15);
+}
+
+/* Calendar Hatching for Past Dates */
+.calendar-past-hatch {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 6px,
+    rgba(255, 255, 255, 0.025) 6px,
+    rgba(255, 255, 255, 0.025) 7px
+  );
+}
+
+/* Button & Clickable resets */
+button:not(:disabled),
+[role="button"]:not(:disabled),
+a[href] {
+  cursor: pointer;
 }

@@ -111,3 +111,17 @@ export async function publishToLinkedIn(
   const postId = response.headers.get('x-restli-id');
   return { success: true, postId };
 }
+
+/**
+ * Generates an official LinkedIn share intent URL for 1-click manual sharing
+ */
+export function generateLinkedInIntentUrl(text: string, url?: string): string {
+  const params = new URLSearchParams();
+  if (url) {
+    params.set('url', url);
+  }
+  // LinkedIn feed sharing with pre-filled text
+  const shareText = encodeURIComponent(text);
+  return `https://www.linkedin.com/feed/?shareActive=true&text=${shareText}`;
+}
+
