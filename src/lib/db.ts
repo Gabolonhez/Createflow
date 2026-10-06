@@ -334,8 +334,56 @@ export async function deleteDocData(collectionName: string, docId: string): Prom
 // DOMAIN-SPECIFIC ACCESSORS (CREATOR POSTS & SECOND BRAIN)
 // ----------------------------------------------------
 
+function mapPostFromDb(row: any): CreatorPost {
+  return {
+    id: row.id,
+    text: row.text || '',
+    thread: row.thread || [],
+    threadStyle: row.thread_style || row.threadStyle || 'single',
+    platforms: row.platforms || ['x'],
+    status: row.status || 'DRAFT',
+    pillar: row.pillar || undefined,
+    mediaUrls: row.media_urls || row.mediaUrls || [],
+    scheduledFor: row.scheduled_for || row.scheduledFor || null,
+    publishedAt: row.published_at || row.publishedAt || null,
+    xPostId: row.tweet_id || row.xPostId || null,
+    xPostUrl: row.x_post_url || row.xPostUrl || null,
+    linkedinPostId: row.linkedin_post_id || row.linkedinPostId || null,
+    linkedinPostUrl: row.linkedin_post_url || row.linkedinPostUrl || null,
+    voiceCheck: row.voice_check || row.voiceCheck || undefined,
+    factId: row.fact_id || row.factId || null,
+    ideaId: row.idea_id || row.ideaId || null,
+    referenceUrl: row.reference_url || row.referenceUrl || null,
+    rejectReason: row.rejection_reason || row.rejectReason || null,
+    created_at: row.created_at || new Date().toISOString(),
+    updated_at: row.updated_at || new Date().toISOString(),
+  };
+}
+
+function mapPostToDb(post: Partial<CreatorPost>): Record<string, any> {
+  const payload: Record<string, any> = { ...post };
+  if (post.threadStyle !== undefined) payload.thread_style = post.threadStyle;
+  if (post.mediaUrls !== undefined) payload.media_urls = post.mediaUrls;
+  if (post.scheduledFor !== undefined) payload.scheduled_for = post.scheduledFor;
+  if (post.publishedAt !== undefined) payload.published_at = post.publishedAt;
+  if (post.xPostId !== undefined) payload.tweet_id = post.xPostId;
+  if (post.linkedinPostId !== undefined) payload.linkedin_post_id = post.linkedinPostId;
+  if (post.voiceCheck !== undefined) payload.voice_check = post.voiceCheck;
+  if (post.rejectReason !== undefined) payload.rejection_reason = post.rejectReason;
+  delete payload.threadStyle;
+  delete payload.mediaUrls;
+  delete payload.scheduledFor;
+  delete payload.publishedAt;
+  delete payload.xPostId;
+  delete payload.linkedinPostId;
+  delete payload.voiceCheck;
+  delete payload.rejectReason;
+  return payload;
+}
+
 export async function getCreatorPosts(filters?: { status?: PostStatus; platform?: 'x' | 'linkedin' }): Promise<CreatorPost[]> {
-  const all = await getCollectionData<CreatorPost>('creator_posts', 'scheduledFor');
+  const rawPosts = await getCollectionData<any>('creator_posts', 'scheduled_for');
+  const all = rawPosts.map(mapPostFromDb);
   let filtered = all;
   if (filters?.status) {
     filtered = filtered.filter((p) => p.status === filters.status);
@@ -347,23 +395,26 @@ export async function getCreatorPosts(filters?: { status?: PostStatus; platform?
 }
 
 export async function getCreatorPostById(id: string): Promise<CreatorPost | null> {
-  return getDocById<CreatorPost>('creator_posts', id);
+  const raw = await getDocById<any>('creator_posts', id);
+  return raw ? mapPostFromDb(raw) : null;
 }
 
 export async function saveCreatorPost(post: Partial<CreatorPost>): Promise<CreatorPost> {
+  const dbPayload = mapPostToDb(post);
   if (post.id) {
-    await updateDocData('creator_posts', post.id, post);
-    const updated = await getDocById<CreatorPost>('creator_posts', post.id);
+    await updateDocData('creator_posts', post.id, dbPayload);
+    const updated = await getCreatorPostById(post.id);
     return updated!;
   } else {
-    return addDocData('creator_posts', {
-      ...post,
+    const raw = await addDocData('creator_posts', {
+      ...dbPayload,
       thread: post.thread || [],
-      threadStyle: post.threadStyle || 'single',
+      thread_style: post.threadStyle || 'single',
       platforms: post.platforms || ['x'],
       status: post.status || 'DRAFT',
-      mediaUrls: post.mediaUrls || [],
+      media_urls: post.mediaUrls || [],
     });
+    return mapPostFromDb(raw);
   }
 }
 
@@ -433,30 +484,32 @@ export async function deleteFact(id: string): Promise<void> {
 }
 
 export async function getReferences(): Promise<Reference[]> {
-  return getCollectionData<Reference>('references', 'created_at');
+  return getCollectionData<Reference>('content_references', 'created_at');
 }
 
 export async function saveReference(ref: Partial<Reference>): Promise<Reference> {
   if (ref.id) {
-    await updateDocData('references', ref.id, ref);
-    const updated = await getDocById<Reference>('references', ref.id);
+    await updateDocData('content_references', ref.id, ref);
+    const updated = await getDocById<Reference>('content_references', ref.id);
     return updated!;
   } else {
-    return addDocData('references', ref);
+    return addDocData('content_references', ref);
   }
 }
 
 export async function deleteReference(id: string): Promise<void> {
-  await deleteDocData('references', id);
+  await deleteDocData('content_references', id);
 }
 
 export async function getVoiceProfile(): Promise<VoiceProfile> {
-  const profile = await getDocById<VoiceProfile>('voice_profile', 'voice_config');
+  const profile = (await getDocById<VoiceProfile>('voice_profile', 'main_profile')) ||
+                  (await getDocById<VoiceProfile>('voice_profile', 'voice_config'));
   if (profile) return profile;
   return inMemoryStore.voice_profile.voice_config as VoiceProfile;
 }
 
 export async function saveVoiceProfile(profile: Partial<VoiceProfile>): Promise<void> {
+  await setDocData('voice_profile', 'main_profile', profile);
   await setDocData('voice_profile', 'voice_config', profile);
 }
 
@@ -473,11 +526,13 @@ export async function deleteAiLearning(id: string): Promise<void> {
 }
 
 export async function getConnectionsConfig(): Promise<ConnectionsConfig> {
-  const cfg = await getDocById<ConnectionsConfig>('connections_config', 'connections_config');
+  const cfg = (await getDocById<ConnectionsConfig>('connections_config', 'main_config')) ||
+              (await getDocById<ConnectionsConfig>('connections_config', 'connections_config'));
   if (cfg) return cfg;
   return inMemoryStore.connections_config.connections_config as ConnectionsConfig;
 }
 
 export async function saveConnectionsConfig(cfg: Partial<ConnectionsConfig>): Promise<void> {
+  await setDocData('connections_config', 'main_config', cfg);
   await setDocData('connections_config', 'connections_config', cfg);
 }
