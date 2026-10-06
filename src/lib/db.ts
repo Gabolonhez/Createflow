@@ -1,16 +1,4 @@
-import { db } from './firebase';
-import {
-  collection,
-  doc,
-  getDocs,
-  getDoc,
-  setDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  orderBy,
-} from 'firebase/firestore';
+import { supabase } from './supabase';
 import type {
   CreatorPost,
   PostIdea,
@@ -241,16 +229,17 @@ function getLocalStore(collectionName: string) {
 
 export async function getCollectionData<T = any>(collectionName: string, orderByField?: string): Promise<T[]> {
   try {
-    const colRef = collection(db, collectionName);
-    const q = orderByField ? query(colRef, orderBy(orderByField, 'desc')) : colRef;
-    const snapshot = await getDocs(q);
-    if (!snapshot.empty) {
-      const docs = snapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as T[];
+    let query = supabase.from(collectionName).select('*');
+    if (orderByField) {
+      query = query.order(orderByField, { ascending: false });
+    }
+    const { data, error } = await query;
+    if (!error && data && data.length > 0) {
       const store = getLocalStore(collectionName);
-      docs.forEach((doc: any) => {
-        store[doc.id] = doc;
+      data.forEach((item: any) => {
+        store[item.id] = item;
       });
-      return docs;
+      return data as T[];
     }
   } catch (error) {
     // Silently fallback to memory store
@@ -265,12 +254,14 @@ export async function getCollectionData<T = any>(collectionName: string, orderBy
 
 export async function getDocById<T = any>(collectionName: string, docId: string): Promise<T | null> {
   try {
-    const docRef = doc(db, collectionName, docId);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      const data = { id: docSnap.id, ...docSnap.data() } as T;
+    const { data, error } = await supabase
+      .from(collectionName)
+      .select('*')
+      .eq('id', docId)
+      .maybeSingle();
+    if (!error && data) {
       getLocalStore(collectionName)[docId] = data;
-      return data;
+      return data as T;
     }
   } catch (error) {
     // Silently fallback to memory store
@@ -287,8 +278,7 @@ export async function setDocData(collectionName: string, docId: string, data: an
   store[docId] = updatedData;
 
   try {
-    const docRef = doc(db, collectionName, docId);
-    await setDoc(docRef, updatedData, { merge: true });
+    await supabase.from(collectionName).upsert(updatedData);
   } catch (error) {
     // Local persistence works seamlessly
   }
@@ -298,22 +288,23 @@ export async function addDocData(collectionName: string, data: any): Promise<any
   const now = new Date().toISOString();
   const tempId = 'id_' + Math.random().toString(36).substring(2, 9);
   const created_at = data.created_at || now;
-  let finalId = tempId;
+  const resultItem = { id: tempId, ...data, created_at, updated_at: now };
 
   try {
-    const colRef = collection(db, collectionName);
-    const res = await addDoc(colRef, {
-      ...data,
-      created_at,
-      updated_at: now,
-    });
-    finalId = res.id;
+    const { data: inserted, error } = await supabase
+      .from(collectionName)
+      .insert(resultItem)
+      .select()
+      .maybeSingle();
+    if (!error && inserted) {
+      getLocalStore(collectionName)[inserted.id] = inserted;
+      return inserted;
+    }
   } catch (error) {
     // Local persistence works seamlessly
   }
 
-  const resultItem = { id: finalId, ...data, created_at, updated_at: now };
-  getLocalStore(collectionName)[finalId] = resultItem;
+  getLocalStore(collectionName)[tempId] = resultItem;
   return resultItem;
 }
 
@@ -323,8 +314,7 @@ export async function updateDocData(collectionName: string, docId: string, data:
     store[docId] = { ...store[docId], ...data, updated_at: new Date().toISOString() };
   }
   try {
-    const docRef = doc(db, collectionName, docId);
-    await updateDoc(docRef, { ...data, updated_at: new Date().toISOString() });
+    await supabase.from(collectionName).update({ ...data, updated_at: new Date().toISOString() }).eq('id', docId);
   } catch (error) {
     // Local persistence works seamlessly
   }
@@ -334,8 +324,7 @@ export async function deleteDocData(collectionName: string, docId: string): Prom
   const store = getLocalStore(collectionName);
   delete store[docId];
   try {
-    const docRef = doc(db, collectionName, docId);
-    await deleteDoc(docRef);
+    await supabase.from(collectionName).delete().eq('id', docId);
   } catch (error) {
     // Local persistence works seamlessly
   }
