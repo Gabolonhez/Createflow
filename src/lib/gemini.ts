@@ -1,15 +1,15 @@
 export async function generateText(prompt: string, systemInstruction?: string): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || apiKey.trim() === '' || apiKey.startsWith('AQ.')) {
-    throw new Error('Chave de API do Gemini inválida ou não configurada. Obtenha uma chave gratuita válida em https://aistudio.google.com/app/apikey e adicione GEMINI_API_KEY nas variáveis da Vercel / .env.local.');
+  if (!apiKey || apiKey.trim() === '') {
+    throw new Error('Chave de API do Gemini não configurada. Obtenha uma chave gratuita válida em https://aistudio.google.com/app/apikey e adicione GEMINI_API_KEY no arquivo .env.local.');
   }
 
-  const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.0-flash-lite'];
+  const models = ['gemini-flash-lite-latest', 'gemini-3.8-flash', 'gemini-3-flash-preview', 'gemma-4-26b-a4b-it'];
   let lastErrorMessage = '';
 
   for (const model of models) {
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`;
 
       const body: any = {
         contents: [
@@ -37,11 +37,12 @@ export async function generateText(prompt: string, systemInstruction?: string): 
 
       if (!response.ok) {
         const msg = data.error?.message || `Status HTTP ${response.status}`;
-        if (data.error?.code === 429 || msg.includes('Quota exceeded') || msg.includes('limit: 0')) {
-          throw new Error('A cota da sua chave do Gemini foi excedida (limit: 0). Por favor, gere uma nova chave de API no Google AI Studio: https://aistudio.google.com/app/apikey');
+        if (response.status === 429 || msg.includes('Quota exceeded') || msg.includes('limit: 0')) {
+          lastErrorMessage = 'Cota do modelo excedida.';
+          continue;
         }
-        if (response.status === 404) {
-          lastErrorMessage = `Modelo ${model} indisponível.`;
+        if (response.status === 404 || response.status === 503 || response.status === 500) {
+          lastErrorMessage = `Modelo ${model} temporariamente indisponível (${response.status}).`;
           continue;
         }
         throw new Error(`Erro no Gemini (${model}): ${msg}`);
@@ -54,28 +55,28 @@ export async function generateText(prompt: string, systemInstruction?: string): 
 
       return text;
     } catch (err: any) {
-      if (err.message.includes('cota') || err.message.includes('inválida') || err.message.includes('configurada')) {
+      if (err.message.includes('não configurada')) {
         throw err;
       }
       lastErrorMessage = err.message;
     }
   }
 
-  throw new Error(lastErrorMessage || 'Não foi possível se comunicar com o Gemini. Verifique sua GEMINI_API_KEY.');
+  throw new Error(lastErrorMessage || 'Não foi possível se comunicar com o Gemini. Verifique sua GEMINI_API_KEY no .env.local.');
 }
 
 export async function generateJson<T>(prompt: string, systemInstruction?: string): Promise<T> {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || apiKey.trim() === '' || apiKey.startsWith('AQ.')) {
-    throw new Error('Chave de API do Gemini inválida ou não configurada. Obtenha uma chave gratuita válida em https://aistudio.google.com/app/apikey e adicione GEMINI_API_KEY nas variáveis da Vercel / .env.local.');
+  if (!apiKey || apiKey.trim() === '') {
+    throw new Error('Chave de API do Gemini não configurada. Obtenha uma chave gratuita válida em https://aistudio.google.com/app/apikey e adicione GEMINI_API_KEY no arquivo .env.local.');
   }
 
-  const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.0-flash-lite'];
+  const models = ['gemini-flash-lite-latest', 'gemini-3.8-flash', 'gemini-3-flash-preview', 'gemma-4-26b-a4b-it'];
   let lastErrorMessage = '';
 
   for (const model of models) {
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`;
 
       const body: any = {
         contents: [
@@ -106,11 +107,12 @@ export async function generateJson<T>(prompt: string, systemInstruction?: string
 
       if (!response.ok) {
         const msg = data.error?.message || `Status HTTP ${response.status}`;
-        if (data.error?.code === 429 || msg.includes('Quota exceeded') || msg.includes('limit: 0')) {
-          throw new Error('A cota da sua chave do Gemini foi excedida (limit: 0). Por favor, gere uma nova chave de API no Google AI Studio: https://aistudio.google.com/app/apikey');
+        if (response.status === 429 || msg.includes('Quota exceeded') || msg.includes('limit: 0')) {
+          lastErrorMessage = 'Cota do modelo excedida.';
+          continue;
         }
-        if (response.status === 404) {
-          lastErrorMessage = `Modelo ${model} indisponível.`;
+        if (response.status === 404 || response.status === 503 || response.status === 500) {
+          lastErrorMessage = `Modelo ${model} temporariamente indisponível (${response.status}).`;
           continue;
         }
         throw new Error(`Erro no Gemini (${model}): ${msg}`);
@@ -125,16 +127,17 @@ export async function generateJson<T>(prompt: string, systemInstruction?: string
         return JSON.parse(text) as T;
       } catch (e) {
         console.error('Erro ao analisar JSON retornado pelo Gemini:', text);
-        throw new Error('A resposta do Gemini não pôde ser analisada como JSON válido.');
+        lastErrorMessage = 'A resposta do Gemini não pôde ser analisada como JSON válido.';
+        continue;
       }
     } catch (err: any) {
-      if (err.message.includes('cota') || err.message.includes('inválida') || err.message.includes('configurada')) {
+      if (err.message.includes('não configurada')) {
         throw err;
       }
       lastErrorMessage = err.message;
     }
   }
 
-  throw new Error(lastErrorMessage || 'Não foi possível se comunicar com o Gemini. Verifique sua GEMINI_API_KEY.');
+  throw new Error(lastErrorMessage || 'Não foi possível se comunicar com o Gemini. Verifique sua GEMINI_API_KEY no .env.local.');
 }
 
