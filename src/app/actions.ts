@@ -7,12 +7,14 @@ import {
   getCreatorPostById,
   saveIdea,
   deleteIdea,
+  getIdeas,
   saveTopic,
   deleteTopic,
   saveFact,
   deleteFact,
   saveReference,
   deleteReference,
+  getReferences,
   getVoiceProfile,
   saveVoiceProfile,
   addAiLearning,
@@ -27,6 +29,7 @@ import {
   checkVoiceClichés,
   generateTopicsForCreator,
   analyzeReferencePost,
+  generateBrainstormIdeas,
 } from '@/lib/ai-assistant';
 import { publishToX, publishXThread } from '@/lib/twitter';
 import { publishToLinkedIn } from '@/lib/linkedin';
@@ -348,6 +351,43 @@ export async function deleteIdeaAction(id: string) {
     return { success: true };
   } catch (err: any) {
     return { error: err.message };
+  }
+}
+
+export async function generateIdeasWithAiAction(count = 5) {
+  try {
+    const voiceProfile = await getVoiceProfile();
+    const facts = await getFacts();
+    const references = await getReferences();
+    const existingIdeas = await getIdeas();
+
+    const existingTitles = existingIdeas.map((i) => i.title);
+
+    const generated = await generateBrainstormIdeas(
+      voiceProfile,
+      facts,
+      existingTitles,
+      references,
+      count
+    );
+
+    const savedIdeas: PostIdea[] = [];
+    for (const item of generated) {
+      const saved = await saveIdea({
+        title: item.title,
+        note: item.note,
+        pillar: item.pillar,
+        platforms: item.platforms || ['x', 'linkedin'],
+        status: 'NEW',
+      });
+      savedIdeas.push(saved);
+    }
+
+    revalidatePath('/');
+    return { success: true, ideas: savedIdeas };
+  } catch (err: any) {
+    console.error('Erro ao gerar ideias com IA:', err);
+    return { error: err.message || 'Falha ao gerar ideias com IA.' };
   }
 }
 

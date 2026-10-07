@@ -17,6 +17,7 @@ interface MyIdeasViewProps {
   onSaveIdea: (idea: Partial<PostIdea>) => Promise<void>;
   onDeleteIdea: (id: string) => Promise<void>;
   onGenerateFromIdea: (idea: PostIdea) => void;
+  onGenerateIdeasWithAi?: () => Promise<void>;
 }
 
 export function MyIdeasView({
@@ -24,11 +25,13 @@ export function MyIdeasView({
   onSaveIdea,
   onDeleteIdea,
   onGenerateFromIdea,
+  onGenerateIdeasWithAi,
 }: MyIdeasViewProps) {
   const [newTitle, setNewTitle] = useState('');
   const [newNote, setNewNote] = useState('');
   const [platforms, setPlatforms] = useState<Platform[]>(['x', 'linkedin']);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
   const togglePlatform = (p: Platform) => {
     if (platforms.includes(p)) {
@@ -59,16 +62,53 @@ export function MyIdeasView({
     }
   };
 
+  const handleTriggerAiIdeas = async () => {
+    if (!onGenerateIdeasWithAi || isGeneratingAi) return;
+    setIsGeneratingAi(true);
+    try {
+      await onGenerateIdeasWithAi();
+    } finally {
+      setIsGeneratingAi(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6">
+      {/* Top Action Header with AI Generator */}
+      <div className="flex items-center justify-between p-4 rounded-xl bg-[#0f0f15] border border-white/[0.08] flex-wrap gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400">
+            <Lightbulb size={16} />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs font-semibold text-white">Banco de Ideias ({ideas.length})</span>
+            <span className="text-[11px] text-white/40">
+              Pautas autênticas prontas para virar posts no X e LinkedIn
+            </span>
+          </div>
+        </div>
+
+        {onGenerateIdeasWithAi && (
+          <button
+            type="button"
+            onClick={handleTriggerAiIdeas}
+            disabled={isGeneratingAi}
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-violet-600 hover:bg-violet-500 text-white transition-all shadow-md shadow-violet-600/20 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+          >
+            <Sparkles size={14} className={isGeneratingAi ? 'animate-spin text-violet-200' : 'text-violet-200'} />
+            <span>{isGeneratingAi ? 'Consultando IA & referências…' : '✨ Sugerir Ideias com IA (+5)'}</span>
+          </button>
+        )}
+      </div>
+
       {/* Quick Capture Panel */}
       <form
         onSubmit={handleCreate}
         className="flex flex-col gap-3 p-4 rounded-xl bg-white/[0.025] border border-white/[0.08]"
       >
         <div className="flex items-center gap-2 text-xs font-semibold text-white/90">
-          <Lightbulb size={15} className="text-amber-400" />
-          <span>Captura Rápida de Ideia</span>
+          <Plus size={14} className="text-white/60" />
+          <span>Captura Manual Rápida</span>
         </div>
 
         <input

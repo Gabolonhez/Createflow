@@ -29,6 +29,7 @@ import {
   rewritePostAction,
   saveIdeaAction,
   deleteIdeaAction,
+  generateIdeasWithAiAction,
   generateTopicsAction,
   saveTopicAction,
   deleteTopicAction,
@@ -281,6 +282,16 @@ export default function Dashboard({
     showToast('Ideia excluída.');
   };
 
+  const handleGenerateIdeasWithAi = async () => {
+    const res = await generateIdeasWithAiAction(5);
+    if (res.ideas && res.ideas.length > 0) {
+      setIdeas((prev) => [...res.ideas!, ...prev]);
+      showToast(`+${res.ideas.length} novas ideias sugeridas pela IA!`);
+    } else if (res.error) {
+      showToast(`Erro ao gerar ideias: ${res.error}`);
+    }
+  };
+
   // Handlers for Topics
   const handleGenerateTopics = async () => {
     const res = await generateTopicsAction(5);
@@ -477,6 +488,7 @@ export default function Dashboard({
               onSaveIdea={handleSaveIdea}
               onDeleteIdea={handleDeleteIdea}
               onGenerateFromIdea={handleGenerateFromIdea}
+              onGenerateIdeasWithAi={handleGenerateIdeasWithAi}
             />
           )}
 

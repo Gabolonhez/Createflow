@@ -338,3 +338,54 @@ Retorne um JSON com:
     reusable_template: string;
   }>(prompt, systemInstruction);
 }
+
+/**
+ * Brainstorms fresh, high-impact post ideas grounded on the creator's profile,
+ * real facts, references, and existing idea backlog (avoiding duplicates).
+ */
+export async function generateBrainstormIdeas(
+  voiceProfile: VoiceProfile,
+  facts: Fact[],
+  existingTitles: string[],
+  references: Reference[] = [],
+  count = 5
+): Promise<{ title: string; note: string; pillar: string; platforms: Platform[] }[]> {
+  const systemInstruction = buildSystemInstruction(voiceProfile, facts);
+
+  const existingSample = existingTitles.slice(0, 40).map((t) => `- ${t}`).join('\n');
+  const refSample = references.slice(0, 5).map((r) => `- [${r.platform}] ${r.text.slice(0, 100)}...`).join('\n');
+
+  const prompt = `Você é o estrategista de conteúdo autoral de ${voiceProfile.creator_name || 'Gabriel Bolonhez'}.
+Gere ${count} NOVAS ideias de publicações de alto impacto para o X (Twitter) e LinkedIn.
+
+DIRETRIZES FUNDAMENTAIS:
+1. MENTALIDADE: Operador técnico / founder na trincheira (sem clichês de livro ou tom didático de professor).
+2. NUNCA REPITA TEMAS: Analise o que o autor já possui anotado e gere ângulos inéditos, contrários (hot takes) ou aprofundamentos práticos:
+${existingSample || 'Nenhum tema prévio.'}
+
+3. REFERÊNCIAS ESTRUTURAIS:
+${refSample || 'Foco em ganchos viscerais e valor acionável.'}
+
+4. DIVERSIFIQUE OS PILARES:
+- 'tech-insights' (arquitetura, IA em produção, engenharia de software, código limpo sem enrolação)
+- 'founder-journey' (produtos reais, métricas, lições de startups, decisões de produto)
+- 'career-lessons' (consistência, soft skills em tech, rotina de estudos, vulnerabilidade real)
+
+Retorne estritamente um JSON no seguinte formato:
+{
+  "ideas": [
+    {
+      "title": "Gancho central ou título provocativo e direto",
+      "note": "Contexto acionável do post, qual a tese principal e o payoff para quem ler",
+      "pillar": "tech-insights",
+      "platforms": ["x", "linkedin"]
+    }
+  ]
+}`;
+
+  const res = await generateJson<{
+    ideas: { title: string; note: string; pillar: string; platforms: Platform[] }[];
+  }>(prompt, systemInstruction);
+
+  return res.ideas || [];
+}
