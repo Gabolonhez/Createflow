@@ -107,8 +107,25 @@ export interface VoiceProfile {
   forbidden_words: string[];
   writing_samples: string[];
   posting_slots: PostingSlot[];
+  best_time_slots?: string[];
   auto_publish_x: boolean;
   auto_publish_linkedin: boolean;
+}
+
+export interface SprayVariant {
+  type: 'x_contrarian' | 'x_thread' | 'linkedin_deep_dive';
+  title: string;
+  badge: string;
+  platform: Platform;
+  text: string;
+  thread?: string[];
+  linkedinText?: string;
+}
+
+export interface SprayResult {
+  theme: string;
+  sourceNote?: string;
+  variants: SprayVariant[];
 }
 
 export interface AiLearning {

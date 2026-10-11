@@ -17,6 +17,7 @@ import { ConnectionsView } from '@/components/ConnectionsView';
 import { PostComposerModal } from '@/components/PostComposerModal';
 import { GeneratePostModal } from '@/components/GeneratePostModal';
 import { RejectPostModal } from '@/components/RejectPostModal';
+import { SprayModal } from '@/components/SprayModal';
 
 import {
   savePostAction,
@@ -40,6 +41,8 @@ import {
   saveVoiceProfileAction,
   deleteAiLearningAction,
   saveConnectionsAction,
+  generateSprayPackageAction,
+  saveSprayVariantsAction,
 } from './actions';
 
 import type {
@@ -54,6 +57,7 @@ import type {
   MainSection,
   ActiveSubView,
   Platform,
+  SprayVariant,
 } from '@/types';
 
 interface DashboardProps {
@@ -108,6 +112,10 @@ export default function Dashboard({
 
   const [isRejectOpen, setIsRejectOpen] = useState(false);
   const [rejectingPostId, setRejectingPostId] = useState<string | null>(null);
+
+  const [isSprayOpen, setIsSprayOpen] = useState(false);
+  const [sprayPrefilledTheme, setSprayPrefilledTheme] = useState('');
+  const [sprayPrefilledNote, setSprayPrefilledNote] = useState('');
 
   // Toast / Status banner
   const [toastMessage, setToastMessage] = useState<string | null>(
@@ -224,6 +232,34 @@ export default function Dashboard({
       const post = posts.find((p) => p.id === id);
       if (post) handleOpenComposer(post);
     }
+  };
+
+  // Handlers for Spray Composer
+  const handleOpenSprayModal = (theme?: string, note?: string) => {
+    setSprayPrefilledTheme(theme || '');
+    setSprayPrefilledNote(note || '');
+    setIsSprayOpen(true);
+  };
+
+  const handleGenerateSpray = async (theme: string, note?: string) => {
+    return await generateSprayPackageAction(theme, note);
+  };
+
+  const handleSaveSprayVariants = async (
+    variants: SprayVariant[],
+    theme: string,
+    autoSchedule: boolean
+  ) => {
+    const res = await saveSprayVariantsAction(variants, theme, autoSchedule);
+    if (res.success && res.posts) {
+      setPosts((prev) => [...res.posts!, ...prev]);
+      showToast(
+        autoSchedule
+          ? `3 variantes atomizadas e agendadas na fila de horários!`
+          : `3 variantes salvas como rascunhos!`
+      );
+    }
+    return res;
   };
 
   // Handlers for Generation
@@ -448,6 +484,7 @@ export default function Dashboard({
           onSelectPlatform={setSelectedPlatform}
           onOpenComposer={() => handleOpenComposer()}
           onOpenGenerate={handleOpenGenerateModal}
+          onOpenSpray={() => handleOpenSprayModal()}
           authorHandle={voiceProfile.handle_x}
         />
 
@@ -471,6 +508,7 @@ export default function Dashboard({
               onApprovePost={(id) => handleApprovePost(id)}
               onOpenGenerate={handleOpenGenerateModal}
               onOpenComposer={() => handleOpenComposer()}
+              onOpenSpray={() => handleOpenSprayModal()}
             />
           )}
 
@@ -489,6 +527,8 @@ export default function Dashboard({
               onDeleteIdea={handleDeleteIdea}
               onGenerateFromIdea={handleGenerateFromIdea}
               onGenerateIdeasWithAi={handleGenerateIdeasWithAi}
+              onOpenSprayFromIdea={(idea) => handleOpenSprayModal(idea.title, idea.note)}
+              onOpenSprayNew={() => handleOpenSprayModal()}
             />
           )}
 
@@ -579,6 +619,16 @@ export default function Dashboard({
         onClose={() => setIsRejectOpen(false)}
         postId={rejectingPostId || ''}
         onConfirmReject={handleConfirmReject}
+      />
+
+      {/* Spray Composer Modal */}
+      <SprayModal
+        isOpen={isSprayOpen}
+        onClose={() => setIsSprayOpen(false)}
+        onGenerateSpray={handleGenerateSpray}
+        onSaveSprayVariants={handleSaveSprayVariants}
+        prefilledTheme={sprayPrefilledTheme}
+        prefilledNote={sprayPrefilledNote}
       />
     </div>
   );

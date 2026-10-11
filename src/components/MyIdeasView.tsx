@@ -8,6 +8,7 @@ import {
   Trash2,
   ArrowRight,
   CheckCircle2,
+  Zap,
 } from 'lucide-react';
 import { XLogo, LinkedInLogo } from './BrandIcons';
 import type { PostIdea, Platform } from '@/types';
@@ -18,6 +19,8 @@ interface MyIdeasViewProps {
   onDeleteIdea: (id: string) => Promise<void>;
   onGenerateFromIdea: (idea: PostIdea) => void;
   onGenerateIdeasWithAi?: () => Promise<void>;
+  onOpenSprayFromIdea?: (idea: PostIdea) => void;
+  onOpenSprayNew?: () => void;
 }
 
 export function MyIdeasView({
@@ -26,6 +29,8 @@ export function MyIdeasView({
   onDeleteIdea,
   onGenerateFromIdea,
   onGenerateIdeasWithAi,
+  onOpenSprayFromIdea,
+  onOpenSprayNew,
 }: MyIdeasViewProps) {
   const [newTitle, setNewTitle] = useState('');
   const [newNote, setNewNote] = useState('');
@@ -88,17 +93,30 @@ export function MyIdeasView({
           </div>
         </div>
 
-        {onGenerateIdeasWithAi && (
-          <button
-            type="button"
-            onClick={handleTriggerAiIdeas}
-            disabled={isGeneratingAi}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-violet-600 hover:bg-violet-500 text-white transition-all shadow-md shadow-violet-600/20 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
-          >
-            <Sparkles size={14} className={isGeneratingAi ? 'animate-spin text-violet-200' : 'text-violet-200'} />
-            <span>{isGeneratingAi ? 'Consultando IA & referências…' : '✨ Sugerir Ideias com IA (+5)'}</span>
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {onOpenSprayNew && (
+            <button
+              type="button"
+              onClick={onOpenSprayNew}
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition-all shadow-md active:scale-[0.98] cursor-pointer"
+            >
+              <Zap size={14} className="text-amber-400" />
+              <span>⚡ Atomizar Pauta (Spray)</span>
+            </button>
+          )}
+
+          {onGenerateIdeasWithAi && (
+            <button
+              type="button"
+              onClick={handleTriggerAiIdeas}
+              disabled={isGeneratingAi}
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-violet-600 hover:bg-violet-500 text-white transition-all shadow-md shadow-violet-600/20 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+            >
+              <Sparkles size={14} className={isGeneratingAi ? 'animate-spin text-violet-200' : 'text-violet-200'} />
+              <span>{isGeneratingAi ? 'Consultando IA & referências…' : '✨ Sugerir Ideias com IA (+5)'}</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Quick Capture Panel */}
@@ -214,15 +232,29 @@ export function MyIdeasView({
                 </div>
 
                 <div className="flex items-center justify-between pt-3 mt-3 border-t border-white/[0.05]">
-                  <button
-                    type="button"
-                    onClick={() => onGenerateFromIdea(idea)}
-                    className="flex items-center gap-1.5 text-xs font-semibold text-violet-300 hover:text-violet-200 transition-colors"
-                  >
-                    <Sparkles size={13} className="text-violet-400" />
-                    <span>Gerar post</span>
-                    <ArrowRight size={12} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onGenerateFromIdea(idea)}
+                      className="flex items-center gap-1.5 text-xs font-semibold text-violet-300 hover:text-violet-200 transition-colors"
+                    >
+                      <Sparkles size={13} className="text-violet-400" />
+                      <span>Gerar post</span>
+                      <ArrowRight size={12} />
+                    </button>
+
+                    {onOpenSprayFromIdea && (
+                      <button
+                        type="button"
+                        onClick={() => onOpenSprayFromIdea(idea)}
+                        className="flex items-center gap-1 text-[11px] font-semibold text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/20 transition-all cursor-pointer"
+                        title="Atomizar em 3 formatos (Contrarian, Thread e LinkedIn Deep Dive)"
+                      >
+                        <Zap size={11} />
+                        <span>Spray</span>
+                      </button>
+                    )}
+                  </div>
 
                   <button
                     type="button"

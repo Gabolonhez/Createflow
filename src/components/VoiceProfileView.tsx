@@ -48,6 +48,12 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
   const [newSample, setNewSample] = useState('');
 
   const [slots, setSlots] = useState<PostingSlot[]>(profile.posting_slots || []);
+  const [bestTimeSlots, setBestTimeSlots] = useState<string[]>(
+    profile.best_time_slots && profile.best_time_slots.length > 0
+      ? profile.best_time_slots
+      : ['09:00', '14:30', '18:30']
+  );
+  const [newSlotTime, setNewSlotTime] = useState('11:00');
 
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -66,6 +72,7 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
         forbidden_words: forbiddenWords,
         writing_samples: samples,
         posting_slots: slots,
+        best_time_slots: bestTimeSlots,
       });
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 2500);
@@ -110,6 +117,17 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
   };
 
   const removeSample = (idx: number) => setSamples(samples.filter((_, i) => i !== idx));
+
+  const handleAddSlot = () => {
+    if (newSlotTime && !bestTimeSlots.includes(newSlotTime) && bestTimeSlots.length < 8) {
+      setBestTimeSlots([...bestTimeSlots, newSlotTime].sort());
+    }
+  };
+
+  const handleRemoveSlot = (slotToRemove: string) => {
+    if (bestTimeSlots.length <= 1) return;
+    setBestTimeSlots(bestTimeSlots.filter((s) => s !== slotToRemove));
+  };
 
   return (
     <form onSubmit={handleSave} className="flex flex-col gap-6">
@@ -329,6 +347,71 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
                   <Trash2 size={11} /> Remover
                 </button>
               </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Smart Post Slots Section */}
+      <div className="flex flex-col gap-4 p-5 rounded-xl bg-[#0f0f15] border border-white/[0.07]">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <h3 className="text-xs font-mono font-semibold text-white/80 uppercase tracking-wider">
+                4. FILA COM HORÁRIOS INTELIGENTES (SMART POST SLOTS)
+              </h3>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20 font-semibold">
+                Auto-Scheduling
+              </span>
+            </div>
+            <p className="text-xs text-white/50 mt-0.5">
+              Horários nobres fixos em Horário de Brasília (UTC-03:00). Ao aprovar qualquer post sem escolher data/hora manual, a fila ocupará automaticamente o próximo horário livre disponível.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <input
+              type="time"
+              value={newSlotTime}
+              onChange={(e) => setNewSlotTime(e.target.value)}
+              className="px-3 py-1.5 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs font-mono focus:outline-none focus:border-violet-500/50"
+            />
+            <button
+              type="button"
+              onClick={handleAddSlot}
+              disabled={bestTimeSlots.includes(newSlotTime) || bestTimeSlots.length >= 8}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-violet-600 hover:bg-violet-500 text-white disabled:opacity-40 transition-all cursor-pointer"
+            >
+              <Plus size={13} />
+              <span>Adicionar Horário</span>
+            </button>
+          </div>
+
+          <span className="text-[11px] font-mono text-zinc-500">
+            Fuso: America/Sao_Paulo (UTC-03:00) • Margem de 30 min • Máx 8 horários
+          </span>
+        </div>
+
+        <div className="flex flex-wrap gap-2 pt-1">
+          {bestTimeSlots.map((slot) => (
+            <div
+              key={slot}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white"
+            >
+              <Clock size={13} className="text-violet-400" />
+              <span className="text-xs font-mono font-semibold">{slot} BRT</span>
+              {bestTimeSlots.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => handleRemoveSlot(slot)}
+                  className="text-zinc-500 hover:text-rose-400 text-xs ml-1 transition-colors"
+                  title="Remover horário"
+                >
+                  ×
+                </button>
+              )}
             </div>
           ))}
         </div>

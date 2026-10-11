@@ -553,15 +553,31 @@ export function PostComposerModal({
             {/* Schedule Date & Media Url Inputs */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-white/[0.06]">
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-mono text-white/50 flex items-center gap-1">
-                  <CalendarClock size={12} /> Agendar Data e Hora:
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-mono text-white/50 flex items-center gap-1">
+                    <CalendarClock size={12} /> Agendar Data e Hora:
+                  </label>
+                  {scheduledFor && (
+                    <button
+                      type="button"
+                      onClick={() => setScheduledFor('')}
+                      className="text-[10px] font-mono text-violet-400 hover:text-violet-300"
+                    >
+                      Usar Smart Slot
+                    </button>
+                  )}
+                </div>
                 <input
                   type="datetime-local"
                   value={scheduledFor}
                   onChange={(e) => setScheduledFor(e.target.value)}
                   className="px-3 py-1.5 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50 font-mono"
                 />
+                <span className="text-[10px] font-mono text-zinc-500">
+                  {scheduledFor
+                    ? 'Horário manual customizado'
+                    : '⚡ Vazio: ocupará automaticamente o próximo Smart Slot livre (09:00, 14:30 ou 18:30 BRT)'}
+                </span>
               </div>
 
               <div className="flex flex-col gap-1">

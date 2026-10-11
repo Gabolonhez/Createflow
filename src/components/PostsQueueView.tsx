@@ -8,6 +8,7 @@ import {
   Clock,
   Layers,
   CheckCircle2,
+  Zap,
 } from 'lucide-react';
 import { PostCard } from './PostCard';
 import type { CreatorPost, PostStatus } from '@/types';
@@ -20,6 +21,7 @@ interface PostsQueueViewProps {
   onApprovePost: (id: string) => void;
   onOpenGenerate: () => void;
   onOpenComposer: () => void;
+  onOpenSpray?: () => void;
 }
 
 export function PostsQueueView({
@@ -30,6 +32,7 @@ export function PostsQueueView({
   onApprovePost,
   onOpenGenerate,
   onOpenComposer,
+  onOpenSpray,
 }: PostsQueueViewProps) {
   const [activeStatus, setActiveStatus] = useState<PostStatus | 'ALL'>('AWAITING_APPROVAL');
 
@@ -106,6 +109,17 @@ export function PostsQueueView({
         </div>
 
         <div className="flex items-center gap-2">
+          {onOpenSpray && (
+            <button
+              type="button"
+              onClick={onOpenSpray}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-all active:scale-[0.98]"
+            >
+              <Zap size={14} className="text-amber-400" />
+              <span>Atomizar (Spray)</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={onOpenGenerate}

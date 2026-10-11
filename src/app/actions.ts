@@ -5,6 +5,7 @@ import {
   saveCreatorPost,
   deleteCreatorPost,
   getCreatorPostById,
+  getCreatorPosts,
   saveIdea,
   deleteIdea,
   getIdeas,
@@ -22,6 +23,8 @@ import {
   getFacts,
   getConnectionsConfig,
   saveConnectionsConfig,
+  getPostSlots,
+  savePostSlots,
 } from '@/lib/db';
 import {
   generateCreatorPost,
@@ -30,9 +33,11 @@ import {
   generateTopicsForCreator,
   analyzeReferencePost,
   generateBrainstormIdeas,
+  generateSprayPackage,
 } from '@/lib/ai-assistant';
 import { publishToX, publishXThread } from '@/lib/twitter';
 import { publishToLinkedIn } from '@/lib/linkedin';
+import { nextFreeSlot, formatScheduleDatePtBr } from '@/lib/schedule';
 import type {
   CreatorPost,
   PostIdea,
@@ -43,6 +48,8 @@ import type {
   ConnectionsConfig,
   Platform,
   ThreadStyle,
+  SprayVariant,
+  SprayResult,
 } from '@/types';
 
 // ==========================================
@@ -86,14 +93,17 @@ export async function approvePostAction(postId: string, scheduledFor?: string) {
     const post = await getCreatorPostById(postId);
     if (!post) throw new Error('Post não encontrado.');
 
-    const voiceProfile = await getVoiceProfile();
     let finalScheduled = scheduledFor;
 
     // Se nenhuma data foi fornecida, calcula o próximo horário de slot do perfil
     if (!finalScheduled) {
-      const now = new Date();
-      now.setHours(now.getHours() + 2);
-      finalScheduled = now.toISOString();
+      const slots = await getPostSlots();
+      const allPosts = await getCreatorPosts();
+      const takenDates = allPosts
+        .filter((p) => p.status === 'SCHEDULED' && p.scheduledFor && p.id !== postId)
+        .map((p) => p.scheduledFor as string);
+      const nextSlot = nextFreeSlot(slots, takenDates);
+      finalScheduled = nextSlot.toISOString();
     }
 
     const updated = await saveCreatorPost({
@@ -104,7 +114,7 @@ export async function approvePostAction(postId: string, scheduledFor?: string) {
     });
 
     revalidatePath('/');
-    return { success: true, post: updated };
+    return { success: true, post: updated, scheduledFor: finalScheduled };
   } catch (err: any) {
     return { error: err.message || 'Falha ao aprovar post.' };
   }
@@ -524,3 +534,102 @@ export async function saveConnectionsAction(connections: Partial<ConnectionsConf
     return { error: err.message || 'Falha ao salvar conexões.' };
   }
 }
+
+// ==========================================
+// SMART POST SLOTS & SPRAY COMPOSER ACTIONS
+// ==========================================
+
+export async function getNextFreeSlotAction() {
+  try {
+    const slots = await getPostSlots();
+    const allPosts = await getCreatorPosts();
+    const takenDates = allPosts
+      .filter((p) => p.status === 'SCHEDULED' && p.scheduledFor)
+      .map((p) => p.scheduledFor as string);
+    const slot = nextFreeSlot(slots, takenDates);
+    return {
+      success: true,
+      iso: slot.toISOString(),
+      formatted: formatScheduleDatePtBr(slot),
+    };
+  } catch (err: any) {
+    return { error: err.message || 'Falha ao buscar próximo horário livre.' };
+  }
+}
+
+export async function savePostSlotsAction(slots: string[]) {
+  try {
+    const saved = await savePostSlots(slots);
+    revalidatePath('/');
+    return { success: true, slots: saved };
+  } catch (err: any) {
+    return { error: err.message || 'Falha ao salvar horários de postagem.' };
+  }
+}
+
+export async function generateSprayPackageAction(theme: string, note: string = '') {
+  try {
+    const [voiceProfile, facts, references] = await Promise.all([
+      getVoiceProfile(),
+      getFacts(),
+      getReferences(),
+    ]);
+
+    const spray = await generateSprayPackage(theme, note, voiceProfile, facts, references);
+    return { success: true, spray };
+  } catch (err: any) {
+    console.error('Erro ao atomizar conteúdo (Spray):', err);
+    return { error: err.message || 'Falha ao atomizar conteúdo.' };
+  }
+}
+
+export async function saveSprayVariantsAction(
+  variants: SprayVariant[],
+  theme: string,
+  autoSchedule: boolean = true
+) {
+  try {
+    const slots = await getPostSlots();
+    const allPosts = await getCreatorPosts();
+    const takenDates: string[] = allPosts
+      .filter((p) => p.status === 'SCHEDULED' && p.scheduledFor)
+      .map((p) => p.scheduledFor as string);
+
+    const createdPosts: CreatorPost[] = [];
+
+    for (const v of variants) {
+      let scheduledFor: string | undefined = undefined;
+      let status: 'DRAFT' | 'SCHEDULED' = 'DRAFT';
+
+      if (autoSchedule) {
+        const slotDate = nextFreeSlot(slots, takenDates);
+        scheduledFor = slotDate.toISOString();
+        takenDates.push(scheduledFor); // Enfileira em slots consecutivos!
+        status = 'SCHEDULED';
+      }
+
+      const isThread = v.type === 'x_thread' && Array.isArray(v.thread) && v.thread.length > 0;
+
+      const saved = await saveCreatorPost({
+        platforms: [v.platform],
+        threadStyle: isThread ? 'thread' : 'single',
+        pillar: theme,
+        text: v.text,
+        thread: isThread ? (v.thread || []) : [],
+        linkedinText: v.platform === 'linkedin' ? (v.linkedinText || v.text) : undefined,
+        status,
+        scheduledFor,
+        voiceCheck: { level: 'ok', items: [], samplesAnalyzed: 0 },
+      });
+
+      createdPosts.push(saved);
+    }
+
+    revalidatePath('/');
+    return { success: true, count: createdPosts.length, posts: createdPosts };
+  } catch (err: any) {
+    console.error('Erro ao salvar variantes do Spray:', err);
+    return { error: err.message || 'Falha ao salvar variantes atomizadas.' };
+  }
+}
+

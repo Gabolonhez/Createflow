@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Sparkles, Plus, Globe } from 'lucide-react';
+import { Sparkles, Plus, Globe, Zap } from 'lucide-react';
 import { XLogo, LinkedInLogo } from './BrandIcons';
 import type { Platform } from '@/types';
 
@@ -12,6 +12,7 @@ interface DashboardHeaderProps {
   onSelectPlatform: (platform: Platform | 'all') => void;
   onOpenComposer: () => void;
   onOpenGenerate: () => void;
+  onOpenSpray?: () => void;
   authorHandle?: string;
 }
 
@@ -22,6 +23,7 @@ export function DashboardHeader({
   onSelectPlatform,
   onOpenComposer,
   onOpenGenerate,
+  onOpenSpray,
   authorHandle = '@gabolonhez',
 }: DashboardHeaderProps) {
   return (
@@ -75,6 +77,19 @@ export function DashboardHeader({
             <span>LinkedIn</span>
           </button>
         </div>
+
+        {/* Spray Button */}
+        {onOpenSpray && (
+          <button
+            type="button"
+            onClick={onOpenSpray}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-all shadow-sm active:scale-[0.98]"
+            title="Atomizar 1 ideia em 3 formatos complementares"
+          >
+            <Zap size={14} className="text-amber-400" />
+            <span>Spray</span>
+          </button>
+        )}
 
         {/* AI Generate Button */}
         <button

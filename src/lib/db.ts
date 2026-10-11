@@ -560,6 +560,23 @@ export async function saveVoiceProfile(profile: Partial<VoiceProfile>): Promise<
   await setDocData('voice_profile', 'voice_config', profile);
 }
 
+export async function getPostSlots(): Promise<string[]> {
+  const profile = await getVoiceProfile();
+  if (profile.best_time_slots && profile.best_time_slots.length > 0) {
+    return profile.best_time_slots;
+  }
+  return ['09:00', '14:30', '18:30'];
+}
+
+export async function savePostSlots(slots: string[]): Promise<string[]> {
+  const profile = await getVoiceProfile();
+  await saveVoiceProfile({
+    ...profile,
+    best_time_slots: slots,
+  });
+  return slots;
+}
+
 export async function getAiLearnings(): Promise<AiLearning[]> {
   return getCollectionData<AiLearning>('ai_learnings', 'created_at');
 }

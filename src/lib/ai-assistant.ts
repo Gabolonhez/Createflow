@@ -1,5 +1,14 @@
 import { generateJson, generateText } from './gemini';
-import type { VoiceProfile, Fact, Reference, VoiceCheck, Platform, ThreadStyle } from '@/types';
+import type {
+  VoiceProfile,
+  Fact,
+  Reference,
+  VoiceCheck,
+  Platform,
+  ThreadStyle,
+  SprayResult,
+  SprayVariant,
+} from '@/types';
 
 export interface GeneratePostOptions {
   sourceType: 'idea' | 'topic' | 'fact' | 'reference' | 'scratch';
@@ -464,4 +473,68 @@ Retorne estritamente um JSON no seguinte formato:
   }>(prompt, systemInstruction);
 
   return res.ideas || [];
+}
+
+/**
+ * Atomizes (Spray) a single insight/idea into 3 complementary formats:
+ * 1. Hot Take / Contrarian Tweet (< 280 chars) for X
+ * 2. Behind-the-scenes Thread (3-4 tweets) for X
+ * 3. Deep Dive Narrative post (800-1500 chars) for LinkedIn
+ */
+export async function generateSprayPackage(
+  theme: string,
+  note: string,
+  voiceProfile: VoiceProfile,
+  facts: Fact[],
+  references: Reference[] = []
+): Promise<SprayResult> {
+  const systemInstruction = buildSystemInstruction(voiceProfile, facts, references);
+
+  const prompt = `Você é o estrategista de conteúdo autoral de ${voiceProfile.creator_name || 'Gabriel Bolonhez'}.
+Sua missão é realizar um DISPARO DE ATOMIZAÇÃO (SPRAY): transformar o seguinte insight/ideia em TRÊS publicações complementares, cada uma explorando um ângulo e formato diferente:
+
+TEMA CENTRAL: "${theme}"
+ANOTAÇÃO/DETALHE: "${note || 'Sem anotações prévias'}"
+
+GERAÇÃO DOS 3 FORMATOS:
+1. "x_contrarian": Um tweet provocativo e seco no X (< 280 caracteres). Ataca o senso comum ou um erro clássico do mercado com convicção agressiva de operador.
+2. "x_thread": Um fio (thread) técnico no X composto por 1 tweet de gancho (< 280 chars) + 2 tweets adicionais (< 280 chars cada) dissecando os bastidores práticos e o passo a passo de como fazer.
+3. "linkedin_deep_dive": Um post narrativo profundo no LinkedIn (800 a 1.500 caracteres). Primeiras 2 linhas com gancho forte para forçar o clique em "...ver mais", parágrafos curtos de 1 a 2 linhas com respiro visual, lições acionáveis em marcadores limpos e encerramento de autoridade (zero clichês de IA ou corporativos).
+
+Retorne estritamente um JSON no seguinte formato:
+{
+  "theme": "${theme}",
+  "variants": [
+    {
+      "type": "x_contrarian",
+      "title": "Hot Take Provocativo",
+      "badge": "X (Tweet Único)",
+      "platform": "x",
+      "text": "Tweet completo menor que 280 caracteres"
+    },
+    {
+      "type": "x_thread",
+      "title": "Thread Técnica de Bastidores",
+      "badge": "X (Fio Completo)",
+      "platform": "x",
+      "text": "Primeiro tweet do fio (< 280 chars)",
+      "thread": ["Tweet 2 (< 280 chars)", "Tweet 3 (< 280 chars)"]
+    },
+    {
+      "type": "linkedin_deep_dive",
+      "title": "Deep Dive & Estudo de Caso",
+      "badge": "LinkedIn (Narrativo)",
+      "platform": "linkedin",
+      "text": "Post completo do LinkedIn (800 a 1.500 caracteres com quebras de linha duplas)",
+      "linkedinText": "O mesmo post completo do LinkedIn"
+    }
+  ]
+}`;
+
+  const res = await generateJson<SprayResult>(prompt, systemInstruction);
+  return {
+    theme: res.theme || theme,
+    sourceNote: note,
+    variants: Array.isArray(res.variants) ? res.variants : [],
+  };
 }
