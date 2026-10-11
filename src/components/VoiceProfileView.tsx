@@ -54,6 +54,9 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
       : ['09:00', '14:30', '18:30']
   );
   const [newSlotTime, setNewSlotTime] = useState('11:00');
+  const [autoPilotMode, setAutoPilotMode] = useState<'review_first' | 'autonomous'>(
+    profile.auto_pilot_mode || 'review_first'
+  );
 
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -73,6 +76,7 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
         writing_samples: samples,
         posting_slots: slots,
         best_time_slots: bestTimeSlots,
+        auto_pilot_mode: autoPilotMode,
       });
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 2500);
@@ -414,6 +418,64 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
               )}
             </div>
           ))}
+        </div>
+
+        {/* Auto-Pilot Mode Selector */}
+        <div className="flex flex-col gap-2 pt-3 border-t border-white/[0.06]">
+          <label className="text-xs font-mono font-medium text-white/70 uppercase tracking-wider">
+            Modo de Autonomia da Criação:
+          </label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <label
+              className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors ${
+                autoPilotMode === 'review_first'
+                  ? 'bg-violet-500/10 border-violet-500/40 text-white'
+                  : 'bg-black/30 border-white/[0.06] text-white/70 hover:border-white/[0.12]'
+              }`}
+            >
+              <input
+                type="radio"
+                name="autoPilot"
+                value="review_first"
+                checked={autoPilotMode === 'review_first'}
+                onChange={() => setAutoPilotMode('review_first')}
+                className="mt-0.5 accent-violet-500"
+              />
+              <div className="flex flex-col text-xs">
+                <span className="font-semibold text-white">
+                  🛡️ Revisão do Criador (Padrão)
+                </span>
+                <span className="text-white/50 text-[11px] mt-0.5 leading-relaxed">
+                  A IA gera rascunhos com base nas suas ideias e referências e os coloca em "Aguardando Aprovação". Você aprova com 1 clique antes de ir para a fila.
+                </span>
+              </div>
+            </label>
+
+            <label
+              className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors ${
+                autoPilotMode === 'autonomous'
+                  ? 'bg-amber-500/10 border-amber-500/40 text-white'
+                  : 'bg-black/30 border-white/[0.06] text-white/70 hover:border-white/[0.12]'
+              }`}
+            >
+              <input
+                type="radio"
+                name="autoPilot"
+                value="autonomous"
+                checked={autoPilotMode === 'autonomous'}
+                onChange={() => setAutoPilotMode('autonomous')}
+                className="mt-0.5 accent-amber-500"
+              />
+              <div className="flex flex-col text-xs">
+                <span className="font-semibold text-white">
+                  ⚡ Piloto Automático 100% Autônomo
+                </span>
+                <span className="text-white/50 text-[11px] mt-0.5 leading-relaxed">
+                  A IA gera os posts e já os agenda automaticamente nos próximos Smart Slots livres. Se as conexões de API estiverem configuradas, posta sem intervenção.
+                </span>
+              </div>
+            </label>
+          </div>
         </div>
       </div>
     </form>

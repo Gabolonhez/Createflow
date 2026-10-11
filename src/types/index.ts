@@ -110,6 +110,7 @@ export interface VoiceProfile {
   best_time_slots?: string[];
   auto_publish_x: boolean;
   auto_publish_linkedin: boolean;
+  auto_pilot_mode?: 'review_first' | 'autonomous';
 }
 
 export interface SprayVariant {
