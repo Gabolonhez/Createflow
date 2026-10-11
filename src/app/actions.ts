@@ -261,16 +261,19 @@ export async function generatePostAction(options: {
   try {
     const voiceProfile = await getVoiceProfile();
     const facts = await getFacts();
+    const references = await getReferences();
 
     const result = await generateCreatorPost({
       ...options,
       voiceProfile,
       facts,
+      references,
     });
 
     const newPost: Partial<CreatorPost> = {
       text: result.text,
       thread: result.thread,
+      linkedinText: result.linkedinText || null,
       threadStyle: options.threadStyle || (result.thread.length > 0 ? 'thread' : 'single'),
       platforms: options.platforms,
       status: 'AWAITING_APPROVAL',
@@ -309,7 +312,7 @@ export async function publishScheduledDraftsAction() {
   return { publishedCount };
 }
 
-export async function rewritePostAction(text: string, instruction?: string): Promise<{
+export async function rewritePostAction(text: string, instruction?: string, platform?: Platform | 'both'): Promise<{
   success: boolean;
   text: string;
   voiceCheck: any;
@@ -317,7 +320,7 @@ export async function rewritePostAction(text: string, instruction?: string): Pro
 }> {
   try {
     const voiceProfile = await getVoiceProfile();
-    const res = await rewriteInVoice(text, voiceProfile, instruction);
+    const res = await rewriteInVoice(text, voiceProfile, instruction, platform);
     return { success: true, text: res.text, voiceCheck: res.voiceCheck };
   } catch (err: any) {
     return {

@@ -21,6 +21,7 @@ export interface VoiceCheck {
   message?: string;
   items: VoiceCheckItem[];
   samplesAnalyzed?: number;
+  linkedin_text?: string | null;
 }
 
 export interface CreatorPost {
@@ -38,6 +39,7 @@ export interface CreatorPost {
   xPostUrl?: string | null;
   linkedinPostId?: string | null;
   linkedinPostUrl?: string | null;
+  linkedinText?: string | null;
   voiceCheck?: VoiceCheck;
   factId?: string | null;
   ideaId?: string | null;

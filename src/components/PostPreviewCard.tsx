@@ -19,6 +19,7 @@ import type { Platform, ThreadStyle } from '@/types';
 
 interface PostPreviewCardProps {
   text: string;
+  linkedinText?: string | null;
   thread?: string[];
   threadStyle?: ThreadStyle;
   authorName?: string;
@@ -30,6 +31,7 @@ interface PostPreviewCardProps {
 
 export function PostPreviewCard({
   text,
+  linkedinText,
   thread = [],
   threadStyle = 'single',
   authorName = 'Gabriel Bolonhez',
@@ -212,8 +214,8 @@ export function PostPreviewCard({
 
             {/* LinkedIn Text */}
             <div className="text-[14px] leading-relaxed text-white/90 whitespace-pre-line mt-1">
-              {text || 'Digite o texto do seu post no editor ao lado...'}
-              {thread.length > 0 && (
+              {linkedinText || text || 'Digite o texto do seu post no editor ao lado...'}
+              {!linkedinText && thread.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-white/[0.08] text-white/80">
                   {thread.join('\n\n')}
                 </div>

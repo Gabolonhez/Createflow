@@ -12,20 +12,28 @@ export interface GeneratePostOptions {
   instruction?: string;
   voiceProfile: VoiceProfile;
   facts: Fact[];
+  references?: Reference[];
 }
 
 export interface GeneratedPostResult {
   text: string;
   thread: string[];
+  linkedinText?: string;
   pillar: string;
   voiceCheck: VoiceCheck;
   suggestedPlatforms: Platform[];
+  reasoning?: string;
 }
 
 /**
- * Builds the AI prompt context grounding the model on the creator's real voice and real facts.
+ * Builds the AI prompt context grounding the model on the creator's real voice, real facts,
+ * and high-performing benchmark reference structures.
  */
-function buildSystemInstruction(voiceProfile: VoiceProfile, facts: Fact[]): string {
+function buildSystemInstruction(
+  voiceProfile: VoiceProfile,
+  facts: Fact[],
+  references: Reference[] = []
+): string {
   const factsList = facts.length > 0
     ? facts.map((f) => `- [${f.category}] ${f.subject}: ${f.detail}`).join('\n')
     : 'Nenhum fato cadastrado ainda. Use honestidade e nunca invente números, clientes ou métricas falsas.';
@@ -41,6 +49,18 @@ function buildSystemInstruction(voiceProfile: VoiceProfile, facts: Fact[]): stri
   const samples = voiceProfile.writing_samples?.length > 0
     ? voiceProfile.writing_samples.map((s, i) => `Amostra ${i + 1}:\n"${s}"`).join('\n\n')
     : 'Escreva como um engenheiro experiente conversando diretamente com outro profissional.';
+
+  const benchmarkSection = references.length > 0
+    ? `\n7. BENCHMARKS E FORMATOS COMPROVADOS (ESTRUTURAS DE ALTA PERFORMANCE):
+Modele a cadência, o gancho e a escaneabilidade dos seguintes formatos reais que performaram com alto engajamento (NUNCA copie o assunto ou texto, use apenas a engenharia reversa do formato):
+${references.slice(0, 4).map((r, i) => `[Referência ${i + 1} - ${r.platform.toUpperCase()} por ${r.author || 'Autor'}]:
+Gancho: ${r.hook_analysis || 'Gancho de contraste/tensão imediata'}
+Estrutura: ${r.structure || 'Problema -> Quebra de padrão -> Solução'}
+Texto Exemplo:
+"""
+${r.text.slice(0, 320)}...
+"""`).join('\n\n')}`
+    : '';
 
   return `Você é o ghostwriter e estrategista autoral de elite de ${voiceProfile.creator_name || 'Gabriel'}.
 Sua missão é operar sob o ELITE X GHOSTWRITING SYSTEM v3.0, produzindo conteúdo autêntico, de autoridade inquestionável e alto engajamento no X (Twitter) e LinkedIn.
@@ -72,17 +92,50 @@ ${factsList}
    - Amostras de estilo:
 ${samples}
 
-6. ESPECIFICAÇÕES DE PLATAFORMA:
-   - No X (Twitter): Gancho imediato na 1ª linha. < 280 caracteres por tweet. Fios com retenção alta e payoffs claros.
-   - No LinkedIn: Primeiras 2 linhas desenhadas para forçar o clique em "...ver mais". Parágrafos curtos de 1 a 2 linhas com respiro visual.`;
+6. ESPECIFICAÇÕES CRÍTICAS DE PLATAFORMA (FORMATOS E TAMANHOS SÃO DISTINTOS):
+   - NO X (TWITTER):
+     * Limite rígido: estritamente < 280 caracteres por tweet.
+     * Gancho imediato e seco na 1ª linha (pattern interrupt sem enrolação).
+     * Se for Fio (Thread): Tweet 1 vende o clique no fio; tweets 2+ trazem dados, decisões e bastidores; tweet final sintetiza a regra prática.
+   - NO LINKEDIN:
+     * TAMANHO IDEAL: 800 a 1.800 caracteres (150 a 350 palavras). NUNCA gere posts curtos de 200 caracteres para o LinkedIn!
+     * Primeiras 2 linhas (~140 caracteres): Gancho com alta tensão dramática/técnica desenhado para forçar o clique em "...ver mais".
+     * Parágrafos curtos de 1 a 2 linhas com espaçamento visual (linha em branco dupla entre parágrafos) para escaneabilidade mobile.
+     * Desenvolvimento profundo de narrativa: o problema real, o que quebrou na prática, métricas antes vs depois, a decisão difícil tomada.
+     * Marcadores limpos (• ou 1-2-3) para os aprendizados centrais, sem tom de cartilha.
+     * Proibido jargões corporativos vazios ("Muito feliz em anunciar", "Parabéns ao time", "Gratidão").
+     * Zero hashtags no meio das frases (no máximo 2 ou 3 no final).${benchmarkSection}`;
 
 }
 
 /**
- * Generates an authentic post for X and/or LinkedIn
+ * Generates an authentic post for X and/or LinkedIn with platform-specific lengths and structures
  */
 export async function generateCreatorPost(opts: GeneratePostOptions): Promise<GeneratedPostResult> {
-  const systemInstruction = buildSystemInstruction(opts.voiceProfile, opts.facts);
+  const systemInstruction = buildSystemInstruction(opts.voiceProfile, opts.facts, opts.references || []);
+
+  const isLinkedIn = opts.platforms.includes('linkedin');
+  const isX = opts.platforms.includes('x');
+  const isBoth = isLinkedIn && isX;
+
+  let platformInstructions = '';
+  if (isBoth) {
+    platformInstructions = `ATENÇÃO: O post é para AMBAS AS REDES (X e LinkedIn). Como elas têm tamanhos e formatos completamente diferentes:
+- Gere "text" para o X: tweet conciso com gancho visceral, ESTRITAMENTE menor que 280 caracteres.
+- Se for Thread, gere "thread" com tweets adicionais (< 280 chars cada). Se post único, "thread" deve ser [].
+- Gere "linkedinText" para o LinkedIn: post completo, profundo e narrativo (800 a 1.800 caracteres), com as primeiras 2 linhas forçando o clique em "...ver mais", parágrafos curtos de 1 a 2 linhas com respiro visual, bastidores técnicos/lições e fechamento de autoridade.`;
+  } else if (isLinkedIn) {
+    platformInstructions = `ATENÇÃO: O post é EXCLUSIVO PARA LINKEDIN:
+- Gere o post em formato longo e profundo (800 a 1.800 caracteres).
+- Primeiras 2 linhas devem forçar o clique em "...ver mais".
+- Parágrafos curtos de 1 a 2 linhas com respiro visual.
+- Coloque esse post completo tanto em "text" quanto em "linkedinText". "thread" deve ser [].`;
+  } else {
+    platformInstructions = `ATENÇÃO: O post é EXCLUSIVO PARA O X (TWITTER):
+- "text" deve ser estritamente menor que 280 caracteres com gancho imediato na 1ª linha.
+- Se for Thread, preencha "thread" com os tweets seguintes (< 280 chars cada).
+- "linkedinText" deve ser null.`;
+  }
 
   const prompt = `Gere uma publicação pronta para postar baseada nos seguintes parâmetros:
 - Tipo de Origem: ${opts.sourceType}
@@ -90,39 +143,58 @@ export async function generateCreatorPost(opts: GeneratePostOptions): Promise<Ge
 - Anotação/Conteúdo: ${opts.sourceContent || 'Sem anotações prévias'}
 - Pilar de Conteúdo: ${opts.pillar || 'tech-insights'}
 - Plataformas Alvo: ${opts.platforms.join(', ')}
-- Formato: ${opts.threadStyle === 'thread' ? `Fio (Thread) com ${opts.threadLength || 3} tweets adicionais` : 'Post único'}
-- Instrução Adicional do Autor: ${opts.instruction || 'Mantenha o tom visceral, prático e focado em execução.'}
+- Formato X: ${opts.threadStyle === 'thread' ? `Fio (Thread) com ${opts.threadLength || 3} tweets adicionais` : 'Post único (< 280 chars)'}
+- Instrução Adicional do Autor: ${opts.instruction || 'Mantenha o tom visceral, prático e focado em execução de operador.'}
+
+${platformInstructions}
 
 Retorne um JSON estrito no seguinte formato:
 {
-  "text": "O texto principal do post (primeiro tweet no X ou post completo no LinkedIn)",
-  "thread": ["tweet 2 se for thread", "tweet 3 se for thread..."] ou [] se for post único,
+  "text": "Primeiro tweet no X (< 280 chars) ou o post completo se for exclusivo para LinkedIn",
+  "thread": ["tweet 2", "tweet 3..."] ou [],
+  "linkedinText": "Texto completo, profundo e formatado para o LinkedIn (800 a 1.800 caracteres) ou null se for só X",
   "pillar": "${opts.pillar || 'tech-insights'}",
-  "reasoning": "Breve justificativa estratégica de 1 linha sobre a escolha do gancho"
+  "reasoning": "Breve justificativa estratégica de 1 linha sobre a escolha do gancho e formato"
 }`;
 
   const res = await generateJson<{
     text: string;
     thread: string[];
+    linkedinText?: string | null;
     pillar: string;
+    reasoning?: string;
   }>(prompt, systemInstruction);
 
-  // Run immediate voice check on the generated post
-  const voiceCheck = await checkVoiceClichés(res.text, opts.voiceProfile);
+  // If exclusively LinkedIn, ensure linkedinText has the full post
+  const finalLinkedinText = isLinkedIn ? (res.linkedinText || res.text) : undefined;
+  const primaryText = (!isX && isLinkedIn) ? (res.linkedinText || res.text) : res.text;
+
+  // Run immediate voice check on the generated post (network-aware)
+  const voiceCheck = await checkVoiceClichés(
+    isX ? primaryText : (finalLinkedinText || primaryText),
+    opts.voiceProfile,
+    isX ? 'x' : 'linkedin'
+  );
 
   return {
-    text: res.text,
+    text: primaryText,
     thread: Array.isArray(res.thread) ? res.thread : [],
+    linkedinText: finalLinkedinText || undefined,
     pillar: res.pillar || opts.pillar || 'tech-insights',
     voiceCheck,
     suggestedPlatforms: opts.platforms,
+    reasoning: res.reasoning,
   };
 }
 
 /**
  * Checks text against AI clichés, forbidden words, and founder voice principles
  */
-export async function checkVoiceClichés(text: string, voiceProfile: VoiceProfile): Promise<VoiceCheck> {
+export async function checkVoiceClichés(
+  text: string,
+  voiceProfile: VoiceProfile,
+  platform?: Platform | 'both'
+): Promise<VoiceCheck> {
   const items: { code: string; message: string }[] = [];
   const lower = text.toLowerCase().trim();
 
@@ -211,13 +283,15 @@ export async function checkVoiceClichés(text: string, voiceProfile: VoiceProfil
     });
   }
 
-  // Check tweet length if for X
-  const firstParagraph = text.split('\n\n')[0] || text;
-  if (firstParagraph.length > 280) {
-    items.push({
-      code: 'x_length_warning',
-      message: `Primeiro bloco tem ${firstParagraph.length} caracteres (limite do tweet comum é 280).`,
-    });
+  // Check tweet length ONLY if for X
+  if (platform !== 'linkedin') {
+    const firstParagraph = text.split('\n\n')[0] || text;
+    if (firstParagraph.length > 280) {
+      items.push({
+        code: 'x_length_warning',
+        message: `Primeiro bloco tem ${firstParagraph.length} caracteres (limite do tweet comum no X é 280).`,
+      });
+    }
   }
 
   if (items.length > 0) {
@@ -243,14 +317,16 @@ export async function checkVoiceClichés(text: string, voiceProfile: VoiceProfil
 export async function rewriteInVoice(
   text: string,
   voiceProfile: VoiceProfile,
-  instruction?: string
+  instruction?: string,
+  platform?: Platform | 'both'
 ): Promise<{ text: string; voiceCheck: VoiceCheck }> {
   const systemInstruction = buildSystemInstruction(voiceProfile, []);
 
   const prompt = `Reescreva o seguinte rascunho de post para que ele soe 100% autêntico, humano e alinhado com o estilo do autor.
 Elimine qualquer traço de linguagem corporativa ou 'ChatGPT-like'.
 
-Instrução específica: ${instruction || 'Deixe mais direto, com gancho afiado e parágrafos curtos.'}
+Plataforma Alvo: ${platform === 'linkedin' ? 'LinkedIn (post completo de 800 a 1.800 caracteres com gancho em 2 linhas para "...ver mais" e respiro visual)' : platform === 'x' ? 'X / Twitter (< 280 caracteres)' : 'X e/ou LinkedIn'}
+Instrução específica: ${instruction || (platform === 'linkedin' ? 'Formate como post de autoridade para LinkedIn: 800 a 1.500 caracteres, gancho forte nas primeiras 2 linhas para "...ver mais", parágrafos curtos de 1-2 linhas e lições acionáveis.' : 'Deixe mais direto, com gancho afiado e parágrafos curtos.')}
 
 RASCUNHO ATUAL:
 """
@@ -263,7 +339,7 @@ Retorne um JSON estrito no seguinte formato:
 }`;
 
   const res = await generateJson<{ rewritten_text: string }>(prompt, systemInstruction);
-  const voiceCheck = await checkVoiceClichés(res.rewritten_text, voiceProfile);
+  const voiceCheck = await checkVoiceClichés(res.rewritten_text, voiceProfile, platform);
 
   return {
     text: res.rewritten_text,

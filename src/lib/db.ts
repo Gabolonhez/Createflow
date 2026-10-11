@@ -9,6 +9,7 @@ import type {
   AiLearning,
   ConnectionsConfig,
   PostStatus,
+  Platform,
 } from '@/types';
 
 // ARMAZENAMENTO EM MEMÓRIA LOCAL DE FALLBACK COM SEED INICIAL RICO
@@ -350,6 +351,7 @@ function mapPostFromDb(row: any): CreatorPost {
     xPostUrl: row.x_post_url || row.xPostUrl || null,
     linkedinPostId: row.linkedin_post_id || row.linkedinPostId || null,
     linkedinPostUrl: row.linkedin_post_url || row.linkedinPostUrl || null,
+    linkedinText: row.linkedin_text || row.linkedinText || (row.voice_check?.linkedin_text) || null,
     voiceCheck: row.voice_check || row.voiceCheck || undefined,
     factId: row.fact_id || row.factId || null,
     ideaId: row.idea_id || row.ideaId || null,
@@ -368,14 +370,24 @@ function mapPostToDb(post: Partial<CreatorPost>): Record<string, any> {
   if (post.publishedAt !== undefined) payload.published_at = post.publishedAt;
   if (post.xPostId !== undefined) payload.tweet_id = post.xPostId;
   if (post.linkedinPostId !== undefined) payload.linkedin_post_id = post.linkedinPostId;
-  if (post.voiceCheck !== undefined) payload.voice_check = post.voiceCheck;
   if (post.rejectReason !== undefined) payload.rejection_reason = post.rejectReason;
+
+  // Persist linkedinText safely inside voice_check to avoid crashing if linkedin_text column is not yet migrated in Postgres
+  if (post.linkedinText !== undefined || post.voiceCheck !== undefined) {
+    const vc: Record<string, any> = { ...(post.voiceCheck || {}) };
+    if (post.linkedinText !== undefined) {
+      vc.linkedin_text = post.linkedinText;
+    }
+    payload.voice_check = vc;
+  }
+
   delete payload.threadStyle;
   delete payload.mediaUrls;
   delete payload.scheduledFor;
   delete payload.publishedAt;
   delete payload.xPostId;
   delete payload.linkedinPostId;
+  delete payload.linkedinText;
   delete payload.voiceCheck;
   delete payload.rejectReason;
   return payload;
@@ -483,17 +495,52 @@ export async function deleteFact(id: string): Promise<void> {
   await deleteDocData('facts', id);
 }
 
+function mapReferenceFromDb(row: any): Reference {
+  const metrics = row.metrics || {};
+  return {
+    id: row.id,
+    url: row.url || metrics.url || '',
+    platform: (row.platform || 'x') as Platform,
+    author: row.author || 'Desconhecido',
+    text: row.text || row.original_text || '',
+    hook_analysis: row.hook_analysis || metrics.hook_analysis || undefined,
+    structure: row.structure || metrics.structure || undefined,
+    reusable_template: row.reusable_template || metrics.reusable_template || undefined,
+    created_at: row.created_at || new Date().toISOString(),
+  };
+}
+
+function mapReferenceToDb(ref: Partial<Reference>): Record<string, any> {
+  const metrics = {
+    url: ref.url || '',
+    hook_analysis: ref.hook_analysis || '',
+    structure: ref.structure || '',
+    reusable_template: ref.reusable_template || '',
+  };
+  return {
+    id: ref.id,
+    original_text: ref.text || '',
+    platform: ref.platform || 'x',
+    author: ref.author || 'Desconhecido',
+    takeaways: ref.structure ? [ref.structure] : [],
+    metrics,
+  };
+}
+
 export async function getReferences(): Promise<Reference[]> {
-  return getCollectionData<Reference>('content_references', 'created_at');
+  const raw = await getCollectionData<any>('content_references', 'created_at');
+  return raw.map(mapReferenceFromDb);
 }
 
 export async function saveReference(ref: Partial<Reference>): Promise<Reference> {
+  const dbPayload = mapReferenceToDb(ref);
   if (ref.id) {
-    await updateDocData('content_references', ref.id, ref);
-    const updated = await getDocById<Reference>('content_references', ref.id);
-    return updated!;
+    await updateDocData('content_references', ref.id, dbPayload);
+    const updated = await getDocById<any>('content_references', ref.id);
+    return updated ? mapReferenceFromDb(updated) : (ref as Reference);
   } else {
-    return addDocData('content_references', ref);
+    const raw = await addDocData('content_references', dbPayload);
+    return mapReferenceFromDb(raw);
   }
 }
 

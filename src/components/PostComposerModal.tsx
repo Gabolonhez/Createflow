@@ -30,7 +30,11 @@ interface PostComposerModalProps {
   onSave: (post: Partial<CreatorPost>) => Promise<void>;
   onApprove?: (id: string, scheduledFor?: string) => Promise<void>;
   onPublishNow: (id: string) => Promise<void>;
-  onRewrite: (text: string, instruction?: string) => Promise<{ text: string; voiceCheck: any }>;
+  onRewrite: (
+    text: string,
+    instruction?: string,
+    platform?: Platform | 'both'
+  ) => Promise<{ text: string; voiceCheck: any }>;
   authorHandle?: string;
   authorName?: string;
   authorHeadline?: string;
@@ -51,9 +55,18 @@ export function PostComposerModal({
   if (!isOpen) return null;
 
   const [text, setText] = useState(initialPost?.text || '');
+  const [linkedinText, setLinkedinText] = useState(
+    initialPost?.linkedinText ||
+    (initialPost?.platforms.includes('linkedin') && !initialPost?.platforms.includes('x')
+      ? initialPost.text
+      : '')
+  );
   const [thread, setThread] = useState<string[]>(initialPost?.thread || []);
   const [platforms, setPlatforms] = useState<Platform[]>(
     initialPost?.platforms || ['x', 'linkedin']
+  );
+  const [activeEditorTab, setActiveEditorTab] = useState<'x' | 'linkedin'>(
+    initialPost?.platforms?.includes('x') ? 'x' : 'linkedin'
   );
   const [threadStyle, setThreadStyle] = useState<ThreadStyle>(
     initialPost?.threadStyle || 'single'
@@ -69,20 +82,29 @@ export function PostComposerModal({
 
   const [isSaving, setIsSaving] = useState(false);
   const [isRewriting, setIsRewriting] = useState(false);
+  const [isExpandingForLinkedIn, setIsExpandingForLinkedIn] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
 
   const charCount = text.length;
+  const linkedinCharCount = linkedinText.length;
   const isX = platforms.includes('x');
+  const isLinkedIn = platforms.includes('linkedin');
   const xOverLimit = isX && charCount > 280;
 
   const togglePlatform = (p: Platform) => {
     if (platforms.includes(p)) {
       if (platforms.length > 1) {
-        setPlatforms(platforms.filter((x) => x !== p));
+        const next = platforms.filter((x) => x !== p);
+        setPlatforms(next);
+        if (!next.includes(activeEditorTab)) {
+          setActiveEditorTab(next[0] || 'x');
+        }
       }
     } else {
-      setPlatforms([...platforms, p]);
+      const next = [...platforms, p];
+      setPlatforms(next);
+      setActiveEditorTab(p);
     }
   };
 
@@ -104,16 +126,51 @@ export function PostComposerModal({
   };
 
   const handleRewrite = async (instruction?: string) => {
-    if (!text.trim()) return;
-    setIsRewriting(true);
+    if (activeEditorTab === 'linkedin') {
+      const target = linkedinText.trim() || text;
+      if (!target) return;
+      setIsRewriting(true);
+      try {
+        const res = await onRewrite(target, instruction, 'linkedin');
+        if (res.text) {
+          setLinkedinText(res.text);
+          setVoiceCheck(res.voiceCheck);
+        }
+      } finally {
+        setIsRewriting(false);
+      }
+    } else {
+      if (!text.trim()) return;
+      setIsRewriting(true);
+      try {
+        const res = await onRewrite(text, instruction, 'x');
+        if (res.text) {
+          setText(res.text);
+          setVoiceCheck(res.voiceCheck);
+        }
+      } finally {
+        setIsRewriting(false);
+      }
+    }
+  };
+
+  const handleExpandFromXToLinkedIn = async () => {
+    const sourceContent = [text, ...thread.filter((t) => t.trim())].join('\n\n');
+    if (!sourceContent.trim()) return;
+
+    setIsExpandingForLinkedIn(true);
     try {
-      const res = await onRewrite(text, instruction);
+      const res = await onRewrite(
+        sourceContent,
+        'Expanda este conteúdo para o LinkedIn em formato longo e profundo (800 a 1.500 caracteres). Primeiras 2 linhas com gancho forte para forçar o clique em "...ver mais". Use parágrafos curtos de 1 a 2 linhas com respiro visual, bastidores práticos, lições objetivas com marcadores limpos e encerramento de autoridade. Zero clichês corporativos.',
+        'linkedin'
+      );
       if (res.text) {
-        setText(res.text);
-        setVoiceCheck(res.voiceCheck);
+        setLinkedinText(res.text);
+        setActiveEditorTab('linkedin');
       }
     } finally {
-      setIsRewriting(false);
+      setIsExpandingForLinkedIn(false);
     }
   };
 
@@ -124,6 +181,7 @@ export function PostComposerModal({
         id: initialPost?.id,
         text,
         thread: thread.filter((t) => t.trim().length > 0),
+        linkedinText: linkedinText.trim() || null,
         threadStyle,
         platforms,
         pillar,
@@ -145,6 +203,7 @@ export function PostComposerModal({
         id: initialPost.id,
         text,
         thread: thread.filter((t) => t.trim().length > 0),
+        linkedinText: linkedinText.trim() || null,
         threadStyle,
         platforms,
         pillar,
@@ -176,12 +235,12 @@ export function PostComposerModal({
   };
 
   const handleOpenXIntent = () => {
-    const fullText = text;
-    window.open(generateXIntentUrl(fullText), '_blank', 'noopener,noreferrer');
+    window.open(generateXIntentUrl(text), '_blank', 'noopener,noreferrer');
   };
 
   const handleOpenLinkedInIntent = () => {
-    window.open(generateLinkedInIntentUrl(text), '_blank', 'noopener,noreferrer');
+    const fullLinkedIn = linkedinText.trim() || (thread.length > 0 ? [text, ...thread].join('\n\n') : text);
+    window.open(generateLinkedInIntentUrl(fullLinkedIn), '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -256,13 +315,50 @@ export function PostComposerModal({
               </select>
             </div>
 
+            {/* Platform Sub-Tabs when Cross-posting to both */}
+            {isX && isLinkedIn && (
+              <div className="flex items-center gap-2 p-1 bg-black/40 rounded-xl border border-white/[0.08]">
+                <button
+                  type="button"
+                  onClick={() => setActiveEditorTab('x')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    activeEditorTab === 'x'
+                      ? 'bg-white text-black font-semibold shadow-sm'
+                      : 'text-white/50 hover:text-white'
+                  }`}
+                >
+                  <XLogo className="size-3" />
+                  <span>Editar Versão X</span>
+                  <span className={`text-[10px] font-mono px-1 rounded ${charCount > 280 ? 'bg-rose-500/20 text-rose-300' : 'bg-black/20 text-white/60'}`}>
+                    {charCount}/280
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveEditorTab('linkedin')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    activeEditorTab === 'linkedin'
+                      ? 'bg-[#0A66C2] text-white font-semibold shadow-sm'
+                      : 'text-white/50 hover:text-white'
+                  }`}
+                >
+                  <LinkedInLogo className="size-3 text-white" />
+                  <span>Editar Versão LinkedIn</span>
+                  <span className={`text-[10px] font-mono px-1 rounded ${linkedinCharCount >= 800 && linkedinCharCount <= 1800 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-white/10 text-white/70'}`}>
+                    {linkedinCharCount > 0 ? `${linkedinCharCount}c` : '0c'}
+                  </span>
+                </button>
+              </div>
+            )}
+
             {/* AI Voice Check Notification if any */}
             {voiceCheck?.level === 'warn' && (
               <div className="flex items-start justify-between gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-200">
                 <div className="flex items-start gap-2">
                   <AlertTriangle size={15} className="text-amber-400 shrink-0 mt-0.5" />
                   <div className="flex flex-col text-xs">
-                    <span className="font-semibold text-amber-300">Isso pode soar como IA</span>
+                    <span className="font-semibold text-amber-300">Atenção ao Tom de Voz</span>
                     <span className="text-[11px] text-amber-200/70 mt-0.5">
                       {voiceCheck.items[0]?.message || 'Ajuste para soar mais direto e autêntico.'}
                     </span>
@@ -281,97 +377,178 @@ export function PostComposerModal({
               </div>
             )}
 
-            {/* Main Text Editor */}
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center justify-between text-[11px] font-mono">
-                <span className="text-white/40">Texto Principal / 1º Tweet</span>
-                <span
-                  className={`${
-                    xOverLimit ? 'text-rose-400 font-bold' : 'text-white/40'
-                  }`}
-                >
-                  {charCount} {isX && '/ 280'}
-                </span>
-              </div>
-
-              <textarea
-                rows={6}
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="Escreva seu post aqui..."
-                className="w-full p-3.5 rounded-xl bg-black/50 border border-white/[0.08] text-white text-[13px] leading-relaxed placeholder:text-white/30 focus:outline-none focus:border-violet-500/50 resize-none font-sans"
-              />
-            </div>
-
-            {/* AI Quick Helpers Bar */}
-            <div className="flex items-center gap-1.5 overflow-x-auto py-1">
-              <button
-                type="button"
-                disabled={isRewriting || !text.trim()}
-                onClick={() => handleRewrite()}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 border border-violet-500/25 transition-all whitespace-nowrap active:scale-[0.98]"
-              >
-                {isRewriting ? <Loader2 size={12} className="animate-spin" /> : <Wand2 size={12} />}
-                <span>Reescrever no meu tom</span>
-              </button>
-
-              <button
-                type="button"
-                disabled={isRewriting || !text.trim()}
-                onClick={() => handleRewrite('Encurte para caber em exatamente 280 caracteres mantendo o soco.')}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-white/[0.04] hover:bg-white/[0.08] text-white/70 border border-white/[0.06] transition-all whitespace-nowrap"
-              >
-                <span>Encurtar para X (&lt;280)</span>
-              </button>
-
-              <button
-                type="button"
-                disabled={isRewriting || !text.trim()}
-                onClick={() => handleRewrite('Crie um gancho mais forte na primeira linha.')}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-white/[0.04] hover:bg-white/[0.08] text-white/70 border border-white/[0.06] transition-all whitespace-nowrap"
-              >
-                <span>Gancho mais forte</span>
-              </button>
-            </div>
-
-            {/* Thread Tweets Section */}
-            {thread.length > 0 && (
-              <div className="flex flex-col gap-2 pt-2 border-t border-white/[0.06]">
-                <span className="text-[11px] font-mono text-violet-400">
-                  Fio / Continuação ({thread.length} adicionais):
-                </span>
-                {thread.map((t, idx) => (
-                  <div key={idx} className="flex gap-2 items-start">
-                    <span className="text-[11px] font-mono text-white/30 pt-2 shrink-0">
-                      #{idx + 2}
+            {/* MODE 1: X (TWITTER) EDITOR */}
+            {activeEditorTab === 'x' && (
+              <>
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between text-[11px] font-mono">
+                    <span className="text-white/40">1º Tweet (Gancho curto & seco)</span>
+                    <span
+                      className={`${
+                        xOverLimit ? 'text-rose-400 font-bold' : 'text-white/40'
+                      }`}
+                    >
+                      {charCount} / 280
                     </span>
-                    <textarea
-                      rows={3}
-                      value={t}
-                      onChange={(e) => updateThreadTweet(idx, e.target.value)}
-                      placeholder={`Tweet #${idx + 2}...`}
-                      className="flex-1 p-2.5 rounded-lg bg-black/40 border border-white/[0.07] text-white text-xs leading-relaxed focus:outline-none focus:border-violet-500/50 resize-none"
-                    />
+                  </div>
+
+                  <textarea
+                    rows={5}
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    placeholder="Primeiro tweet (< 280 caracteres)..."
+                    className="w-full p-3.5 rounded-xl bg-black/50 border border-white/[0.08] text-white text-[13px] leading-relaxed placeholder:text-white/30 focus:outline-none focus:border-violet-500/50 resize-none font-sans"
+                  />
+                </div>
+
+                {/* AI Quick Helpers Bar for X */}
+                <div className="flex items-center gap-1.5 overflow-x-auto py-1">
+                  <button
+                    type="button"
+                    disabled={isRewriting || !text.trim()}
+                    onClick={() => handleRewrite()}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 border border-violet-500/25 transition-all whitespace-nowrap active:scale-[0.98]"
+                  >
+                    {isRewriting ? <Loader2 size={12} className="animate-spin" /> : <Wand2 size={12} />}
+                    <span>Reescrever tom</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isRewriting || !text.trim()}
+                    onClick={() => handleRewrite('Encurte para caber em exatamente 280 caracteres mantendo o soco.')}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-white/[0.04] hover:bg-white/[0.08] text-white/70 border border-white/[0.06] transition-all whitespace-nowrap"
+                  >
+                    <span>Encurtar (&lt;280)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isRewriting || !text.trim()}
+                    onClick={() => handleRewrite('Crie um gancho mais forte e seco na primeira linha.')}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-white/[0.04] hover:bg-white/[0.08] text-white/70 border border-white/[0.06] transition-all whitespace-nowrap"
+                  >
+                    <span>Gancho afiado</span>
+                  </button>
+
+                  {isLinkedIn && (
                     <button
                       type="button"
-                      onClick={() => removeThreadTweet(idx)}
-                      className="p-1.5 rounded text-white/30 hover:text-rose-400 transition-colors shrink-0 mt-1"
+                      disabled={isExpandingForLinkedIn || !text.trim()}
+                      onClick={handleExpandFromXToLinkedIn}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-[#0A66C2]/15 hover:bg-[#0A66C2]/25 text-[#70b5f9] border border-[#0A66C2]/30 transition-all whitespace-nowrap"
                     >
-                      <Trash2 size={13} />
+                      {isExpandingForLinkedIn ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                      <span>⚡ Expandir para LinkedIn</span>
                     </button>
+                  )}
+                </div>
+
+                {/* Thread Tweets Section */}
+                {thread.length > 0 && (
+                  <div className="flex flex-col gap-2 pt-2 border-t border-white/[0.06]">
+                    <span className="text-[11px] font-mono text-violet-400">
+                      Fio / Continuação ({thread.length} adicionais):
+                    </span>
+                    {thread.map((t, idx) => (
+                      <div key={idx} className="flex gap-2 items-start">
+                        <span className="text-[11px] font-mono text-white/30 pt-2 shrink-0">
+                          #{idx + 2}
+                        </span>
+                        <textarea
+                          rows={3}
+                          value={t}
+                          onChange={(e) => updateThreadTweet(idx, e.target.value)}
+                          placeholder={`Tweet #${idx + 2}...`}
+                          className="flex-1 p-2.5 rounded-lg bg-black/40 border border-white/[0.07] text-white text-xs leading-relaxed focus:outline-none focus:border-violet-500/50 resize-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeThreadTweet(idx)}
+                          className="p-1.5 rounded text-white/30 hover:text-rose-400 transition-colors shrink-0 mt-1"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={addThreadTweet}
+                  className="flex items-center gap-1.5 text-xs font-mono text-violet-300 hover:text-violet-200 transition-colors w-fit pt-1"
+                >
+                  <Plus size={13} />
+                  <span>Adicionar tweet ao fio (+1)</span>
+                </button>
+              </>
             )}
 
-            <button
-              type="button"
-              onClick={addThreadTweet}
-              className="flex items-center gap-1.5 text-xs font-mono text-violet-300 hover:text-violet-200 transition-colors w-fit pt-1"
-            >
-              <Plus size={13} />
-              <span>Adicionar tweet ao fio (+1)</span>
-            </button>
+            {/* MODE 2: LINKEDIN EDITOR */}
+            {activeEditorTab === 'linkedin' && (
+              <>
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between text-[11px] font-mono">
+                    <span className="text-[#70b5f9] font-medium">Post Completo para LinkedIn (Narrativo & Aprofundado)</span>
+                    <div className="flex items-center gap-1.5">
+                      {linkedinCharCount === 0 && (
+                        <span className="text-amber-400 text-[10px]">Vazio (clique em Expandir do X)</span>
+                      )}
+                      {linkedinCharCount > 0 && linkedinCharCount < 600 && (
+                        <span className="text-amber-300 text-[10px]">⚠️ Curto ({linkedinCharCount}c · ideal: 800-1.800)</span>
+                      )}
+                      {linkedinCharCount >= 600 && linkedinCharCount <= 2200 && (
+                        <span className="text-emerald-400 text-[10px]">✓ Excelente extensão ({linkedinCharCount}c)</span>
+                      )}
+                      {linkedinCharCount > 2200 && (
+                        <span className="text-white/50 text-[10px]">{linkedinCharCount} caracteres</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <textarea
+                    rows={9}
+                    value={linkedinText}
+                    onChange={(e) => setLinkedinText(e.target.value)}
+                    placeholder="Escreva seu post do LinkedIn aqui (800 a 1.800 caracteres com gancho nas primeiras 2 linhas para '...ver mais', parágrafos curtos de 1 a 2 linhas com espaçamento visual e lições práticas)..."
+                    className="w-full p-3.5 rounded-xl bg-black/50 border border-white/[0.08] text-white text-[13px] leading-relaxed placeholder:text-white/30 focus:outline-none focus:border-[#0A66C2]/60 resize-none font-sans"
+                  />
+                </div>
+
+                {/* AI Quick Helpers Bar for LinkedIn */}
+                <div className="flex items-center gap-1.5 overflow-x-auto py-1">
+                  <button
+                    type="button"
+                    disabled={isExpandingForLinkedIn || !text.trim()}
+                    onClick={handleExpandFromXToLinkedIn}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-[#0A66C2]/20 hover:bg-[#0A66C2]/30 text-[#70b5f9] border border-[#0A66C2]/35 transition-all whitespace-nowrap active:scale-[0.98]"
+                  >
+                    {isExpandingForLinkedIn ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                    <span>⚡ Expandir do Tweet do X</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isRewriting || (!linkedinText.trim() && !text.trim())}
+                    onClick={() => handleRewrite('Reescreva no tom autoral de operador para LinkedIn: 800 a 1.500 caracteres, gancho forte nas primeiras 2 linhas, respiro visual de 1 a 2 linhas por bloco, métricas reais e zero clichês corporativos.')}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-white/[0.04] hover:bg-white/[0.08] text-white/70 border border-white/[0.06] transition-all whitespace-nowrap"
+                  >
+                    <Wand2 size={11} />
+                    <span>Reescrever tom LinkedIn</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isRewriting || (!linkedinText.trim() && !text.trim())}
+                    onClick={() => handleRewrite('Ajuste as primeiras 2 linhas para criar um gancho irresistível antes do botão ...ver mais, mantendo a profundidade do restante.')}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-white/[0.04] hover:bg-white/[0.08] text-white/70 border border-white/[0.06] transition-all whitespace-nowrap"
+                  >
+                    <span>Gancho para "...ver mais"</span>
+                  </button>
+                </div>
+              </>
+            )}
 
             {/* Schedule Date & Media Url Inputs */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-white/[0.06]">
@@ -407,6 +584,7 @@ export function PostComposerModal({
             </span>
             <PostPreviewCard
               text={text}
+              linkedinText={linkedinText}
               thread={thread}
               threadStyle={threadStyle}
               platforms={platforms}
