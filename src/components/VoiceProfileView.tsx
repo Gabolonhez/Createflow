@@ -341,7 +341,7 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
               key={i}
               className="relative p-3 rounded-lg bg-black/40 border border-white/[0.06] text-xs text-white/80 leading-relaxed font-sans flex flex-col justify-between"
             >
-              <p className="whitespace-pre-line line-clamp-4 italic">"{sample}"</p>
+              <p className="whitespace-pre-line line-clamp-4 italic">&quot;{sample}&quot;</p>
               <div className="flex justify-end pt-2 mt-2 border-t border-white/[0.04]">
                 <button
                   type="button"
@@ -446,7 +446,7 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
                   🛡️ Revisão do Criador (Padrão)
                 </span>
                 <span className="text-white/50 text-[11px] mt-0.5 leading-relaxed">
-                  A IA gera rascunhos com base nas suas ideias e referências e os coloca em "Aguardando Aprovação". Você aprova com 1 clique antes de ir para a fila.
+                  A IA gera rascunhos com base nas suas ideias e referências e os coloca em &quot;Aguardando Aprovação&quot;. Você aprova com 1 clique antes de ir para a fila.
                 </span>
               </div>
             </label>
