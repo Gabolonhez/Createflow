@@ -17,6 +17,7 @@ import {
   FileText,
   Brain,
   CheckCircle2,
+  LogOut,
 } from 'lucide-react';
 import { XLogo, LinkedInLogo } from './BrandIcons';
 import type { MainSection, ActiveSubView } from '@/types';
@@ -31,6 +32,8 @@ interface AppSidebarProps {
   onToggleCollapse: () => void;
   xConnected?: boolean;
   linkedinConnected?: boolean;
+  userEmail?: string | null;
+  onSignOut?: () => void;
 }
 
 export function AppSidebar({
@@ -43,6 +46,8 @@ export function AppSidebar({
   onToggleCollapse,
   xConnected = true,
   linkedinConnected = true,
+  userEmail,
+  onSignOut,
 }: AppSidebarProps) {
   const sidebarWidth = isCollapsed ? '70px' : '250px';
 
@@ -287,6 +292,45 @@ export function AppSidebar({
           <div className="flex flex-col items-center gap-2">
             <XLogo className={`size-3.5 ${xConnected ? 'text-white' : 'text-white/30'}`} />
             <LinkedInLogo className={`size-3.5 ${linkedinConnected ? 'text-[#0A66C2]' : 'text-white/30'}`} />
+          </div>
+        )}
+
+        {/* User Account / Sign Out Strip */}
+        {userEmail && (
+          <div className="pt-2.5 mt-2 border-t border-white/[0.05] flex items-center justify-between">
+            {!isCollapsed ? (
+              <>
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="size-6 rounded-full bg-violet-600/30 border border-violet-500/40 flex items-center justify-center text-[10px] font-bold text-violet-200 shrink-0 uppercase">
+                    {userEmail[0]}
+                  </div>
+                  <span className="text-[11px] font-mono text-white/60 truncate" title={userEmail}>
+                    {userEmail}
+                  </span>
+                </div>
+                {onSignOut && (
+                  <button
+                    type="button"
+                    onClick={onSignOut}
+                    title="Sair da conta"
+                    className="p-1 rounded text-white/40 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                  >
+                    <LogOut size={13} />
+                  </button>
+                )}
+              </>
+            ) : (
+              onSignOut && (
+                <button
+                  type="button"
+                  onClick={onSignOut}
+                  title={`Sair (${userEmail})`}
+                  className="mx-auto p-1.5 rounded text-white/40 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                >
+                  <LogOut size={14} />
+                </button>
+              )
+            )}
           </div>
         )}
       </div>

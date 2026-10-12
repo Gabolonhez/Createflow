@@ -1,6 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { supabaseClient } from '@/lib/supabase-client';
+import LoginView from '@/components/LoginView';
 import { AppSidebar } from '@/components/AppSidebar';
 import { DashboardHeader } from '@/components/DashboardHeader';
 import { XSectionBar } from '@/components/XSectionBar';
@@ -86,6 +89,40 @@ export default function Dashboard({
   connectedParam,
   errorParam,
 }: DashboardProps) {
+  // Authentication State
+  const [sessionUser, setSessionUser] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      if (session?.user?.email) {
+        setSessionUser(session.user.email);
+      }
+      setAuthLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      setSessionUser(session?.user?.email || null);
+      setAuthLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabaseClient.auth.signOut();
+    setSessionUser(null);
+  };
+
   // Navigation & View State
   const [currentSection, setCurrentSection] = useState<MainSection>('plan');
   const [currentSubView, setCurrentSubView] = useState<ActiveSubView>('posts');
@@ -460,6 +497,30 @@ export default function Dashboard({
 
   const headerMeta = viewTitles[currentSubView] || viewTitles.posts;
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#07070a] text-white select-none">
+        <div className="flex flex-col items-center gap-3 animate-pulse">
+          <div className="size-14 rounded-2xl bg-[#0f0f15] border border-white/[0.1] flex items-center justify-center p-1.5 shadow-2xl">
+            <Image
+              src="/createflow-logo.png"
+              alt="CreateFlow"
+              width={48}
+              height={48}
+              className="rounded-xl object-cover"
+              priority
+            />
+          </div>
+          <span className="text-xs font-mono text-white/40 tracking-wider">Carregando CreateFlow...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!sessionUser) {
+    return <LoginView onSuccess={(email) => setSessionUser(email)} />;
+  }
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#050505] text-white">
       {/* Toast Notification */}
@@ -487,6 +548,8 @@ export default function Dashboard({
         onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
         xConnected={connections.x_connected}
         linkedinConnected={connections.linkedin_connected}
+        userEmail={sessionUser}
+        onSignOut={handleSignOut}
       />
 
       {/* Main Content Area */}
