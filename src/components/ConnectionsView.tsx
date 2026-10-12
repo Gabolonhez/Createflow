@@ -9,6 +9,8 @@ import {
   Zap,
   Key,
   Check,
+  Copy,
+  Info,
 } from 'lucide-react';
 import { XLogo, LinkedInLogo } from './BrandIcons';
 import type { ConnectionsConfig } from '@/types';
@@ -29,9 +31,18 @@ export function ConnectionsView({
   const [xToken, setXToken] = useState(connections.x_bearer_token || '');
 
   const [liMode, setLiMode] = useState(connections.linkedin_publish_mode || 'manual');
+  const [liClientId, setLiClientId] = useState(connections.linkedin_client_id || '');
+  const [liClientSecret, setLiClientSecret] = useState(connections.linkedin_client_secret || '');
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedUrl(text);
+    setTimeout(() => setCopiedUrl(null), 2500);
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +53,8 @@ export function ConnectionsView({
         x_username: xUsername.replace('@', '').trim(),
         x_bearer_token: xToken.trim() || undefined,
         linkedin_publish_mode: liMode,
+        linkedin_client_id: liClientId.trim() || undefined,
+        linkedin_client_secret: liClientSecret.trim() || undefined,
       });
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 2500);
@@ -188,17 +201,82 @@ export function ConnectionsView({
             <div className="p-3 rounded-lg bg-black/30 border border-white/[0.06] flex items-center justify-between">
               <div className="flex flex-col">
                 <span className="text-xs font-semibold text-white/90">
-                  {connections.linkedin_name || 'Gabriel Bolonhez'}
+                  {connections.linkedin_name || 'Perfil LinkedIn'}
                 </span>
-                <span className="text-[11px] text-white/45">Perfil Pessoal LinkedIn</span>
+                <span className="text-[11px] text-white/45">
+                  {connections.linkedin_connected
+                    ? `ID: ${connections.linkedin_profile_id || 'Conectado via OAuth'}`
+                    : 'Ainda não autenticado via OAuth'}
+                </span>
               </div>
 
               <a
                 href={linkedInOAuthUrl}
-                className="px-2.5 py-1 rounded text-xs font-medium bg-[#0A66C2] hover:bg-[#084e96] text-white transition-colors"
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0A66C2] hover:bg-[#084e96] text-white transition-all shadow-md active:scale-[0.98]"
               >
-                Conectar OAuth
+                {connections.linkedin_connected ? 'Reconectar OAuth' : 'Conectar OAuth'}
               </a>
+            </div>
+
+            {/* LinkedIn Developer Credentials Setup */}
+            <div className="flex flex-col gap-2.5 pt-2 border-t border-white/[0.05]">
+              <span className="text-[11px] font-mono text-white/60 uppercase tracking-wider flex items-center gap-1.5">
+                <Key size={12} className="text-[#70b5f9]" />
+                Credenciais do App (LinkedIn Developers)
+              </span>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-mono text-white/40">Client ID (aba Auth)</label>
+                <input
+                  type="text"
+                  value={liClientId}
+                  onChange={(e) => setLiClientId(e.target.value)}
+                  placeholder="Cole o Client ID gerado no LinkedIn..."
+                  className="px-3 py-1.5 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs font-mono focus:outline-none focus:border-[#0A66C2]/60"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-mono text-white/40">Primary Client Secret (aba Auth)</label>
+                <input
+                  type="password"
+                  value={liClientSecret}
+                  onChange={(e) => setLiClientSecret(e.target.value)}
+                  placeholder="Cole o Client Secret gerado no LinkedIn..."
+                  className="px-3 py-1.5 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs font-mono focus:outline-none focus:border-[#0A66C2]/60"
+                />
+              </div>
+
+              {/* Redirect URI helper box */}
+              <div className="p-3 rounded-lg bg-white/[0.02] border border-white/[0.06] flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-white/60">
+                    URL de Redirecionamento (Cole na aba Auth do LinkedIn):
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard('https://createfloww.vercel.app/api/oauth/linkedin')}
+                    className="flex items-center gap-1 text-[10px] font-mono text-[#70b5f9] hover:underline"
+                  >
+                    <Copy size={11} />
+                    <span>{copiedUrl === 'https://createfloww.vercel.app/api/oauth/linkedin' ? 'Copiado!' : 'Copiar URL'}</span>
+                  </button>
+                </div>
+                <code className="text-[10px] font-mono text-white/80 bg-black/50 p-1.5 rounded border border-white/[0.04] break-all select-all">
+                  https://createfloww.vercel.app/api/oauth/linkedin
+                </code>
+                <div className="flex items-center justify-between pt-1 border-t border-white/[0.04]">
+                  <span className="text-[10px] font-mono text-white/40">Para testes locais (localhost):</span>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard('http://localhost:3000/api/oauth/linkedin')}
+                    className="flex items-center gap-1 text-[10px] font-mono text-white/50 hover:text-white"
+                  >
+                    <Copy size={10} />
+                    <span>{copiedUrl === 'http://localhost:3000/api/oauth/linkedin' ? 'Copiado!' : 'Copiar Local'}</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* LinkedIn Publish Mode */}

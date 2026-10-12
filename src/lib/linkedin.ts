@@ -1,21 +1,40 @@
-const clientId = process.env.LINKEDIN_CLIENT_ID;
-const clientSecret = process.env.LINKEDIN_CLIENT_SECRET;
-
-export function getLinkedInOAuthUrl(redirectUri: string): string {
+export async function getLinkedInOAuthUrl(redirectUri: string, explicitClientId?: string): Promise<string> {
+  let clientId = explicitClientId || process.env.LINKEDIN_CLIENT_ID;
   if (!clientId) {
-    throw new Error('LINKEDIN_CLIENT_ID não está configurado.');
+    const { getConnectionsConfig } = await import('@/lib/db');
+    const cfg = await getConnectionsConfig();
+    clientId = cfg.linkedin_client_id;
+  }
+
+  if (!clientId) {
+    throw new Error('LINKEDIN_CLIENT_ID não está configurado. Salve as credenciais na aba Conexões ou no .env.local.');
   }
 
   // Usamos state simples de timestamp para fins locais
   const state = Date.now().toString();
-  const scope = encodeURIComponent('w_member_social profile email openid');
+  const scope = encodeURIComponent('openid profile email w_member_social');
   
   return `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(
     redirectUri
   )}&state=${state}&scope=${scope}`;
 }
 
-export async function exchangeCodeForToken(code: string, redirectUri: string) {
+export async function exchangeCodeForToken(
+  code: string,
+  redirectUri: string,
+  explicitClientId?: string,
+  explicitClientSecret?: string
+) {
+  let clientId = explicitClientId || process.env.LINKEDIN_CLIENT_ID;
+  let clientSecret = explicitClientSecret || process.env.LINKEDIN_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) {
+    const { getConnectionsConfig } = await import('@/lib/db');
+    const cfg = await getConnectionsConfig();
+    clientId = clientId || cfg.linkedin_client_id;
+    clientSecret = clientSecret || cfg.linkedin_client_secret;
+  }
+
   if (!clientId || !clientSecret) {
     throw new Error('Credenciais do LinkedIn (Client ID ou Client Secret) não estão configuradas.');
   }

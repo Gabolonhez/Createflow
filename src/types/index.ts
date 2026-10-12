@@ -150,6 +150,8 @@ export interface ConnectionsConfig {
   linkedin_access_token?: string;
   linkedin_expires_at?: string;
   linkedin_publish_mode: 'automatic' | 'manual';
+  linkedin_client_id?: string;
+  linkedin_client_secret?: string;
 }
 
 export type MainSection = 'plan' | 'ideas' | 'voice' | 'results' | 'settings';

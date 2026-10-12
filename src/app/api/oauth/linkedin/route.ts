@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { exchangeCodeForToken, fetchLinkedInProfile } from '@/lib/linkedin';
+import { getLinkedInOAuthUrl, exchangeCodeForToken, fetchLinkedInProfile } from '@/lib/linkedin';
+import { getConnectionsConfig, saveConnectionsConfig } from '@/lib/db';
 import { supabase } from '@/lib/supabase';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
@@ -9,62 +12,75 @@ export async function GET(req: NextRequest) {
     const error = searchParams.get('error');
     const errorDescription = searchParams.get('error_description');
 
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || `${req.nextUrl.protocol}//${req.nextUrl.host}`;
+    const redirectUri = `${appUrl}/api/oauth/linkedin`;
+
+    // 1. Tratamento de erro retornado pelo LinkedIn
     if (error) {
-      console.error('[LinkedIn OAuth] Erro:', error, errorDescription);
+      console.error('[LinkedIn OAuth] Erro retornado pelo LinkedIn:', error, errorDescription);
       return NextResponse.redirect(
         new URL(`/?error=${encodeURIComponent(errorDescription || error)}`, req.url)
       );
     }
 
+    // 2. INICIAÇÃO: Se a rota foi chamada sem código, redireciona o usuário para login no LinkedIn
     if (!code) {
-      console.warn('[LinkedIn OAuth] Código de autorização ausente.');
-      return NextResponse.redirect(new URL('/?error=Codigo_ausente_linkedin', req.url));
+      console.log('[LinkedIn OAuth] Iniciando autorização. Redirecionando para LinkedIn...');
+      try {
+        const authUrl = await getLinkedInOAuthUrl(redirectUri);
+        return NextResponse.redirect(authUrl);
+      } catch (err: any) {
+        return NextResponse.redirect(
+          new URL(`/?error=${encodeURIComponent(err.message || 'Configure o Client ID primeiro')}`, req.url)
+        );
+      }
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || `${req.nextUrl.protocol}//${req.nextUrl.host}`;
-    const redirectUri = `${appUrl}/api/oauth/linkedin`;
-
-    console.log('[LinkedIn OAuth] Trocando código por token...');
+    // 3. CALLBACK: LinkedIn enviou de volta o código de autorização
+    console.log('[LinkedIn OAuth] Trocando código por access token...');
     const tokenData = await exchangeCodeForToken(code, redirectUri);
 
     console.log('[LinkedIn OAuth] Buscando perfil do usuário...');
     const profile = await fetchLinkedInProfile(tokenData.access_token);
 
-    // Calcular expiração (padrão do LinkedIn é 60 dias = 5184000 segundos)
+    // Calcular data de expiração do token (padrão LinkedIn: 60 dias)
     const expiresSeconds = tokenData.expires_in || 5184000;
     const expiresAt = new Date(Date.now() + expiresSeconds * 1000).toISOString();
 
-    // Obter dados existentes para não apagar a conexão do Instagram
-    const { data: existingConfig } = await supabase
-      .from('config')
-      .select('*')
-      .eq('id', 'instagram_config')
-      .maybeSingle();
-
-    const payload = {
-      id: 'instagram_config',
-      access_token: existingConfig?.access_token || 'pending_instagram', // Valor temporário para satisfazer o NOT NULL se o Instagram ainda não estiver conectado
-      ...existingConfig,
-      linkedin_access_token: tokenData.access_token,
-      linkedin_profile_id: profile.id,
+    console.log('[LinkedIn OAuth] Salvando credenciais no sistema...');
+    const currentConnections = await getConnectionsConfig();
+    await saveConnectionsConfig({
+      ...currentConnections,
+      linkedin_connected: true,
       linkedin_name: profile.name,
+      linkedin_profile_id: profile.id,
+      linkedin_access_token: tokenData.access_token,
       linkedin_expires_at: expiresAt,
-      updated_at: new Date().toISOString(),
-    };
+      linkedin_publish_mode: 'automatic',
+    });
 
-    console.log('[LinkedIn OAuth] Salvando credenciais no banco...');
-    const { error: upsertErr } = await supabase.from('config').upsert(payload);
-
-    if (upsertErr) {
-      throw new Error(`Erro ao salvar perfil do LinkedIn: ${upsertErr.message}`);
+    // Compatibilidade com tabela legacy config se ela existir
+    try {
+      await supabase.from('config').upsert({
+        id: 'instagram_config',
+        access_token: 'connected',
+        linkedin_access_token: tokenData.access_token,
+        linkedin_profile_id: profile.id,
+        linkedin_name: profile.name,
+        linkedin_expires_at: expiresAt,
+        updated_at: new Date().toISOString(),
+      });
+    } catch (ignore) {
+      // Falhas no schema legacy não bloqueiam a conexão ativa
     }
 
-    console.log('[LinkedIn OAuth] Sucesso!');
+    console.log(`[LinkedIn OAuth] Conexão bem-sucedida para "${profile.name}" (ID: ${profile.id})`);
     return NextResponse.redirect(new URL('/?connected=true', req.url));
   } catch (err: any) {
-    console.error('[LinkedIn OAuth Error] Falha no callback:', err);
+    console.error('[LinkedIn OAuth Error] Falha na autenticação:', err);
     return NextResponse.redirect(
-      new URL(`/?error=${encodeURIComponent(err.message || 'Falha no LinkedIn')}`, req.url)
+      new URL(`/?error=${encodeURIComponent(err.message || 'Falha no login do LinkedIn')}`, req.url)
     );
   }
 }
+
