@@ -163,6 +163,22 @@ export interface MediaAsset {
   type: 'image' | 'video' | 'other';
 }
 
+export type AiVisualArchetype = 'diagram' | 'minimal' | 'metrics' | 'terminal' | 'concept';
+
+export interface GenerateAiImageParams {
+  topicOrText: string;
+  style?: AiVisualArchetype;
+  aspectRatio?: '16:9' | '1:1';
+  customPrompt?: string;
+}
+
+export interface GeneratedAiImageResult {
+  url: string;
+  prompt: string;
+  style: AiVisualArchetype;
+  name: string;
+}
+
 export type MainSection = 'plan' | 'ideas' | 'voice' | 'results' | 'settings';
 
 export type PlanSubView = 'posts' | 'calendar';

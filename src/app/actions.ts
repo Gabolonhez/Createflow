@@ -37,6 +37,7 @@ import {
   analyzeReferencePost,
   generateBrainstormIdeas,
   generateSprayPackage,
+  generateAiVisualPrompt,
 } from '@/lib/ai-assistant';
 import { publishToX, publishXThread } from '@/lib/twitter';
 import { publishToLinkedIn } from '@/lib/linkedin';
@@ -54,6 +55,8 @@ import type {
   SprayVariant,
   SprayResult,
   MediaAsset,
+  AiVisualArchetype,
+  GenerateAiImageParams,
 } from '@/types';
 
 // ==========================================
@@ -646,6 +649,76 @@ export async function deleteMediaAssetAction(name: string): Promise<{ success?: 
     return { success: true };
   } catch (err: any) {
     return { error: err.message || 'Falha ao excluir arquivo.' };
+  }
+}
+
+export async function generateAiImageAction(params: GenerateAiImageParams): Promise<{
+  success?: boolean;
+  url?: string;
+  prompt?: string;
+  style?: AiVisualArchetype;
+  error?: string;
+}> {
+  try {
+    const { topicOrText, style = 'diagram', aspectRatio = '16:9', customPrompt } = params;
+    if (!topicOrText && !customPrompt) {
+      return { error: 'Informe um tema, rascunho de post ou prompt para gerar a imagem.' };
+    }
+
+    // 1. Gera ou utiliza o prompt de arte otimizado para o modelo FLUX
+    const finalPrompt = customPrompt?.trim()
+      ? customPrompt.trim()
+      : await generateAiVisualPrompt(topicOrText, style);
+
+    // 2. Determina dimensões ideais (16:9 para feeds amplos do X/LinkedIn ou 1:1 quadrado)
+    const width = aspectRatio === '1:1' ? 1080 : 1200;
+    const height = aspectRatio === '1:1' ? 1080 : 675;
+
+    // 3. Requisita imagem de alta resolução ao motor FLUX
+    const encodedPrompt = encodeURIComponent(finalPrompt);
+    const fluxUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&model=flux&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
+
+    const response = await fetch(fluxUrl, {
+      headers: {
+        'User-Agent': 'Createflow-Visual-Engine/1.0',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Falha no motor de imagem (HTTP ${response.status})`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // 4. Salva a imagem gerada de forma persistente no bucket de mídia do Supabase
+    const fileName = `ai_${Date.now()}_${style}.jpg`;
+    const { error: uploadError } = await supabase.storage
+      .from('post_media')
+      .upload(fileName, buffer, {
+        contentType: 'image/jpeg',
+        upsert: true,
+      });
+
+    if (uploadError) {
+      throw new Error(`Erro ao salvar no acervo de mídia: ${uploadError.message}`);
+    }
+
+    const { data: publicData } = supabase.storage
+      .from('post_media')
+      .getPublicUrl(fileName);
+
+    revalidatePath('/');
+
+    return {
+      success: true,
+      url: publicData.publicUrl,
+      prompt: finalPrompt,
+      style,
+    };
+  } catch (err: any) {
+    console.error('Erro ao gerar imagem com IA:', err);
+    return { error: err.message || 'Falha ao gerar imagem com IA.' };
   }
 }
 

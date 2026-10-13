@@ -17,6 +17,7 @@ import {
   Layers,
 } from 'lucide-react';
 import { listMediaAssetsAction, deleteMediaAssetAction, uploadPostImageAction } from '@/app/actions';
+import { AiImageModal } from './AiImageModal';
 import type { MediaAsset } from '@/types';
 
 interface MediaLibraryViewProps {
@@ -35,6 +36,7 @@ export function MediaLibraryView({
   const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [deletingName, setDeletingName] = useState<string | null>(null);
@@ -156,7 +158,7 @@ export function MediaLibraryView({
             type="button"
             disabled={isUploading}
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-violet-600 hover:bg-violet-500 text-white transition-all shadow-md shadow-violet-600/20 active:scale-[0.98] cursor-pointer disabled:opacity-50"
+            className="flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.1] text-white border border-white/[0.1] transition-all cursor-pointer disabled:opacity-50"
           >
             {isUploading ? (
               <>
@@ -165,10 +167,19 @@ export function MediaLibraryView({
               </>
             ) : (
               <>
-                <Upload size={14} />
-                <span>Upload Imagem ou Vídeo</span>
+                <Upload size={14} className="text-violet-400" />
+                <span>Upload Arquivo</span>
               </>
             )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsAiModalOpen(true)}
+            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white transition-all shadow-md shadow-violet-600/20 active:scale-[0.98] cursor-pointer"
+          >
+            <Sparkles size={14} className="text-violet-200" />
+            <span>Gerar com IA</span>
           </button>
         </div>
       </div>
@@ -389,6 +400,24 @@ export function MediaLibraryView({
           })}
         </div>
       )}
+
+      {/* AI Image Generation Modal */}
+      <AiImageModal
+        isOpen={isAiModalOpen}
+        onClose={() => {
+          setIsAiModalOpen(false);
+          loadAssets();
+        }}
+        onSelectImage={(url) => {
+          setIsAiModalOpen(false);
+          loadAssets();
+          if (onSelectMedia) {
+            onSelectMedia(url);
+          } else if (onOpenComposerWithMedia) {
+            onOpenComposerWithMedia(url);
+          }
+        }}
+      />
     </div>
   );
 }

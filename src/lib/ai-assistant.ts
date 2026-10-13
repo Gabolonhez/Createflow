@@ -8,6 +8,7 @@ import type {
   ThreadStyle,
   SprayResult,
   SprayVariant,
+  AiVisualArchetype,
 } from '@/types';
 
 export interface GeneratePostOptions {
@@ -644,3 +645,48 @@ Retorne estritamente um JSON no seguinte formato:
     variants: Array.isArray(res.variants) ? res.variants : [],
   };
 }
+
+/**
+ * Transforms a creator's post text or topic into a high-converting, anti-slop visual prompt for FLUX.
+ * Specifically tuned for tech founders, software engineers, and operators on LinkedIn and X.
+ */
+export async function generateAiVisualPrompt(
+  topicOrText: string,
+  style: AiVisualArchetype = 'diagram'
+): Promise<string> {
+  const archetypeGuides: Record<AiVisualArchetype, string> = {
+    diagram: 'High-level system architecture and data flow diagram, glowing nodes, microservice boxes, database cylinders, message queue pipelines, connected by sleek laser vectors on dark obsidian canvas (#0a0a0c), Linear and Vercel aesthetic, no text labels, clean isometric or 2D technical diagram.',
+    minimal: 'Minimalist high-tech product visual, dark obsidian glass card (#0a0a0c) floating in dark void, soft ambient edge glow in electric cyan and violet, 1px subtle borders, ultra clean typography aesthetic, Dieter Rams meets Apple HIG, no text errors.',
+    metrics: 'Dark mode analytics visualization and performance chart, glowing telemetry line showing massive latency drop or throughput hockey-stick growth, dark matte background, futuristic telemetry dashboard feel, clean vector style, no garbled text.',
+    terminal: 'Sleek modern developer terminal and code editor window floating in space, dark charcoal glassmorphism window, subtle neon syntax highlighting accents, glowing cursor, minimal clean IDE mockup, no blurry text.',
+    concept: 'Abstract 3D technological metaphor, dark obsidian geometric prisms, refracting laser beam, crystalline silicon wafers, clean metallic reflections, high contrast dark mode wallpaper aesthetic, ultra crisp 8k render.'
+  };
+
+  const styleGuide = archetypeGuides[style] || archetypeGuides.diagram;
+
+  const systemInstruction = `You are a world-class visual art director designing viral technical visuals for software engineers, tech founders, and CTOs on LinkedIn and X (Twitter).
+Your task is to convert the user's post content into a precise, high-aesthetic FLUX image generation prompt in English.
+
+CRITICAL ANTI-SLOP RULES:
+- NEVER output generic smiling 3D Pixar/cartoon people, generic business handshakes, or robot android heads.
+- NEVER request legible small text or words inside the image (AI image generators garble text). Specify "no text, abstract geometric nodes and sleek iconography only".
+- COLOR PALETTE: Obsidian dark (#0a0a0c, #121216), dark graphite, with accents of electric violet (#8b5cf6), cyan (#06b6d4), or emerald (#10b981).
+- FORMAT: Output ONLY the final prompt in English as a single cohesive paragraph (40-80 words). No markdown formatting, no conversational filler.`;
+
+  const prompt = `Post Content / Topic:
+"${topicOrText}"
+
+Desired Archetype: ${style.toUpperCase()}
+Archetype Description: ${styleGuide}
+
+Create the ultimate English visual prompt for FLUX to accompany this post:`;
+
+  try {
+    const visualPrompt = await generateText(prompt, systemInstruction);
+    return visualPrompt.trim().replace(/^["']|["']$/g, '');
+  } catch (err: any) {
+    // Robust fallback if Gemini encounters rate limit
+    return `Minimalist dark mode technical illustration about ${topicOrText.slice(0, 80)}, dark obsidian background (#0a0a0c), glowing geometric nodes, laser lines, Linear and Raycast aesthetic, high contrast, clean vector render, no text.`;
+  }
+}
+

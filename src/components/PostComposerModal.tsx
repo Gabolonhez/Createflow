@@ -23,6 +23,7 @@ import {
 import { XLogo, LinkedInLogo } from './BrandIcons';
 import { PostPreviewCard } from './PostPreviewCard';
 import { MediaLibraryView } from './MediaLibraryView';
+import { AiImageModal } from './AiImageModal';
 import { generateXIntentUrl } from '@/lib/twitter';
 import { generateLinkedInIntentUrl } from '@/lib/linkedin';
 import { uploadPostImageAction } from '@/app/actions';
@@ -79,6 +80,7 @@ export function PostComposerModal({
   const [pillar, setPillar] = useState(initialPost?.pillar || 'tech-insights');
   const [mediaUrl, setMediaUrl] = useState(initialPost?.mediaUrls?.[0] || '');
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [isAiImageModalOpen, setIsAiImageModalOpen] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -671,6 +673,16 @@ export function PostComposerModal({
                     <FolderOpen size={13} className="text-violet-400" />
                     <span>Do Acervo</span>
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsAiImageModalOpen(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-sm shadow-violet-600/25 transition-all cursor-pointer whitespace-nowrap active:scale-[0.98]"
+                    title="Gerar imagem técnica com IA (FLUX) ideal para este post"
+                  >
+                    <Sparkles size={13} className="text-violet-200" />
+                    <span>Gerar com IA</span>
+                  </button>
                 </div>
                 {uploadError && (
                   <span className="text-[10px] text-amber-400 font-mono">{uploadError}</span>
@@ -792,6 +804,17 @@ export function PostComposerModal({
           </div>
         </div>
       )}
+
+      {/* AI Image Generator Modal Overlay */}
+      <AiImageModal
+        isOpen={isAiImageModalOpen}
+        onClose={() => setIsAiImageModalOpen(false)}
+        initialContext={activeEditorTab === 'linkedin' && linkedinText ? linkedinText : text}
+        onSelectImage={(url) => {
+          setMediaUrl(url);
+          setIsAiImageModalOpen(false);
+        }}
+      />
     </div>
   );
 }
