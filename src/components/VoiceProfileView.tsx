@@ -57,6 +57,9 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
   const [autoPilotMode, setAutoPilotMode] = useState<'review_first' | 'autonomous'>(
     profile.auto_pilot_mode || 'review_first'
   );
+  const [preferredLanguage, setPreferredLanguage] = useState<'pt-BR' | 'en-US'>(
+    profile.preferred_language || 'pt-BR'
+  );
 
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -77,6 +80,7 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
         posting_slots: slots,
         best_time_slots: bestTimeSlots,
         auto_pilot_mode: autoPilotMode,
+        preferred_language: preferredLanguage,
       });
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 2500);
@@ -472,6 +476,69 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
                 </span>
                 <span className="text-white/50 text-[11px] mt-0.5 leading-relaxed">
                   A IA gera os posts e já os agenda automaticamente nos próximos Smart Slots livres. Se as conexões de API estiverem configuradas, posta sem intervenção.
+                </span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        {/* Preferred Language Selector */}
+        <div className="flex flex-col gap-2 pt-3 border-t border-white/[0.06]">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-mono font-medium text-white/70 uppercase tracking-wider">
+              Idioma Padrão de Redação da IA:
+            </label>
+            <span className="text-[11px] font-mono text-zinc-500">
+              (Você pode alternar no gerador ou traduzir qualquer post com 1 clique)
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <label
+              className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors ${
+                preferredLanguage === 'pt-BR'
+                  ? 'bg-emerald-500/10 border-emerald-500/40 text-white'
+                  : 'bg-black/30 border-white/[0.06] text-white/70 hover:border-white/[0.12]'
+              }`}
+            >
+              <input
+                type="radio"
+                name="preferredLang"
+                value="pt-BR"
+                checked={preferredLanguage === 'pt-BR'}
+                onChange={() => setPreferredLanguage('pt-BR')}
+                className="mt-0.5 accent-emerald-500"
+              />
+              <div className="flex flex-col text-xs">
+                <span className="font-semibold text-white">
+                  🇧🇷 Português do Brasil (Padrão)
+                </span>
+                <span className="text-white/50 text-[11px] mt-0.5 leading-relaxed">
+                  Gera todos os posts em português com vocabulário natural do mercado tech brasileiro.
+                </span>
+              </div>
+            </label>
+
+            <label
+              className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors ${
+                preferredLanguage === 'en-US'
+                  ? 'bg-sky-500/10 border-sky-500/40 text-white'
+                  : 'bg-black/30 border-white/[0.06] text-white/70 hover:border-white/[0.12]'
+              }`}
+            >
+              <input
+                type="radio"
+                name="preferredLang"
+                value="en-US"
+                checked={preferredLanguage === 'en-US'}
+                onChange={() => setPreferredLanguage('en-US')}
+                className="mt-0.5 accent-sky-500"
+              />
+              <div className="flex flex-col text-xs">
+                <span className="font-semibold text-white">
+                  🇺🇸 Inglês (US Tech Operator)
+                </span>
+                <span className="text-white/50 text-[11px] mt-0.5 leading-relaxed">
+                  Gera nativamente em inglês no estilo founder / staff engineer do Vale do Silício.
                 </span>
               </div>
             </label>

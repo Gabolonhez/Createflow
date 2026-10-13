@@ -111,6 +111,7 @@ export interface VoiceProfile {
   auto_publish_x: boolean;
   auto_publish_linkedin: boolean;
   auto_pilot_mode?: 'review_first' | 'autonomous';
+  preferred_language?: 'pt-BR' | 'en-US';
 }
 
 export interface SprayVariant {
@@ -177,6 +178,19 @@ export interface GeneratedAiImageResult {
   prompt: string;
   style: AiVisualArchetype;
   name: string;
+}
+
+export interface TranslatePostParams {
+  text: string;
+  thread?: string[];
+  linkedinText?: string | null;
+  targetLanguage?: 'en-US' | 'pt-BR';
+}
+
+export interface TranslatePostResult {
+  text: string;
+  thread: string[];
+  linkedinText?: string;
 }
 
 export type MainSection = 'plan' | 'ideas' | 'voice' | 'results' | 'settings';

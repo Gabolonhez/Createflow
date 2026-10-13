@@ -9,6 +9,8 @@ import type {
   SprayResult,
   SprayVariant,
   AiVisualArchetype,
+  TranslatePostParams,
+  TranslatePostResult,
 } from '@/types';
 
 export interface GeneratePostOptions {
@@ -20,6 +22,7 @@ export interface GeneratePostOptions {
   threadStyle?: ThreadStyle;
   threadLength?: number;
   instruction?: string;
+  language?: 'pt-BR' | 'en-US';
   voiceProfile: VoiceProfile;
   facts: Fact[];
   references?: Reference[];
@@ -42,7 +45,8 @@ export interface GeneratedPostResult {
 function buildSystemInstruction(
   voiceProfile: VoiceProfile,
   facts: Fact[],
-  references: Reference[] = []
+  references: Reference[] = [],
+  language: 'pt-BR' | 'en-US' = 'pt-BR'
 ): string {
   const factsList = facts.length > 0
     ? facts.map((f) => `- [${f.category}] ${f.subject}: ${f.detail}`).join('\n')
@@ -149,7 +153,17 @@ ${samples}
      * Parágrafos curtos de 1 a 2 linhas com espaçamento visual (linha em branco dupla entre parágrafos) para escaneabilidade mobile.
      * Desenvolvimento profundo de narrativa: o problema real, o que quebrou na prática, métricas antes vs depois, a decisão difícil tomada.
      * Marcadores limpos (• ou 1-2-3) para os aprendizados centrais, sem tom de cartilha.
-     * Proibido jargões corporativos vazios. Zero hashtags no meio das frases (no máximo 2 ou 3 no final).${benchmarkSection}`;
+     * Proibido jargões corporativos vazios. Zero hashtags no meio das frases (no máximo 2 ou 3 no final).
+
+9. IDIOMA DE REDAÇÃO & VOCABULÁRIO:
+${language === 'en-US'
+  ? `   * ATENÇÃO CRÍTICA: ESCREVA 100% EM INGLÊS NORTE-AMERICANO (US English).
+   * Adote a cadência autêntica de um tech founder ou staff engineer do Vale do Silício.
+   * Use termos naturais de operadores americanos (ex: shipped, latency drop, technical debt, dogfooding, playbook, bottleneck).
+   * NUNCA faça traduções literais robóticas.
+   * Respeite rigorosamente os limites: tweets no X < 280 caracteres e LinkedIn 800 a 1.800 caracteres.`
+  : `   * ESCREVA EM PORTUGUÊS DO BRASIL (pt-BR - Padrão).
+   * Mantenha o vocabulário natural do mercado tech brasileiro com termos técnicos usuais (ex: deploy, pipeline, refactor, prod).`}${benchmarkSection}`;
 
 }
 
@@ -157,7 +171,8 @@ ${samples}
  * Generates an authentic post for X and/or LinkedIn with platform-specific lengths and structures
  */
 export async function generateCreatorPost(opts: GeneratePostOptions): Promise<GeneratedPostResult> {
-  const systemInstruction = buildSystemInstruction(opts.voiceProfile, opts.facts, opts.references || []);
+  const language = opts.language || opts.voiceProfile.preferred_language || 'pt-BR';
+  const systemInstruction = buildSystemInstruction(opts.voiceProfile, opts.facts, opts.references || [], language);
 
   const isLinkedIn = opts.platforms.includes('linkedin');
   const isX = opts.platforms.includes('x');
@@ -689,4 +704,72 @@ Create the ultimate English visual prompt for FLUX to accompany this post:`;
     return `Minimalist dark mode technical illustration about ${topicOrText.slice(0, 80)}, dark obsidian background (#0a0a0c), glowing geometric nodes, laser lines, Linear and Raycast aesthetic, high contrast, clean vector render, no text.`;
   }
 }
+
+/**
+ * Transcreates / localizes a post between Portuguese and native US Tech English (or vice-versa).
+ * Strictly preserves the operator voice, staccato spacing, nuclear hooks, and character constraints.
+ */
+export async function translateAndLocalizePost(
+  params: TranslatePostParams
+): Promise<TranslatePostResult> {
+  const { text, thread = [], linkedinText, targetLanguage = 'en-US' } = params;
+  const isToEnglish = targetLanguage === 'en-US';
+
+  const systemInstruction = `You are a bilingual tech founder, staff engineer, and elite ghostwriter fluent in both Brazilian Portuguese and Silicon Valley US Tech English.
+Your task is to TRANSCREATE and LOCALIZE social posts for X (Twitter) and LinkedIn.
+
+CRITICAL RULES:
+1. TRANSCREATION OVER LITERAL TRANSLATION: Do not translate word-for-word. Adapt cultural tech idioms so it reads 100% native to an operator.
+${isToEnglish ? `
+- TARGET LANGUAGE: American English (US).
+- TONE: Direct, high-authority, contrarian, no hedging, staccato linebreaks (double spaced).
+- VOCABULARY: Natural Silicon Valley tech founder / engineer terminology (e.g., 'shipped to prod', 'p99 latency', 'bottleneck', 'dogfooding', 'playbook').
+- STRICT X CONSTRAINT: Each tweet in "text" and each tweet in "thread" MUST be strictly under 280 characters!
+- STRICT LINKEDIN CONSTRAINT: "linkedinText" must maintain short 1-2 line paragraphs with visual spacing, hook in first 2 lines, no corporate cliché.` : `
+- TARGET LANGUAGE: Brazilian Portuguese (pt-BR).
+- TONE: Operador direto, opinativo, sem enrolação.
+- STRICT X CONSTRAINT: Cada tweet DEVE ter estritamente menos de 280 caracteres.
+- STRICT LINKEDIN CONSTRAINT: Parágrafos curtos com espaçamento visual.`}
+
+2. FORMAT: Return strictly a JSON object matching:
+{
+  "text": "translated main text (< 280 chars if for X)",
+  "thread": ["translated tweet 2 (< 280 chars)", "translated tweet 3 (< 280 chars)"],
+  "linkedinText": "translated linkedin post if provided"
+}`;
+
+  const prompt = `Post to transcreate into ${isToEnglish ? 'American English' : 'Brazilian Portuguese'}:
+
+MAIN TEXT:
+"""
+${text}
+"""
+
+${thread.length > 0 ? `THREAD TWEETS (${thread.length}):
+${thread.map((t, i) => `Tweet #${i + 2}: """${t}"""`).join('\n')}
+` : ''}
+
+${linkedinText ? `LINKEDIN POST:
+"""
+${linkedinText}
+"""` : ''}`;
+
+  try {
+    const res = await generateJson<{
+      text: string;
+      thread?: string[];
+      linkedinText?: string;
+    }>(prompt, systemInstruction);
+
+    return {
+      text: res.text || text,
+      thread: Array.isArray(res.thread) ? res.thread : [],
+      linkedinText: res.linkedinText || undefined,
+    };
+  } catch (err: any) {
+    console.error('Erro na transcriação/tradução:', err);
+    throw new Error('Falha ao traduzir o post com IA.');
+  }
+}
+
 

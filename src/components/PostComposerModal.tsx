@@ -19,6 +19,8 @@ import {
   Image as ImageIcon,
   Upload,
   FolderOpen,
+  Globe,
+  RotateCcw,
 } from 'lucide-react';
 import { XLogo, LinkedInLogo } from './BrandIcons';
 import { PostPreviewCard } from './PostPreviewCard';
@@ -26,7 +28,7 @@ import { MediaLibraryView } from './MediaLibraryView';
 import { AiImageModal } from './AiImageModal';
 import { generateXIntentUrl } from '@/lib/twitter';
 import { generateLinkedInIntentUrl } from '@/lib/linkedin';
-import { uploadPostImageAction } from '@/app/actions';
+import { uploadPostImageAction, translatePostAction } from '@/app/actions';
 import type { CreatorPost, Platform, ThreadStyle } from '@/types';
 
 interface PostComposerModalProps {
@@ -117,8 +119,56 @@ export function PostComposerModal({
   const [isSaving, setIsSaving] = useState(false);
   const [isRewriting, setIsRewriting] = useState(false);
   const [isExpandingForLinkedIn, setIsExpandingForLinkedIn] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [isTranslatedToEn, setIsTranslatedToEn] = useState(false);
+  const [originalPtState, setOriginalPtState] = useState<{
+    text: string;
+    thread: string[];
+    linkedinText: string;
+  } | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
+
+  const handleTranslate = async (targetLang: 'en-US' | 'pt-BR') => {
+    if (targetLang === 'pt-BR' && originalPtState) {
+      setText(originalPtState.text);
+      setThread(originalPtState.thread);
+      setLinkedinText(originalPtState.linkedinText);
+      setIsTranslatedToEn(false);
+      return;
+    }
+
+    setIsTranslating(true);
+    try {
+      setOriginalPtState({
+        text,
+        thread: [...thread],
+        linkedinText,
+      });
+
+      const res = await translatePostAction({
+        text,
+        thread: thread.length > 0 ? thread : undefined,
+        linkedinText: linkedinText.trim() ? linkedinText : undefined,
+        targetLanguage: targetLang,
+      });
+
+      if (res.translated) {
+        setText(res.translated.text);
+        if (res.translated.thread && res.translated.thread.length > 0) {
+          setThread(res.translated.thread);
+        }
+        if (res.translated.linkedinText) {
+          setLinkedinText(res.translated.linkedinText);
+        }
+        setIsTranslatedToEn(true);
+      }
+    } catch (err: any) {
+      console.error('Erro na tradução:', err);
+    } finally {
+      setIsTranslating(false);
+    }
+  };
 
   const charCount = text.length;
   const linkedinCharCount = linkedinText.length;
@@ -303,7 +353,7 @@ export function PostComposerModal({
         {/* Modal Body: 2 Columns (Editor on left, Live Preview on right) */}
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 overflow-y-auto">
           {/* LEFT: Composer Controls */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 min-w-0">
             {/* Platform Selection & Pillar */}
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div className="flex items-center gap-1.5">
@@ -465,6 +515,30 @@ export function PostComposerModal({
                     <span>Gancho afiado</span>
                   </button>
 
+                  {isTranslatedToEn ? (
+                    <button
+                      type="button"
+                      disabled={isTranslating}
+                      onClick={() => handleTranslate('pt-BR')}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/35 transition-all whitespace-nowrap active:scale-[0.98]"
+                      title="Restaurar versão original em Português"
+                    >
+                      {isTranslating ? <Loader2 size={12} className="animate-spin" /> : <RotateCcw size={12} />}
+                      <span>↩ Voltar p/ Português</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={isTranslating || !text.trim()}
+                      onClick={() => handleTranslate('en-US')}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/30 transition-all whitespace-nowrap active:scale-[0.98]"
+                      title="Transcriar para inglês de operador (< 280c no X mantendo gancho)"
+                    >
+                      {isTranslating ? <Loader2 size={12} className="animate-spin" /> : <Globe size={12} />}
+                      <span>🌐 Traduzir p/ Inglês</span>
+                    </button>
+                  )}
+
                   {isLinkedIn && (
                     <button
                       type="button"
@@ -580,76 +654,100 @@ export function PostComposerModal({
                   >
                     <span>Gancho para "...ver mais"</span>
                   </button>
+
+                  {isTranslatedToEn ? (
+                    <button
+                      type="button"
+                      disabled={isTranslating}
+                      onClick={() => handleTranslate('pt-BR')}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/35 transition-all whitespace-nowrap active:scale-[0.98]"
+                      title="Restaurar versão original em Português"
+                    >
+                      {isTranslating ? <Loader2 size={12} className="animate-spin" /> : <RotateCcw size={12} />}
+                      <span>↩ Voltar p/ Português</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={isTranslating || (!linkedinText.trim() && !text.trim())}
+                      onClick={() => handleTranslate('en-US')}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/30 transition-all whitespace-nowrap active:scale-[0.98]"
+                      title="Transcriar para inglês de operador do Vale do Silício"
+                    >
+                      {isTranslating ? <Loader2 size={12} className="animate-spin" /> : <Globe size={12} />}
+                      <span>🌐 Traduzir p/ Inglês</span>
+                    </button>
+                  )}
                 </div>
               </>
             )}
 
-            {/* Schedule Date & Media Url Inputs */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-white/[0.06]">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-mono text-white/50 flex items-center gap-1">
-                    <CalendarClock size={12} /> Agendar Data e Hora:
-                  </label>
-                  {scheduledFor && (
-                    <button
-                      type="button"
-                      onClick={() => setScheduledFor('')}
-                      className="text-[10px] font-mono text-violet-400 hover:text-violet-300"
-                    >
-                      Usar Smart Slot
-                    </button>
-                  )}
+            {/* Schedule Date & Media Controls */}
+            <div className="flex flex-col gap-3 pt-3 border-t border-white/[0.08]">
+              {/* Schedule Date Box */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-white flex items-center gap-1.5">
+                      <CalendarClock size={13} className="text-violet-400" /> Agendar Data e Hora
+                    </span>
+                    {scheduledFor && (
+                      <button
+                        type="button"
+                        onClick={() => setScheduledFor('')}
+                        className="text-[10px] font-mono text-violet-400 hover:text-violet-300"
+                      >
+                        Usar Smart Slot
+                      </button>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-zinc-500 font-mono">
+                    {scheduledFor
+                      ? 'Horário agendado manualmente'
+                      : '⚡ Automático: ocupará o próximo Smart Slot livre'}
+                  </span>
                 </div>
+
                 <input
                   type="datetime-local"
                   value={scheduledFor}
                   onChange={(e) => setScheduledFor(e.target.value)}
-                  className="px-3 py-1.5 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50 font-mono"
+                  className="px-3 py-1.5 rounded-lg bg-black/50 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50 font-mono self-start sm:self-auto"
                 />
-                <span className="text-[10px] font-mono text-zinc-500">
-                  {scheduledFor
-                    ? 'Horário manual customizado'
-                    : '⚡ Vazio: ocupará automaticamente o próximo Smart Slot livre (09:00, 14:30 ou 18:30 BRT)'}
-                </span>
               </div>
 
-              <div className="flex flex-col gap-1.5">
+              {/* Media Controls Box */}
+              <div className="flex flex-col gap-2.5 p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] relative z-20">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-mono text-white/50 flex items-center gap-1">
-                    <ImageIcon size={12} className="text-violet-400" /> Imagem Anexa:
-                  </label>
+                  <span className="text-xs font-medium text-white flex items-center gap-1.5">
+                    <ImageIcon size={13} className="text-violet-400" /> Mídia Anexa (Imagem ou Vídeo)
+                  </span>
                   {mediaUrl && (
                     <button
                       type="button"
                       onClick={() => setMediaUrl('')}
-                      className="text-[10px] font-mono text-red-400 hover:text-red-300"
+                      className="text-[11px] font-mono text-rose-400 hover:text-rose-300 transition-colors"
                     >
-                      Remover imagem
+                      Remover mídia
                     </button>
                   )}
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <input
-                    type="url"
-                    value={mediaUrl}
-                    onChange={(e) => setMediaUrl(e.target.value)}
-                    placeholder="Cole a URL ou envie um arquivo..."
-                    className="flex-1 px-3 py-1.5 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50 font-mono"
-                  />
+                {/* 3 Prominent Action Buttons */}
+                <div className="flex items-center flex-wrap gap-2">
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/*,video/*"
                     onChange={handleFileUpload}
                     className="hidden"
                   />
+
                   <button
                     type="button"
                     disabled={isUploadingImage}
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.1] text-white border border-white/[0.1] transition-all cursor-pointer whitespace-nowrap disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.1] text-white border border-white/[0.1] transition-all cursor-pointer whitespace-nowrap disabled:opacity-50 active:scale-[0.98]"
                   >
                     {isUploadingImage ? (
                       <>
@@ -659,7 +757,7 @@ export function PostComposerModal({
                     ) : (
                       <>
                         <Upload size={13} className="text-violet-400" />
-                        <span>Upload</span>
+                        <span>Upload Arquivo</span>
                       </>
                     )}
                   </button>
@@ -667,7 +765,7 @@ export function PostComposerModal({
                   <button
                     type="button"
                     onClick={() => setIsLibraryOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-violet-600/20 hover:bg-violet-600/30 text-violet-300 border border-violet-500/30 transition-all cursor-pointer whitespace-nowrap"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-violet-600/20 hover:bg-violet-600/30 text-violet-300 border border-violet-500/30 transition-all cursor-pointer whitespace-nowrap active:scale-[0.98]"
                     title="Escolher mídia salva no acervo"
                   >
                     <FolderOpen size={13} className="text-violet-400" />
@@ -677,13 +775,45 @@ export function PostComposerModal({
                   <button
                     type="button"
                     onClick={() => setIsAiImageModalOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-sm shadow-violet-600/25 transition-all cursor-pointer whitespace-nowrap active:scale-[0.98]"
-                    title="Gerar imagem técnica com IA (FLUX) ideal para este post"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-md shadow-violet-600/25 transition-all cursor-pointer whitespace-nowrap active:scale-[0.98]"
+                    title="Gerar visual técnico com IA (FLUX) ideal para este post"
                   >
                     <Sparkles size={13} className="text-violet-200" />
-                    <span>Gerar com IA</span>
+                    <span>✨ Gerar com IA</span>
                   </button>
                 </div>
+
+                {/* URL Input */}
+                <input
+                  type="url"
+                  value={mediaUrl}
+                  onChange={(e) => setMediaUrl(e.target.value)}
+                  placeholder="Ou cole a URL direta de uma imagem ou vídeo..."
+                  className="w-full px-3 py-1.5 rounded-lg bg-black/50 border border-white/[0.08] text-white text-xs placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/50 font-mono"
+                />
+
+                {/* Media Preview thumbnail if attached */}
+                {mediaUrl && (
+                  <div className="flex items-center gap-3 p-2 rounded-lg bg-black/40 border border-white/[0.06]">
+                    <img
+                      src={mediaUrl}
+                      alt="Anexo"
+                      className="size-10 rounded object-cover border border-white/[0.1] bg-black"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="text-[11px] font-mono text-emerald-400 flex items-center gap-1">
+                        <Check size={11} /> Mídia pronta e anexada
+                      </span>
+                      <span className="text-[10px] text-zinc-500 font-mono truncate">
+                        {mediaUrl}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 {uploadError && (
                   <span className="text-[10px] text-amber-400 font-mono">{uploadError}</span>
                 )}
@@ -692,7 +822,7 @@ export function PostComposerModal({
           </div>
 
           {/* RIGHT: Live Preview */}
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 min-w-0">
             <span className="text-[11px] font-mono text-white/40 uppercase">
               VISUALIZAÇÃO EM TEMPO REAL
             </span>

@@ -34,6 +34,7 @@ interface GeneratePostModalProps {
     threadStyle?: ThreadStyle;
     threadLength?: number;
     instruction?: string;
+    language?: 'pt-BR' | 'en-US';
   }) => Promise<{ success: boolean; post?: CreatorPost; error?: string }>;
   ideas: PostIdea[];
   topics: Topic[];
@@ -42,6 +43,7 @@ interface GeneratePostModalProps {
   prefilledIdea?: PostIdea | null;
   prefilledTopic?: Topic | null;
   prefilledReference?: Reference | null;
+  defaultLanguage?: 'pt-BR' | 'en-US';
 }
 
 export function GeneratePostModal({
@@ -55,12 +57,15 @@ export function GeneratePostModal({
   prefilledIdea,
   prefilledTopic,
   prefilledReference,
+  defaultLanguage = 'pt-BR',
 }: GeneratePostModalProps) {
   if (!isOpen) return null;
 
   const [sourceType, setSourceType] = useState<'idea' | 'topic' | 'fact' | 'reference' | 'scratch'>(
     prefilledIdea ? 'idea' : prefilledTopic ? 'topic' : prefilledReference ? 'reference' : 'scratch'
   );
+
+  const [language, setLanguage] = useState<'pt-BR' | 'en-US'>(defaultLanguage);
 
   const [selectedIdeaId, setSelectedIdeaId] = useState<string>(prefilledIdea?.id || '');
   const [selectedTopicId, setSelectedTopicId] = useState<string>(prefilledTopic?.id || '');
@@ -125,6 +130,7 @@ export function GeneratePostModal({
         threadStyle: format === 'thread' ? 'thread' : 'single',
         threadLength: format === 'thread' ? threadLength : 0,
         instruction: instruction.trim() || undefined,
+        language,
       });
 
       if (res.error) {
@@ -378,6 +384,40 @@ export function GeneratePostModal({
               placeholder="Ex: Foque no aprendizado de engenharia e use tom provocativo..."
               className="px-3 py-2 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50"
             />
+          </div>
+
+          {/* Language Selector */}
+          <div className="flex flex-col gap-1.5 pt-1">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-mono text-white/50">Idioma de Geração:</label>
+              <span className="text-[10px] text-zinc-500 font-mono">
+                {language === 'pt-BR' ? 'Português Nativo BR (Padrão)' : 'US Tech Operator English'}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setLanguage('pt-BR')}
+                className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium border transition-all ${
+                  language === 'pt-BR'
+                    ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 font-semibold shadow-sm'
+                    : 'bg-white/[0.03] border-white/[0.06] text-white/50 hover:text-white'
+                }`}
+              >
+                <span>🇧🇷 Português (padrão)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setLanguage('en-US')}
+                className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium border transition-all ${
+                  language === 'en-US'
+                    ? 'bg-sky-500/15 border-sky-500/40 text-sky-300 font-semibold shadow-sm'
+                    : 'bg-white/[0.03] border-white/[0.06] text-white/50 hover:text-white'
+                }`}
+              >
+                <span>🇺🇸 Inglês (US Tech)</span>
+              </button>
+            </div>
           </div>
         </div>
 

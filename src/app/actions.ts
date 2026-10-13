@@ -38,6 +38,7 @@ import {
   generateBrainstormIdeas,
   generateSprayPackage,
   generateAiVisualPrompt,
+  translateAndLocalizePost,
 } from '@/lib/ai-assistant';
 import { publishToX, publishXThread } from '@/lib/twitter';
 import { publishToLinkedIn } from '@/lib/linkedin';
@@ -57,6 +58,7 @@ import type {
   MediaAsset,
   AiVisualArchetype,
   GenerateAiImageParams,
+  TranslatePostParams,
 } from '@/types';
 
 // ==========================================
@@ -274,6 +276,7 @@ export async function generatePostAction(options: {
   threadStyle?: ThreadStyle;
   threadLength?: number;
   instruction?: string;
+  language?: 'pt-BR' | 'en-US';
 }) {
   try {
     const voiceProfile = await getVoiceProfile();
@@ -346,6 +349,19 @@ export async function rewritePostAction(text: string, instruction?: string, plat
       voiceCheck: { level: 'warn', items: [] },
       error: err.message || 'Falha ao reescrever no seu tom.',
     };
+  }
+}
+
+export async function translatePostAction(params: TranslatePostParams): Promise<{
+  success?: boolean;
+  translated?: { text: string; thread: string[]; linkedinText?: string };
+  error?: string;
+}> {
+  try {
+    const translated = await translateAndLocalizePost(params);
+    return { success: true, translated };
+  } catch (err: any) {
+    return { error: err.message || 'Falha ao traduzir post.' };
   }
 }
 
