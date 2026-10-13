@@ -279,7 +279,25 @@ export async function setDocData(collectionName: string, docId: string, data: an
   store[docId] = updatedData;
 
   try {
-    await supabase.from(collectionName).upsert(updatedData);
+    const { error } = await supabase.from(collectionName).upsert(updatedData);
+    if (error && error.code === 'PGRST204' && collectionName === 'connections_config') {
+      // Fallback: PostgREST schema cache does not have linkedin_client_id/secret columns yet.
+      // Save known core columns without crashing.
+      const safeData = {
+        id: 'main_config',
+        x_connected: updatedData.x_connected ?? true,
+        x_username: updatedData.x_username ?? 'gabolonhez',
+        x_publish_mode: updatedData.x_publish_mode ?? 'manual',
+        x_bearer_token: updatedData.x_bearer_token ?? null,
+        linkedin_connected: updatedData.linkedin_connected ?? false,
+        linkedin_name: updatedData.linkedin_name ?? 'Gabriel Bolonhez',
+        linkedin_profile_id: updatedData.linkedin_profile_id ?? null,
+        linkedin_access_token: updatedData.linkedin_access_token ?? null,
+        linkedin_publish_mode: updatedData.linkedin_publish_mode ?? 'manual',
+        updated_at: now,
+      };
+      await supabase.from(collectionName).upsert(safeData);
+    }
   } catch (error) {
     // Local persistence works seamlessly
   }
@@ -478,7 +496,8 @@ export async function deleteTopic(id: string): Promise<void> {
 }
 
 export async function getFacts(): Promise<Fact[]> {
-  return getCollectionData<Fact>('facts', 'created_at');
+  const facts = await getCollectionData<Fact>('facts', 'created_at');
+  return facts.filter((f: any) => f.category !== 'system');
 }
 
 export async function saveFact(fact: Partial<Fact>): Promise<Fact> {
@@ -592,11 +611,62 @@ export async function deleteAiLearning(id: string): Promise<void> {
 export async function getConnectionsConfig(): Promise<ConnectionsConfig> {
   const cfg = (await getDocById<ConnectionsConfig>('connections_config', 'main_config')) ||
               (await getDocById<ConnectionsConfig>('connections_config', 'connections_config'));
-  if (cfg) return cfg;
-  return inMemoryStore.connections_config.connections_config as ConnectionsConfig;
+  const fallback = inMemoryStore.connections_config.connections_config as ConnectionsConfig;
+  const merged: ConnectionsConfig = { ...fallback, ...(cfg || {}) };
+
+  // 1. Fallback to process.env
+  if (!merged.linkedin_client_id && process.env.LINKEDIN_CLIENT_ID) {
+    merged.linkedin_client_id = process.env.LINKEDIN_CLIENT_ID;
+  }
+  if (!merged.linkedin_client_secret && process.env.LINKEDIN_CLIENT_SECRET) {
+    merged.linkedin_client_secret = process.env.LINKEDIN_CLIENT_SECRET;
+  }
+
+  // 2. Fallback to system backup in facts table
+  if (!merged.linkedin_client_id || !merged.linkedin_client_secret) {
+    try {
+      const credFact = await getDocById<{ id: string; statement: string }>('facts', 'cfg_linkedin_credentials');
+      if (credFact?.statement) {
+        const parsed = JSON.parse(credFact.statement);
+        if (!merged.linkedin_client_id && parsed.linkedin_client_id) {
+          merged.linkedin_client_id = parsed.linkedin_client_id;
+        }
+        if (!merged.linkedin_client_secret && parsed.linkedin_client_secret) {
+          merged.linkedin_client_secret = parsed.linkedin_client_secret;
+        }
+      }
+    } catch (ignore) {}
+  }
+
+  return merged;
 }
 
 export async function saveConnectionsConfig(cfg: Partial<ConnectionsConfig>): Promise<void> {
+  // 1. If LinkedIn credentials are provided, safely persist in system backup store
+  if (cfg.linkedin_client_id || cfg.linkedin_client_secret) {
+    try {
+      const current = await getConnectionsConfig();
+      const statement = JSON.stringify({
+        linkedin_client_id: cfg.linkedin_client_id || current.linkedin_client_id || '',
+        linkedin_client_secret: cfg.linkedin_client_secret || current.linkedin_client_secret || '',
+      });
+      await setDocData('facts', 'cfg_linkedin_credentials', {
+        id: 'cfg_linkedin_credentials',
+        statement,
+        category: 'system',
+      });
+    } catch (ignore) {}
+  }
+
+  // 2. Update memory store
+  const store = inMemoryStore.connections_config;
+  if (store.connections_config) {
+    store.connections_config = { ...store.connections_config, ...cfg };
+  }
+  if (store.main_config) {
+    store.main_config = { ...store.main_config, ...cfg };
+  }
+
+  // 3. Persist core fields to Postgres connections_config table
   await setDocData('connections_config', 'main_config', cfg);
-  await setDocData('connections_config', 'connections_config', cfg);
 }

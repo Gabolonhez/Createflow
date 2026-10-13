@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Link2,
   CheckCircle2,
@@ -37,6 +37,20 @@ export function ConnectionsView({
 
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
+  const [isConnectingOAuth, setIsConnectingOAuth] = useState(false);
+
+  useEffect(() => {
+    if (connections.linkedin_client_id && !liClientId) {
+      setLiClientId(connections.linkedin_client_id);
+    }
+    if (connections.linkedin_client_secret && !liClientSecret) {
+      setLiClientSecret(connections.linkedin_client_secret);
+    }
+    if (connections.linkedin_publish_mode) {
+      setLiMode(connections.linkedin_publish_mode);
+    }
+  }, [connections.linkedin_client_id, connections.linkedin_client_secret, connections.linkedin_publish_mode]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -47,6 +61,7 @@ export function ConnectionsView({
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
+    setConnectError(null);
     try {
       await onSaveConnections({
         x_publish_mode: xMode,
@@ -61,6 +76,39 @@ export function ConnectionsView({
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleConnectOAuth = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setConnectError(null);
+
+    const effectiveClientId = liClientId.trim() || connections.linkedin_client_id?.trim();
+    const effectiveClientSecret = liClientSecret.trim() || connections.linkedin_client_secret?.trim();
+
+    if (!effectiveClientId) {
+      setConnectError('Preencha o Client ID abaixo antes de conectar.');
+      return;
+    }
+
+    setIsConnectingOAuth(true);
+    try {
+      await onSaveConnections({
+        linkedin_client_id: effectiveClientId,
+        linkedin_client_secret: effectiveClientSecret || undefined,
+        linkedin_publish_mode: liMode,
+      });
+    } catch (err) {
+      console.warn('Silent save failed before OAuth redirect:', err);
+    }
+
+    const url = new URL(linkedInOAuthUrl, window.location.origin);
+    if (effectiveClientId) {
+      url.searchParams.set('client_id', effectiveClientId);
+    }
+    if (effectiveClientSecret) {
+      url.searchParams.set('client_secret', effectiveClientSecret);
+    }
+    window.location.href = url.toString();
   };
 
   return (
@@ -210,12 +258,25 @@ export function ConnectionsView({
                 </span>
               </div>
 
-              <a
-                href={linkedInOAuthUrl}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0A66C2] hover:bg-[#084e96] text-white transition-all shadow-md active:scale-[0.98]"
-              >
-                {connections.linkedin_connected ? 'Reconectar OAuth' : 'Conectar OAuth'}
-              </a>
+              <div className="flex flex-col items-end gap-1">
+                <button
+                  type="button"
+                  onClick={handleConnectOAuth}
+                  disabled={isConnectingOAuth}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0A66C2] hover:bg-[#084e96] text-white transition-all shadow-md active:scale-[0.98] cursor-pointer disabled:opacity-50"
+                >
+                  {isConnectingOAuth
+                    ? 'Redirecionando…'
+                    : connections.linkedin_connected
+                    ? 'Reconectar OAuth'
+                    : 'Conectar OAuth'}
+                </button>
+                {connectError && (
+                  <span className="text-[10px] text-amber-400 font-mono text-right max-w-[200px]">
+                    {connectError}
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* LinkedIn Developer Credentials Setup */}

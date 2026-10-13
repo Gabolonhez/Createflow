@@ -27,8 +27,39 @@ export async function GET(req: NextRequest) {
     if (!code) {
       console.log('[LinkedIn OAuth] Iniciando autorização. Redirecionando para LinkedIn...');
       try {
-        const authUrl = await getLinkedInOAuthUrl(redirectUri);
-        return NextResponse.redirect(authUrl);
+        const queryClientId = searchParams.get('client_id')?.trim();
+        const queryClientSecret = searchParams.get('client_secret')?.trim();
+
+        // Se foram passados explicitamente, já salva nas conexões
+        if (queryClientId || queryClientSecret) {
+          const current = await getConnectionsConfig();
+          await saveConnectionsConfig({
+            ...current,
+            linkedin_client_id: queryClientId || current.linkedin_client_id,
+            linkedin_client_secret: queryClientSecret || current.linkedin_client_secret,
+          });
+        }
+
+        const authUrl = await getLinkedInOAuthUrl(redirectUri, queryClientId || undefined);
+        const redirectRes = NextResponse.redirect(authUrl);
+
+        // Armazena credenciais temporárias em cookie seguro httpOnly para garantir troca do token no callback
+        const effectiveClientId = queryClientId || (await getConnectionsConfig()).linkedin_client_id;
+        const effectiveClientSecret = queryClientSecret || (await getConnectionsConfig()).linkedin_client_secret;
+
+        if (effectiveClientId || effectiveClientSecret) {
+          redirectRes.cookies.set('cf_li_oauth_creds', JSON.stringify({
+            clientId: effectiveClientId,
+            clientSecret: effectiveClientSecret,
+          }), {
+            httpOnly: true,
+            maxAge: 600, // 10 minutos
+            sameSite: 'lax',
+            path: '/api/oauth/linkedin',
+          });
+        }
+
+        return redirectRes;
       } catch (err: any) {
         return NextResponse.redirect(
           new URL(`/?error=${encodeURIComponent(err.message || 'Configure o Client ID primeiro')}`, req.url)
@@ -38,7 +69,19 @@ export async function GET(req: NextRequest) {
 
     // 3. CALLBACK: LinkedIn enviou de volta o código de autorização
     console.log('[LinkedIn OAuth] Trocando código por access token...');
-    const tokenData = await exchangeCodeForToken(code, redirectUri);
+    let cookieClientId: string | undefined;
+    let cookieClientSecret: string | undefined;
+
+    try {
+      const credCookie = req.cookies.get('cf_li_oauth_creds')?.value;
+      if (credCookie) {
+        const parsed = JSON.parse(credCookie);
+        cookieClientId = parsed.clientId;
+        cookieClientSecret = parsed.clientSecret;
+      }
+    } catch (ignore) {}
+
+    const tokenData = await exchangeCodeForToken(code, redirectUri, cookieClientId, cookieClientSecret);
 
     console.log('[LinkedIn OAuth] Buscando perfil do usuário...');
     const profile = await fetchLinkedInProfile(tokenData.access_token);
@@ -75,7 +118,9 @@ export async function GET(req: NextRequest) {
     }
 
     console.log(`[LinkedIn OAuth] Conexão bem-sucedida para "${profile.name}" (ID: ${profile.id})`);
-    return NextResponse.redirect(new URL('/?connected=true', req.url));
+    const successRes = NextResponse.redirect(new URL('/?connected=true', req.url));
+    successRes.cookies.delete('cf_li_oauth_creds');
+    return successRes;
   } catch (err: any) {
     console.error('[LinkedIn OAuth Error] Falha na autenticação:', err);
     return NextResponse.redirect(
