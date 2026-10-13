@@ -16,11 +16,14 @@ import {
   Loader2,
   Copy,
   Check,
+  Image as ImageIcon,
+  Upload,
 } from 'lucide-react';
 import { XLogo, LinkedInLogo } from './BrandIcons';
 import { PostPreviewCard } from './PostPreviewCard';
 import { generateXIntentUrl } from '@/lib/twitter';
 import { generateLinkedInIntentUrl } from '@/lib/linkedin';
+import { uploadPostImageAction } from '@/app/actions';
 import type { CreatorPost, Platform, ThreadStyle } from '@/types';
 
 interface PostComposerModalProps {
@@ -73,6 +76,32 @@ export function PostComposerModal({
   );
   const [pillar, setPillar] = useState(initialPost?.pillar || 'tech-insights');
   const [mediaUrl, setMediaUrl] = useState(initialPost?.mediaUrls?.[0] || '');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    setUploadError(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await uploadPostImageAction(formData);
+      if (res.error) {
+        setUploadError(res.error);
+      } else if (res.url) {
+        setMediaUrl(res.url);
+      }
+    } catch (err: any) {
+      setUploadError(err.message || 'Falha ao enviar arquivo.');
+    } finally {
+      setIsUploadingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
   const [scheduledFor, setScheduledFor] = useState(
     initialPost?.scheduledFor
       ? new Date(initialPost.scheduledFor).toISOString().slice(0, 16)
@@ -580,15 +609,59 @@ export function PostComposerModal({
                 </span>
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-mono text-white/50">URL da Imagem (opcional):</label>
-                <input
-                  type="url"
-                  value={mediaUrl}
-                  onChange={(e) => setMediaUrl(e.target.value)}
-                  placeholder="https://exemplo.com/imagem.png"
-                  className="px-3 py-1.5 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50 font-mono"
-                />
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-mono text-white/50 flex items-center gap-1">
+                    <ImageIcon size={12} className="text-violet-400" /> Imagem Anexa:
+                  </label>
+                  {mediaUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setMediaUrl('')}
+                      className="text-[10px] font-mono text-red-400 hover:text-red-300"
+                    >
+                      Remover imagem
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="url"
+                    value={mediaUrl}
+                    onChange={(e) => setMediaUrl(e.target.value)}
+                    placeholder="Cole a URL ou envie um arquivo..."
+                    className="flex-1 px-3 py-1.5 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50 font-mono"
+                  />
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    disabled={isUploadingImage}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.1] text-white border border-white/[0.1] transition-all cursor-pointer whitespace-nowrap disabled:opacity-50"
+                  >
+                    {isUploadingImage ? (
+                      <>
+                        <Loader2 size={13} className="animate-spin text-violet-400" />
+                        <span>Enviando…</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload size={13} className="text-violet-400" />
+                        <span>Upload</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+                {uploadError && (
+                  <span className="text-[10px] text-amber-400 font-mono">{uploadError}</span>
+                )}
               </div>
             </div>
           </div>

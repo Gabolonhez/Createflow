@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { supabase } from '@/lib/supabase';
 import {
   saveCreatorPost,
   deleteCreatorPost,
@@ -566,6 +567,38 @@ export async function savePostSlotsAction(slots: string[]) {
     return { success: true, slots: saved };
   } catch (err: any) {
     return { error: err.message || 'Falha ao salvar horários de postagem.' };
+  }
+}
+
+export async function uploadPostImageAction(formData: FormData) {
+  try {
+    const file = formData.get('file') as File | null;
+    if (!file) {
+      return { error: 'Nenhum arquivo de imagem fornecido.' };
+    }
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const fileName = `${Date.now()}_${cleanName}`;
+
+    const { error } = await supabase.storage
+      .from('post_media')
+      .upload(fileName, buffer, {
+        contentType: file.type || 'image/png',
+        upsert: true,
+      });
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    const { data: publicData } = supabase.storage
+      .from('post_media')
+      .getPublicUrl(fileName);
+
+    return { success: true, url: publicData.publicUrl };
+  } catch (err: any) {
+    return { error: err.message || 'Falha no upload da imagem.' };
   }
 }
 
