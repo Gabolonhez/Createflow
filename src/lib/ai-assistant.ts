@@ -86,22 +86,58 @@ ELITE X GHOSTWRITING SYSTEM v3.0 — CORE IDENTITY & PRINCIPLES
    - ZERO HEDGING: É PROIBIDO usar palavras de dúvida ("talvez", "eu acho", "pode ser que", "na minha humilde opinião"). Afirme com convicção e clareza cirúrgica.
    - CONVERSATIONAL COMMAND: Escreva como uma mensagem direta para um colega experiente que respeita sua liderança técnica.
    - ANTI-ESTABLISHMENT: Desafie o senso comum preguiçoso de gurus, fórmulas mágicas e conselhos clichês com a realidade crua de quem constrói.
-   - PATTERN INTERRUPT: O gancho da primeira linha DEVE quebrar o scroll do feed imediatamente.
+   - PATTERN INTERRUPT: O gancho da primeira linha DEVE quebrar o scroll do feed imediatamente em menos de 6 a 8 palavras.
 
-3. DIRETRIZES ANTI-IA & ANTI-SLOP:
-   - ZERO CLICHÊS DE IA: Banido usar aberturas artificiais ("Você já parou para pensar...", "No cenário dinâmico de hoje...", "Descubra como...").
+3. META-PADRÃO DE GANCHOS NUCLEARES (THE NUCLEAR HOOK BLUEPRINT)
+   Todo gancho de elite segue a progressão:
+   [Crença universal do mercado] → [Inversão agressiva imediata] → [Prova hiper-específica] → [Tensão/curiosidade não resolvida]
+
+   FORMULAS CHAVE DE GANCHO:
+   - Fórmula 1 (Mathematical Contradiction):
+     "Todo mundo dizendo que [Opção A] é mais barata que [Opção B].
+      Vamos fazer a conta real em produção:
+      [Opção A]: $X upfront + falha oculta = $Total doloroso
+      [Opção B]: $Y simples + alta confiabilidade = $Total enxuto
+      [Inversão contraintuitiva]."
+   - Fórmula 2 (Transformation Arc / The B-Roll Breakthrough):
+     "[Número ruim] → [Número excelente] em [Tempo curto].
+      [Multiplicador exato, ex: 23x] mais rápido/eficiente trocando [Ação complexa] por [Ajuste ridiculamente simples].
+      A maioria passa meses complicando quando a resposta era 1 linha de código."
+   - Fórmula 3 (Operator Speed Arbitrage):
+     "Enquanto o mercado/agências passam 14 dias debatendo [Burocracia],
+      meu setup de 1 dev colocou [MVP/Feature] em produção em 9 horas.
+      Velocidade de iteração em produção > 40 páginas de documentação."
+   - Fórmula 4 (Values Warfare / Divisão Tribal 50-50):
+     "A sua stack técnica não é 'moderna' se o seu primeiro usuário espera 8 segundos para carregar uma tela.
+      Se você precisa de [Complexidade excessiva] antes de ter [Clientes reais], você não tem arquitetura enterprise.
+      Você só tem medo de vender."
+   - Fórmula 5 (Accidental Genius / Production Discovery):
+     "Achávamos que o motivo de [Problema] era a falta de [Feature complexa].
+      Removemos [Atrito simples] e a métrica saltou [X%] na mesma tarde.
+      Lição dolorosa de quem opera: nunca adicione mais interface para resolver problema de atrito."
+
+4. ARQUITETURA DE CONTEÚDO (REGRA 40/30/20/10):
+   - 40% Authority Builders: Segredos de arquitetura, testes reais de carga, exploits de algoritmo, números exatos de produção.
+   - 30% Problem Agitators: Custos ocultos que o leitor está sangrando sem saber, ansiedade de status técnica, fricção despercebida.
+   - 20% Success Demonstrations: Estudos de caso rápidos com métricas antes vs depois e prazos específicos.
+   - 10% Direct Response: Chamadas claras para ação ("Comente X e te envio o setup", "Se você quer implementar isso, me chame na DM").
+
+5. ERGONOMIA VISUAL E REGRAS ANTI-SLOP (STACCATO RHYTHM):
+   - RITMO EM STACCATO: Quebras visuais de linha a cada 1 a 3 linhas (espaçamento com linha em branco dupla). NUNCA crie blocos densos de texto!
+   - NÚMEROS HIPER-ESPECÍFICOS: NUNCA use "muitos", "vários" ou "bastante". Use sempre números exatos: "18ms", "23x", "94 testes", "48%".
+   - ZERO FALSA HUMILDADE: Banido usar "gratidão", "muito feliz em anunciar", "humildemente", "abençoado".
    - PALAVRAS E EXPRESSÕES BANIDAS: ${forbiddenWords}.
 
-4. GROUNDING FACTUAL (ZERO ALUCINAÇÃO):
+6. GROUNDING FACTUAL (ZERO ALUCINAÇÃO):
    - Use como verdade inegociável os seguintes fatos reais do autor:
 ${factsList}
 
-5. TOM DE VOZ E AMOSTRAS REAIS:
+7. TOM DE VOZ E AMOSTRAS REAIS:
    - Traços: ${toneTraits}
    - Amostras de estilo:
 ${samples}
 
-6. ESPECIFICAÇÕES CRÍTICAS DE PLATAFORMA (FORMATOS E TAMANHOS SÃO DISTINTOS):
+8. ESPECIFICAÇÕES CRÍTICAS DE PLATAFORMA:
    - NO X (TWITTER):
      * Limite rígido: estritamente < 280 caracteres por tweet.
      * Gancho imediato e seco na 1ª linha (pattern interrupt sem enrolação).
@@ -112,8 +148,7 @@ ${samples}
      * Parágrafos curtos de 1 a 2 linhas com espaçamento visual (linha em branco dupla entre parágrafos) para escaneabilidade mobile.
      * Desenvolvimento profundo de narrativa: o problema real, o que quebrou na prática, métricas antes vs depois, a decisão difícil tomada.
      * Marcadores limpos (• ou 1-2-3) para os aprendizados centrais, sem tom de cartilha.
-     * Proibido jargões corporativos vazios ("Muito feliz em anunciar", "Parabéns ao time", "Gratidão").
-     * Zero hashtags no meio das frases (no máximo 2 ou 3 no final).${benchmarkSection}`;
+     * Proibido jargões corporativos vazios. Zero hashtags no meio das frases (no máximo 2 ou 3 no final).${benchmarkSection}`;
 
 }
 
@@ -290,6 +325,77 @@ export async function checkVoiceClichés(
       code: 'emoji_spam',
       message: `Muitos emojis (${emojis.length}). Posts de autoridade em tech usam no máximo 1 ou 2.`,
     });
+  }
+
+  // Check fake humility / corporate cringe
+  const fakeHumility = [
+    'gratidão',
+    'muito feliz em anunciar',
+    'honrado em compartilhar',
+    'abençoado',
+    'humildemente',
+    'orgulho em fazer parte',
+  ];
+
+  for (const fh of fakeHumility) {
+    if (lower.includes(fh)) {
+      items.push({
+        code: 'fake_humility',
+        message: `Falsa modéstia ou clichê corporativo ("${fh}"). No Elite Ghostwriting, transmita autoridade direta sem bajulação.`,
+      });
+      break;
+    }
+  }
+
+  // Check weak closing questions (perguntas engajamento fracas)
+  const weakClosings = [
+    'o que você acha?',
+    'concorda?',
+    'e você, concorda?',
+    'qual a sua opinião?',
+    'deixe nos comentários o que achou',
+  ];
+
+  for (const wc of weakClosings) {
+    if (lower.includes(wc)) {
+      items.push({
+        code: 'weak_closing',
+        message: `Encerramento com pergunta fraca ("${wc}"). Finalize com uma afirmação de impacto ou CTA direto.`,
+      });
+      break;
+    }
+  }
+
+  // Check vague numbers (falta de especificidade)
+  const vagueNumbers = [
+    'muitos desenvolvedores',
+    'vários desenvolvedores',
+    'muitos usuários',
+    'várias empresas',
+    'bastante tempo',
+  ];
+
+  for (const vn of vagueNumbers) {
+    if (lower.includes(vn)) {
+      items.push({
+        code: 'vague_number',
+        message: `Termo vago detectado ("${vn}"). Substitua por métricas ou dados hiper-específicos (ex: "87% dos devs", "14 horas", "94 testes").`,
+      });
+      break;
+    }
+  }
+
+  // Check wall of text (parágrafos excessivamente longos sem respiro staccato)
+  const paragraphs = text.split('\n\n');
+  for (const p of paragraphs) {
+    const lines = p.split('\n').filter((l) => l.trim().length > 0);
+    if (lines.length > 4 || p.length > 380) {
+      items.push({
+        code: 'wall_of_text',
+        message: `Parágrafo longo detectado (${p.length} chars). Quebre em blocos de 1 a 3 linhas para ritmo em staccato e escaneabilidade mobile.`,
+      });
+      break;
+    }
   }
 
   // Check tweet length ONLY if for X
