@@ -12,7 +12,10 @@ export async function GET(req: NextRequest) {
     const error = searchParams.get('error');
     const errorDescription = searchParams.get('error_description');
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || `${req.nextUrl.protocol}//${req.nextUrl.host}`;
+    const isLocal = req.nextUrl.host.includes('localhost') || req.nextUrl.host.includes('127.0.0.1');
+    const appUrl = isLocal
+      ? `${req.nextUrl.protocol}//${req.nextUrl.host}`
+      : (process.env.NEXT_PUBLIC_APP_URL || `${req.nextUrl.protocol}//${req.nextUrl.host}`);
     const redirectUri = `${appUrl}/api/oauth/linkedin`;
 
     // 1. Tratamento de erro retornado pelo LinkedIn
