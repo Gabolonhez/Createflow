@@ -53,6 +53,7 @@ import type {
   ThreadStyle,
   SprayVariant,
   SprayResult,
+  MediaAsset,
 } from '@/types';
 
 // ==========================================
@@ -599,6 +600,52 @@ export async function uploadPostImageAction(formData: FormData) {
     return { success: true, url: publicData.publicUrl };
   } catch (err: any) {
     return { error: err.message || 'Falha no upload da imagem.' };
+  }
+}
+
+export async function listMediaAssetsAction(): Promise<{ success?: boolean; assets?: MediaAsset[]; error?: string }> {
+  try {
+    const { data, error } = await supabase.storage.from('post_media').list('', {
+      limit: 100,
+      sortBy: { column: 'created_at', order: 'desc' },
+    });
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    const assets: MediaAsset[] = (data || []).map((file) => {
+      const { data: publicData } = supabase.storage.from('post_media').getPublicUrl(file.name);
+      const mimetype = file.metadata?.mimetype || '';
+      const isVideo = mimetype.startsWith('video/') || /\.(mp4|webm|mov|avi)$/i.test(file.name);
+      const isImage = mimetype.startsWith('image/') || /\.(png|jpe?g|webp|gif|svg)$/i.test(file.name);
+
+      return {
+        name: file.name,
+        url: publicData.publicUrl,
+        size: file.metadata?.size || 0,
+        mimetype: mimetype || (isVideo ? 'video/mp4' : 'image/png'),
+        created_at: file.created_at || new Date().toISOString(),
+        type: isVideo ? 'video' : isImage ? 'image' : 'other',
+      };
+    });
+
+    return { success: true, assets };
+  } catch (err: any) {
+    return { error: err.message || 'Falha ao listar arquivos de mídia.' };
+  }
+}
+
+export async function deleteMediaAssetAction(name: string): Promise<{ success?: boolean; error?: string }> {
+  try {
+    const { error } = await supabase.storage.from('post_media').remove([name]);
+    if (error) {
+      return { error: error.message };
+    }
+    revalidatePath('/');
+    return { success: true };
+  } catch (err: any) {
+    return { error: err.message || 'Falha ao excluir arquivo.' };
   }
 }
 

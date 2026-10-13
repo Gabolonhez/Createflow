@@ -154,10 +154,19 @@ export interface ConnectionsConfig {
   linkedin_client_secret?: string;
 }
 
+export interface MediaAsset {
+  name: string;
+  url: string;
+  size: number;
+  mimetype: string;
+  created_at: string;
+  type: 'image' | 'video' | 'other';
+}
+
 export type MainSection = 'plan' | 'ideas' | 'voice' | 'results' | 'settings';
 
 export type PlanSubView = 'posts' | 'calendar';
-export type IdeasSubView = 'my-ideas' | 'topics' | 'facts' | 'references';
+export type IdeasSubView = 'my-ideas' | 'topics' | 'facts' | 'references' | 'media-library';
 export type VoiceSubView = 'manual' | 'learnings';
 export type ResultsSubView = 'performance';
 export type SettingsSubView = 'connection';

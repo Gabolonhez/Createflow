@@ -17,6 +17,7 @@ import { VoiceProfileView } from '@/components/VoiceProfileView';
 import { AiLearningsView } from '@/components/AiLearningsView';
 import { PerformanceView } from '@/components/PerformanceView';
 import { ConnectionsView } from '@/components/ConnectionsView';
+import { MediaLibraryView } from '@/components/MediaLibraryView';
 import { PostComposerModal } from '@/components/PostComposerModal';
 import { GeneratePostModal } from '@/components/GeneratePostModal';
 import { RejectPostModal } from '@/components/RejectPostModal';
@@ -267,6 +268,23 @@ export default function Dashboard({
       pillar: 'tech-insights',
       mediaUrls: [],
       scheduledFor: dateIso,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+    setIsComposerOpen(true);
+  };
+
+  const handleOpenComposerWithMedia = (mediaUrl: string) => {
+    setEditingPost({
+      id: '',
+      text: '',
+      thread: [],
+      threadStyle: 'single',
+      platforms: ['x', 'linkedin'],
+      status: 'DRAFT',
+      pillar: 'tech-insights',
+      mediaUrls: [mediaUrl],
+      scheduledFor: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });
@@ -542,6 +560,10 @@ export default function Dashboard({
       title: 'Referências Virais',
       subtitle: 'Posts de sucesso desconstruídos em templates de alta performance.',
     },
+    'media-library': {
+      title: 'Acervo de Mídia & Biblioteca',
+      subtitle: 'Imagens e vídeos salvos para enriquecer suas publicações no X e LinkedIn.',
+    },
     manual: {
       title: 'Meu Estilo & Regras de Voz',
       subtitle: 'Defina seu jeito de escrever, palavras proibidas e amostras reais.',
@@ -699,6 +721,12 @@ export default function Dashboard({
               onAnalyzeAndSave={handleAnalyzeAndSaveReference}
               onDeleteReference={handleDeleteReference}
               onUseTemplate={handleGenerateFromReference}
+            />
+          )}
+
+          {currentSubView === 'media-library' && (
+            <MediaLibraryView
+              onOpenComposerWithMedia={handleOpenComposerWithMedia}
             />
           )}
 

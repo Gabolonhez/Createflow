@@ -18,6 +18,7 @@ import {
   Brain,
   CheckCircle2,
   LogOut,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { XLogo, LinkedInLogo } from './BrandIcons';
 import type { MainSection, ActiveSubView } from '@/types';
@@ -103,6 +104,13 @@ export function AppSidebar({
           subView: 'references' as ActiveSubView,
           label: 'Referências Virais',
           icon: <BookOpen size={17} />,
+        },
+        {
+          id: 'media-library',
+          section: 'ideas' as MainSection,
+          subView: 'media-library' as ActiveSubView,
+          label: 'Acervo de Mídia',
+          icon: <ImageIcon size={17} />,
         },
       ],
     },

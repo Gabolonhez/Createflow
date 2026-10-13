@@ -18,9 +18,11 @@ import {
   Check,
   Image as ImageIcon,
   Upload,
+  FolderOpen,
 } from 'lucide-react';
 import { XLogo, LinkedInLogo } from './BrandIcons';
 import { PostPreviewCard } from './PostPreviewCard';
+import { MediaLibraryView } from './MediaLibraryView';
 import { generateXIntentUrl } from '@/lib/twitter';
 import { generateLinkedInIntentUrl } from '@/lib/linkedin';
 import { uploadPostImageAction } from '@/app/actions';
@@ -76,6 +78,7 @@ export function PostComposerModal({
   );
   const [pillar, setPillar] = useState(initialPost?.pillar || 'tech-insights');
   const [mediaUrl, setMediaUrl] = useState(initialPost?.mediaUrls?.[0] || '');
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -658,6 +661,16 @@ export function PostComposerModal({
                       </>
                     )}
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsLibraryOpen(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-violet-600/20 hover:bg-violet-600/30 text-violet-300 border border-violet-500/30 transition-all cursor-pointer whitespace-nowrap"
+                    title="Escolher mídia salva no acervo"
+                  >
+                    <FolderOpen size={13} className="text-violet-400" />
+                    <span>Do Acervo</span>
+                  </button>
                 </div>
                 {uploadError && (
                   <span className="text-[10px] text-amber-400 font-mono">{uploadError}</span>
@@ -750,6 +763,35 @@ export function PostComposerModal({
           </div>
         </div>
       </div>
+
+      {/* Media Library Picker Modal Overlay */}
+      {isLibraryOpen && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="relative w-full max-w-4xl max-h-[85vh] overflow-y-auto p-6 rounded-2xl bg-[#0f0f15] border border-white/[0.1] shadow-2xl flex flex-col gap-4">
+            <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
+              <div className="flex items-center gap-2">
+                <FolderOpen size={18} className="text-violet-400" />
+                <span className="text-sm font-semibold text-white">Selecionar Mídia do Acervo</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsLibraryOpen(false)}
+                className="p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/[0.05] transition-colors cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <MediaLibraryView
+              isModalPicker={true}
+              onSelectMedia={(url) => {
+                setMediaUrl(url);
+                setIsLibraryOpen(false);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
