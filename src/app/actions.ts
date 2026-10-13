@@ -43,6 +43,7 @@ import {
 import { publishToX, publishXThread } from '@/lib/twitter';
 import { publishToLinkedIn } from '@/lib/linkedin';
 import { nextFreeSlot, formatScheduleDatePtBr } from '@/lib/schedule';
+import { humanizeText } from '@/lib/humanizer';
 import type {
   CreatorPost,
   PostIdea,
@@ -70,12 +71,20 @@ export async function savePostAction(postData: Partial<CreatorPost>) {
     const voiceProfile = await getVoiceProfile();
     let voiceCheck = postData.voiceCheck;
 
-    if (postData.text) {
-      voiceCheck = await checkVoiceClichés(postData.text, voiceProfile);
+    // Sterilize text, thread and linkedinText to ensure zero invisible characters or synthetic AI marks
+    const cleanText = postData.text ? humanizeText(postData.text).text : postData.text;
+    const cleanThread = postData.thread ? postData.thread.map((t) => humanizeText(t).text) : postData.thread;
+    const cleanLinkedin = postData.linkedinText ? humanizeText(postData.linkedinText).text : postData.linkedinText;
+
+    if (cleanText) {
+      voiceCheck = await checkVoiceClichés(cleanText, voiceProfile);
     }
 
     const saved = await saveCreatorPost({
       ...postData,
+      text: cleanText,
+      thread: cleanThread,
+      linkedinText: cleanLinkedin,
       voiceCheck,
     });
 
@@ -277,6 +286,7 @@ export async function generatePostAction(options: {
   threadLength?: number;
   instruction?: string;
   language?: 'pt-BR' | 'en-US';
+  hookFormulaId?: string;
 }) {
   try {
     const voiceProfile = await getVoiceProfile();

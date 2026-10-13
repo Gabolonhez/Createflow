@@ -1,4 +1,6 @@
 import { generateJson, generateText } from './gemini';
+import { humanizeText, detectAiMarkers } from './humanizer';
+import { HOOK_FORMULAS, getHookFormulaById } from './hook-formulas';
 import type {
   VoiceProfile,
   Fact,
@@ -23,6 +25,7 @@ export interface GeneratePostOptions {
   threadLength?: number;
   instruction?: string;
   language?: 'pt-BR' | 'en-US';
+  hookFormulaId?: string;
   voiceProfile: VoiceProfile;
   facts: Fact[];
   references?: Reference[];
@@ -40,13 +43,14 @@ export interface GeneratedPostResult {
 
 /**
  * Builds the AI prompt context grounding the model on the creator's real voice, real facts,
- * and high-performing benchmark reference structures.
+ * 21 proven hook formulas, and high-performing benchmark reference structures.
  */
 function buildSystemInstruction(
   voiceProfile: VoiceProfile,
   facts: Fact[],
   references: Reference[] = [],
-  language: 'pt-BR' | 'en-US' = 'pt-BR'
+  language: 'pt-BR' | 'en-US' = 'pt-BR',
+  hookFormulaId?: string
 ): string {
   const factsList = facts.length > 0
     ? facts.map((f) => `- [${f.category}] ${f.subject}: ${f.detail}`).join('\n')
@@ -54,7 +58,7 @@ function buildSystemInstruction(
 
   const forbiddenWords = voiceProfile.forbidden_words?.length > 0
     ? voiceProfile.forbidden_words.join(', ')
-    : 'Neste artigo vamos desvendar, Mergulhe, Alavanque, Revolucionário, Game changer, No mundo de hoje';
+    : 'Neste artigo vamos desvendar, Mergulhe, Alavanque, Revolucionário, Game changer, No mundo de hoje, Delve, Tapestry, Testament';
 
   const toneTraits = voiceProfile.tone_traits?.length > 0
     ? voiceProfile.tone_traits.join(', ')
@@ -63,6 +67,27 @@ function buildSystemInstruction(
   const samples = voiceProfile.writing_samples?.length > 0
     ? voiceProfile.writing_samples.map((s, i) => `Amostra ${i + 1}:\n"${s}"`).join('\n\n')
     : 'Escreva como um engenheiro experiente conversando diretamente com outro profissional.';
+
+  const selectedHook = hookFormulaId ? getHookFormulaById(hookFormulaId) : undefined;
+  const hookInstruction = selectedHook
+    ? `\n*** FÓRMULA DE GANCHO ESCOLHIDA PELO AUTOR: "${selectedHook.name}" ***
+ESTRUTURA OBRIGATÓRIA DA 1ª LINHA:
+${selectedHook.blueprint}
+REGRA CRÍTICA & ARMADILHA A EVITAR:
+${selectedHook.trap}
+EXEMPLO DE REFERÊNCIA:
+"${language === 'en-US' ? selectedHook.exampleEn : selectedHook.examplePt}"`
+    : `\n*** FÓRMULAS DE GANCHO NUCLEARES DE ALTA PERFORMANCE (ESCOLHA A MELHOR PARA O TEMA): ***
+1. Contrarian Take: "[Crença popular] é um mito. A realidade que ninguém te conta:"
+2. Number Reveal: "[Número exato, ex: 14.820] foi o que custou [Ação simples]. A matemática real:"
+3. Mistake Confession: "Perdi [Tempo/Dinheiro] cometendo o erro de [Ação errada]. Se pudesse voltar atrás:"
+4. Transformation Arc: "De [Métrica ruim] para [Métrica excelente] em [Tempo curto]. O que mudamos:"
+5. Speed Arbitrage: "Enquanto [Grandes times] passam [Tempo longo] em reuniões, colocamos [Feature] no ar em [Horas]."
+6. Values Warfare: "A sua stack não é 'moderna' se [Falha crítica]. Menos vaidade e mais resultado."
+7. Accidental Genius: "Achávamos que o gargalo era [Hipótese complexa]. Na verdade era apenas [Ajuste simples]."
+8. Micro-Optimization: "1 linha de código que reduziu [Gargalo] em [X%]:"
+9. Insider Secret: "O segredo de bastidor que a maioria dos [Profissionais] esconde sobre [Tema]:"
+10. Unpopular Tech Opinion: "Opinião impopular em tech: [Hype atual] é inútil para 90% das empresas."`;
 
   const benchmarkSection = references.length > 0
     ? `\n7. BENCHMARKS E FORMATOS COMPROVADOS (ESTRUTURAS DE ALTA PERFORMANCE):
@@ -93,33 +118,8 @@ ELITE X GHOSTWRITING SYSTEM v3.0 — CORE IDENTITY & PRINCIPLES
    - ANTI-ESTABLISHMENT: Desafie o senso comum preguiçoso de gurus, fórmulas mágicas e conselhos clichês com a realidade crua de quem constrói.
    - PATTERN INTERRUPT: O gancho da primeira linha DEVE quebrar o scroll do feed imediatamente em menos de 6 a 8 palavras.
 
-3. META-PADRÃO DE GANCHOS NUCLEARES (THE NUCLEAR HOOK BLUEPRINT)
-   Todo gancho de elite segue a progressão:
-   [Crença universal do mercado] → [Inversão agressiva imediata] → [Prova hiper-específica] → [Tensão/curiosidade não resolvida]
-
-   FORMULAS CHAVE DE GANCHO:
-   - Fórmula 1 (Mathematical Contradiction):
-     "Todo mundo dizendo que [Opção A] é mais barata que [Opção B].
-      Vamos fazer a conta real em produção:
-      [Opção A]: $X upfront + falha oculta = $Total doloroso
-      [Opção B]: $Y simples + alta confiabilidade = $Total enxuto
-      [Inversão contraintuitiva]."
-   - Fórmula 2 (Transformation Arc / The B-Roll Breakthrough):
-     "[Número ruim] → [Número excelente] em [Tempo curto].
-      [Multiplicador exato, ex: 23x] mais rápido/eficiente trocando [Ação complexa] por [Ajuste ridiculamente simples].
-      A maioria passa meses complicando quando a resposta era 1 linha de código."
-   - Fórmula 3 (Operator Speed Arbitrage):
-     "Enquanto o mercado/agências passam 14 dias debatendo [Burocracia],
-      meu setup de 1 dev colocou [MVP/Feature] em produção em 9 horas.
-      Velocidade de iteração em produção > 40 páginas de documentação."
-   - Fórmula 4 (Values Warfare / Divisão Tribal 50-50):
-     "A sua stack técnica não é 'moderna' se o seu primeiro usuário espera 8 segundos para carregar uma tela.
-      Se você precisa de [Complexidade excessiva] antes de ter [Clientes reais], você não tem arquitetura enterprise.
-      Você só tem medo de vender."
-   - Fórmula 5 (Accidental Genius / Production Discovery):
-     "Achávamos que o motivo de [Problema] era a falta de [Feature complexa].
-      Removemos [Atrito simples] e a métrica saltou [X%] na mesma tarde.
-      Lição dolorosa de quem opera: nunca adicione mais interface para resolver problema de atrito."
+3. ARQUITETURA DE GANCHOS NUCLEARES:
+${hookInstruction}
 
 4. ARQUITETURA DE CONTEÚDO (REGRA 40/30/20/10):
    - 40% Authority Builders: Segredos de arquitetura, testes reais de carga, exploits de algoritmo, números exatos de produção.
@@ -127,11 +127,12 @@ ELITE X GHOSTWRITING SYSTEM v3.0 — CORE IDENTITY & PRINCIPLES
    - 20% Success Demonstrations: Estudos de caso rápidos com métricas antes vs depois e prazos específicos.
    - 10% Direct Response: Chamadas claras para ação ("Comente X e te envio o setup", "Se você quer implementar isso, me chame na DM").
 
-5. ERGONOMIA VISUAL E REGRAS ANTI-SLOP (STACCATO RHYTHM):
+5. ERGONOMIA VISUAL, ZERO WATERMARK E REGRAS ANTI-SLOP (STACCATO RHYTHM):
    - RITMO EM STACCATO: Quebras visuais de linha a cada 1 a 3 linhas (espaçamento com linha em branco dupla). NUNCA crie blocos densos de texto!
    - NÚMEROS HIPER-ESPECÍFICOS: NUNCA use "muitos", "vários" ou "bastante". Use sempre números exatos: "18ms", "23x", "94 testes", "48%".
    - ZERO FALSA HUMILDADE: Banido usar "gratidão", "muito feliz em anunciar", "humildemente", "abençoado".
-   - PALAVRAS E EXPRESSÕES BANIDAS: ${forbiddenWords}.
+   - ZERO MARCAS D'ÁGUA OU TRAVESSÕES DE IA: NUNCA use travessões longos ('—'). Use hífens simples (' - ') ou quebras de linha em staccato.
+   - PROIBIDO VOCABULÁRIO MORTO DE IA: ${forbiddenWords}.
 
 6. GROUNDING FACTUAL (ZERO ALUCINAÇÃO):
    - Use como verdade inegociável os seguintes fatos reais do autor:
@@ -172,7 +173,13 @@ ${language === 'en-US'
  */
 export async function generateCreatorPost(opts: GeneratePostOptions): Promise<GeneratedPostResult> {
   const language = opts.language || opts.voiceProfile.preferred_language || 'pt-BR';
-  const systemInstruction = buildSystemInstruction(opts.voiceProfile, opts.facts, opts.references || [], language);
+  const systemInstruction = buildSystemInstruction(
+    opts.voiceProfile,
+    opts.facts,
+    opts.references || [],
+    language,
+    opts.hookFormulaId
+  );
 
   const isLinkedIn = opts.platforms.includes('linkedin');
   const isX = opts.platforms.includes('x');
@@ -225,9 +232,13 @@ Retorne um JSON estrito no seguinte formato:
     reasoning?: string;
   }>(prompt, systemInstruction);
 
-  // If exclusively LinkedIn, ensure linkedinText has the full post
-  const finalLinkedinText = isLinkedIn ? (res.linkedinText || res.text) : undefined;
-  const primaryText = (!isX && isLinkedIn) ? (res.linkedinText || res.text) : res.text;
+  // Humanize and sterilize all synthetic markers, zero-width characters and em-dashes
+  const rawPrimary = (!isX && isLinkedIn) ? (res.linkedinText || res.text) : res.text;
+  const rawLinkedin = isLinkedIn ? (res.linkedinText || res.text) : undefined;
+
+  const primaryText = humanizeText(rawPrimary || '').text;
+  const cleanThread = Array.isArray(res.thread) ? res.thread.map((t) => humanizeText(t || '').text) : [];
+  const finalLinkedinText = rawLinkedin ? humanizeText(rawLinkedin).text : undefined;
 
   // Run immediate voice check on the generated post (network-aware)
   const voiceCheck = await checkVoiceClichés(
@@ -238,7 +249,7 @@ Retorne um JSON estrito no seguinte formato:
 
   return {
     text: primaryText,
-    thread: Array.isArray(res.thread) ? res.thread : [],
+    thread: cleanThread,
     linkedinText: finalLinkedinText || undefined,
     pillar: res.pillar || opts.pillar || 'tech-insights',
     voiceCheck,
@@ -257,6 +268,21 @@ export async function checkVoiceClichés(
 ): Promise<VoiceCheck> {
   const items: { code: string; message: string }[] = [];
   const lower = text.toLowerCase().trim();
+
+  // Check for invisible AI watermarks and synthetic em-dashes (from Jakeschincariol/linkedin-agent-skill heuristics)
+  const aiDetection = detectAiMarkers(text);
+  if (aiDetection.watermarksCount > 0) {
+    items.push({
+      code: 'invisible_watermark',
+      message: `${aiDetection.watermarksCount} caractere(s) invisível(is) de IA detectado(s). Algoritmos do LinkedIn e X suprimem o alcance orgânico desses posts.`,
+    });
+  }
+  if (aiDetection.emDashesCount > 0) {
+    items.push({
+      code: 'ai_em_dash',
+      message: `${aiDetection.emDashesCount} travessão(ões) de IA ('—') detectado(s). Substitua por hífens simples ou quebras de linha staccato.`,
+    });
+  }
 
   // Check forbidden words
   if (voiceProfile.forbidden_words) {
@@ -470,10 +496,11 @@ Retorne um JSON estrito no seguinte formato:
 }`;
 
   const res = await generateJson<{ rewritten_text: string }>(prompt, systemInstruction);
-  const voiceCheck = await checkVoiceClichés(res.rewritten_text, voiceProfile, platform);
+  const cleanRewritten = humanizeText(res.rewritten_text || '').text;
+  const voiceCheck = await checkVoiceClichés(cleanRewritten, voiceProfile, platform);
 
   return {
-    text: res.rewritten_text,
+    text: cleanRewritten,
     voiceCheck,
   };
 }
@@ -654,10 +681,17 @@ Retorne estritamente um JSON no seguinte formato:
 }`;
 
   const res = await generateJson<SprayResult>(prompt, systemInstruction);
+  const cleanVariants = (Array.isArray(res.variants) ? res.variants : []).map((v) => ({
+    ...v,
+    text: humanizeText(v.text || '').text,
+    linkedinText: v.linkedinText ? humanizeText(v.linkedinText).text : undefined,
+    thread: Array.isArray(v.thread) ? v.thread.map((t) => humanizeText(t || '').text) : undefined,
+  }));
+
   return {
     theme: res.theme || theme,
     sourceNote: note,
-    variants: Array.isArray(res.variants) ? res.variants : [],
+    variants: cleanVariants,
   };
 }
 
@@ -761,10 +795,15 @@ ${linkedinText}
       linkedinText?: string;
     }>(prompt, systemInstruction);
 
+    const rawPrimary = res.text || text;
+    const cleanPrimary = humanizeText(rawPrimary).text;
+    const cleanThread = Array.isArray(res.thread) ? res.thread.map((t) => humanizeText(t || '').text) : [];
+    const cleanLinkedin = res.linkedinText ? humanizeText(res.linkedinText).text : undefined;
+
     return {
-      text: res.text || text,
-      thread: Array.isArray(res.thread) ? res.thread : [],
-      linkedinText: res.linkedinText || undefined,
+      text: cleanPrimary,
+      thread: cleanThread,
+      linkedinText: cleanLinkedin,
     };
   } catch (err: any) {
     console.error('Erro na transcriação/tradução:', err);

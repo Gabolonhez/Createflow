@@ -10,8 +10,10 @@ import {
   BookOpen,
   Layers,
   Loader2,
+  Target,
 } from 'lucide-react';
 import { XLogo, LinkedInLogo } from './BrandIcons';
+import { HOOK_FORMULAS } from '@/lib/hook-formulas';
 import type {
   Platform,
   ThreadStyle,
@@ -35,6 +37,7 @@ interface GeneratePostModalProps {
     threadLength?: number;
     instruction?: string;
     language?: 'pt-BR' | 'en-US';
+    hookFormulaId?: string;
   }) => Promise<{ success: boolean; post?: CreatorPost; error?: string }>;
   ideas: PostIdea[];
   topics: Topic[];
@@ -66,6 +69,7 @@ export function GeneratePostModal({
   );
 
   const [language, setLanguage] = useState<'pt-BR' | 'en-US'>(defaultLanguage);
+  const [hookFormulaId, setHookFormulaId] = useState<string>('');
 
   const [selectedIdeaId, setSelectedIdeaId] = useState<string>(prefilledIdea?.id || '');
   const [selectedTopicId, setSelectedTopicId] = useState<string>(prefilledTopic?.id || '');
@@ -131,6 +135,7 @@ export function GeneratePostModal({
         threadLength: format === 'thread' ? threadLength : 0,
         instruction: instruction.trim() || undefined,
         language,
+        hookFormulaId: hookFormulaId || undefined,
       });
 
       if (res.error) {
@@ -372,6 +377,41 @@ export function GeneratePostModal({
                 </button>
               </div>
             </div>
+          </div>
+
+          {/* 21 Battle-tested Hook Formulas from linkedin-agent-skill */}
+          <div className="flex flex-col gap-1.5 pt-1">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-mono text-white/50 flex items-center gap-1.5">
+                <Target size={12} className="text-violet-400" />
+                <span>Fórmula de Gancho (21 Modelos de Elite):</span>
+              </label>
+              <span className="text-[10px] text-zinc-500 font-mono">
+                {hookFormulaId ? 'Modelo Selecionado' : 'IA escolhe o melhor'}
+              </span>
+            </div>
+            <select
+              value={hookFormulaId}
+              onChange={(e) => setHookFormulaId(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50"
+            >
+              <option value="">✨ Automático (A IA escolhe o gancho de maior impacto para o tema)</option>
+              {HOOK_FORMULAS.map((formula) => (
+                <option key={formula.id} value={formula.id}>
+                  [{formula.tag}] {formula.name}
+                </option>
+              ))}
+            </select>
+            {hookFormulaId && (
+              <div className="p-2.5 rounded-lg bg-violet-500/10 border border-violet-500/20 text-[11px] text-violet-200 space-y-1">
+                <p className="font-mono text-[10px] text-violet-300 font-semibold">
+                  Estrutura: {HOOK_FORMULAS.find((f) => f.id === hookFormulaId)?.blueprint}
+                </p>
+                <p className="text-violet-200/80 text-[11px]">
+                  {HOOK_FORMULAS.find((f) => f.id === hookFormulaId)?.description}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Optional Direct Instruction */}

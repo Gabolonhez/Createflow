@@ -21,6 +21,8 @@ import {
   FolderOpen,
   Globe,
   RotateCcw,
+  ShieldCheck,
+  ShieldAlert,
 } from 'lucide-react';
 import { XLogo, LinkedInLogo } from './BrandIcons';
 import { PostPreviewCard } from './PostPreviewCard';
@@ -29,6 +31,7 @@ import { AiImageModal } from './AiImageModal';
 import { generateXIntentUrl } from '@/lib/twitter';
 import { generateLinkedInIntentUrl } from '@/lib/linkedin';
 import { uploadPostImageAction, translatePostAction } from '@/app/actions';
+import { detectAiMarkers, humanizeText } from '@/lib/humanizer';
 import type { CreatorPost, Platform, ThreadStyle } from '@/types';
 
 interface PostComposerModalProps {
@@ -255,6 +258,22 @@ export function PostComposerModal({
       }
     } finally {
       setIsExpandingForLinkedIn(false);
+    }
+  };
+
+  const currentActiveText = activeEditorTab === 'x' ? text : (linkedinText || text);
+  const aiDetection = detectAiMarkers(currentActiveText);
+
+  const handleCleanAiWatermarks = () => {
+    if (activeEditorTab === 'x') {
+      const res = humanizeText(text);
+      setText(res.text);
+      if (thread.length > 0) {
+        setThread(thread.map((t) => humanizeText(t).text));
+      }
+    } else {
+      const res = humanizeText(linkedinText || text);
+      setLinkedinText(res.text);
     }
   };
 
@@ -550,6 +569,27 @@ export function PostComposerModal({
                       <span>⚡ Expandir para LinkedIn</span>
                     </button>
                   )}
+
+                  {/* AI Watermark & Humanizer Badge/Action for X */}
+                  {aiDetection.isFlagged ? (
+                    <button
+                      type="button"
+                      onClick={handleCleanAiWatermarks}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-all whitespace-nowrap active:scale-[0.98]"
+                      title={aiDetection.summary}
+                    >
+                      <ShieldAlert size={12} className="text-amber-400" />
+                      <span>🛡️ Limpar Marcas de IA ({aiDetection.watermarksCount > 0 ? `${aiDetection.watermarksCount} invisíveis` : 'Humanizar'})</span>
+                    </button>
+                  ) : (
+                    <div
+                      className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono text-emerald-400/90 bg-emerald-500/10 border border-emerald-500/20 whitespace-nowrap"
+                      title="Zero marcas d'água invisíveis e zero travessões de IA detectados"
+                    >
+                      <ShieldCheck size={11} className="text-emerald-400" />
+                      <span>100% Humano</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Thread Tweets Section */}
@@ -677,6 +717,27 @@ export function PostComposerModal({
                       {isTranslating ? <Loader2 size={12} className="animate-spin" /> : <Globe size={12} />}
                       <span>🌐 Traduzir p/ Inglês</span>
                     </button>
+                  )}
+
+                  {/* AI Watermark & Humanizer Badge/Action for LinkedIn */}
+                  {aiDetection.isFlagged ? (
+                    <button
+                      type="button"
+                      onClick={handleCleanAiWatermarks}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-all whitespace-nowrap active:scale-[0.98]"
+                      title={aiDetection.summary}
+                    >
+                      <ShieldAlert size={12} className="text-amber-400" />
+                      <span>🛡️ Limpar Marcas de IA ({aiDetection.watermarksCount > 0 ? `${aiDetection.watermarksCount} invisíveis` : 'Humanizar'})</span>
+                    </button>
+                  ) : (
+                    <div
+                      className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono text-emerald-400/90 bg-emerald-500/10 border border-emerald-500/20 whitespace-nowrap"
+                      title="Zero marcas d'água invisíveis e zero travessões de IA detectados"
+                    >
+                      <ShieldCheck size={11} className="text-emerald-400" />
+                      <span>100% Humano</span>
+                    </div>
                   )}
                 </div>
               </>
