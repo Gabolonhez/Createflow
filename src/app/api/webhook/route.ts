@@ -3,7 +3,8 @@ import crypto from 'crypto';
 import { supabase } from '@/lib/supabase';
 import { drainQueue } from '@/lib/queue-processor';
 import { after } from 'next/server';
-import { getDmCampaigns, addDmLog } from '@/lib/db';
+import { getDmCampaigns, addDmLog, getConnectionsConfig } from '@/lib/db';
+import { checkUserFollowsBusiness } from '@/lib/instagram';
 import type { DmCampaign } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -350,57 +351,91 @@ export async function POST(req: NextRequest) {
                     ? matchedDmCamp.openingDmMessage
                     : matchedDmCamp.dmMessage;
 
-                const privatePayload =
-                  matchedDmCamp.openingDmEnabled && matchedDmCamp.openingDmButtonLabel
-                    ? {
-                        recipient: { comment_id: commentId },
-                        message: {
-                          attachment: {
-                            type: 'template',
-                            payload: {
-                              template_type: 'button',
-                              text: (matchedDmCamp.openingDmMessage || dmBody).slice(0, 640),
+                let privatePayload: any;
+
+                if (matchedDmCamp.requireFollow) {
+                  // Follow-Gate ATIVO (Estilo AutoDM / ManyChat):
+                  // Envia primeiro a mensagem exigindo que siga o perfil com botão interativo para confirmar
+                  const followPrompt = (
+                    matchedDmCamp.followPromptMessage ||
+                    'Ei {username}! Para liberar o link exclusivo, siga nosso perfil @{account} e toque no botão abaixo:'
+                  )
+                    .replace('{username}', commenterUsername || 'amigo(a)')
+                    .replace('{account}', matchedDmCamp.accountUsername || 'gabolonhez');
+
+                  const btnLabel = (matchedDmCamp.followPromptButtonLabel || 'Já segui ✅').slice(0, 20);
+
+                  privatePayload = {
+                    recipient: { comment_id: commentId },
+                    message: {
+                      attachment: {
+                        type: 'template',
+                        payload: {
+                          template_type: 'button',
+                          text: followPrompt.slice(0, 640),
+                          buttons: [
+                            {
+                              type: 'postback',
+                              title: btnLabel,
+                              payload: `QR_CHECK_FOLLOW_${matchedDmCamp.id}`,
+                            },
+                          ],
+                        },
+                      },
+                    },
+                  };
+                } else if (matchedDmCamp.openingDmEnabled && matchedDmCamp.openingDmButtonLabel) {
+                  privatePayload = {
+                    recipient: { comment_id: commentId },
+                    message: {
+                      attachment: {
+                        type: 'template',
+                        payload: {
+                          template_type: 'button',
+                          text: (matchedDmCamp.openingDmMessage || dmBody).slice(0, 640),
+                          buttons: [
+                            {
+                              type: 'postback',
+                              title: matchedDmCamp.openingDmButtonLabel.slice(0, 20),
+                              payload: `QR_CAMP_${matchedDmCamp.id}`,
+                            },
+                          ],
+                        },
+                      },
+                    },
+                  };
+                } else if (matchedDmCamp.targetUrl) {
+                  privatePayload = {
+                    recipient: { comment_id: commentId },
+                    message: {
+                      attachment: {
+                        type: 'template',
+                        payload: {
+                          template_type: 'generic',
+                          elements: [
+                            {
+                              title: matchedDmCamp.cardTitle || dmBody,
+                              subtitle: matchedDmCamp.cardSubtitle || undefined,
+                              image_url: matchedDmCamp.cardImageUrl || undefined,
                               buttons: [
                                 {
-                                  type: 'postback',
-                                  title: matchedDmCamp.openingDmButtonLabel.slice(0, 20),
-                                  payload: `QR_CAMP_${matchedDmCamp.id}`,
+                                  type: 'web_url',
+                                  url: matchedDmCamp.targetUrl,
+                                  title: matchedDmCamp.linkButtonLabel || 'Acessar Link',
                                 },
                               ],
                             },
-                          },
+                          ],
                         },
-                      }
-                    : matchedDmCamp.targetUrl
-                    ? {
-                        recipient: { comment_id: commentId },
-                        message: {
-                          attachment: {
-                            type: 'template',
-                            payload: {
-                              template_type: 'generic',
-                              elements: [
-                                {
-                                  title: matchedDmCamp.cardTitle || dmBody,
-                                  subtitle: matchedDmCamp.cardSubtitle || undefined,
-                                  image_url: matchedDmCamp.cardImageUrl || undefined,
-                                  buttons: [
-                                    {
-                                      type: 'web_url',
-                                      url: matchedDmCamp.targetUrl,
-                                      title: matchedDmCamp.linkButtonLabel || 'Acessar Link',
-                                    },
-                                  ],
-                                },
-                              ],
-                            },
-                          },
-                        },
-                      }
-                    : {
-                        recipient: { comment_id: commentId },
-                        message: { text: dmBody },
-                      };
+                      },
+                    },
+                  };
+                } else {
+                  privatePayload = {
+                    recipient: { comment_id: commentId },
+                    message: { text: dmBody },
+                  };
+                }
 
                 try {
                   await supabase.from('queue').insert({
@@ -583,50 +618,162 @@ export async function POST(req: NextRequest) {
             continue;
           }
 
-          if (payloadStr && payloadStr.startsWith('QR_CAMP_')) {
-            const campId = payloadStr.replace('QR_CAMP_', '');
+          if (payloadStr && (payloadStr.startsWith('QR_CAMP_') || payloadStr.startsWith('QR_CHECK_FOLLOW_'))) {
+            const isFollowGateCheck = payloadStr.startsWith('QR_CHECK_FOLLOW_');
+            const campId = payloadStr.replace('QR_CHECK_FOLLOW_', '').replace('QR_CAMP_', '');
             const allCamps = await getDmCampaigns();
             const camp = allCamps.find((c) => c.id === campId);
-            if (camp && camp.targetUrl) {
-              console.log(`[Webhook] Quick Reply acionada para campanha CreateFlow: ${camp.name}`);
-              const linkPayload = {
-                recipient: { id: senderId },
-                message: {
-                  attachment: {
-                    type: 'template',
-                    payload: {
-                      template_type: 'generic',
-                      elements: [
-                        {
-                          title: camp.cardTitle || camp.name,
-                          subtitle: camp.cardSubtitle || undefined,
-                          image_url: camp.cardImageUrl || undefined,
+
+            if (camp) {
+              console.log(`[Webhook] Botão acionado para campanha: ${camp.name} (FollowGate: ${isFollowGateCheck})`);
+
+              // Obter access token da conta do Instagram
+              let accessToken: string | null = null;
+              const { data: config } = await supabase
+                .from('config')
+                .select('access_token, instagram_user_id')
+                .eq('id', 'instagram_config')
+                .single();
+
+              if (config?.access_token) {
+                accessToken = config.access_token;
+              } else {
+                const conn = await getConnectionsConfig();
+                accessToken = conn.instagram_access_token || null;
+              }
+
+              let followerUsername = '';
+
+              if (isFollowGateCheck && accessToken) {
+                // Consultar se o seguidor realmente segue o perfil na Meta Graph API
+                const followCheck = await checkUserFollowsBusiness(senderId, accessToken);
+                followerUsername = followCheck.username || '';
+
+                if (!followCheck.follows) {
+                  console.log(`[Webhook-FollowGate] Usuário ${senderId} (@${followerUsername}) ainda NÃO segue @${camp.accountUsername}. Enviando aviso.`);
+
+                  const notFollowingMsg = `Opa ${followerUsername ? `@${followerUsername}` : ''}! Verifiquei aqui e você ainda não está seguindo o nosso perfil @${camp.accountUsername || 'gabolonhez'}. 😅\n\nBasta tocar em "Seguir" no topo desta conversa e depois tocar no botão abaixo para liberar seu link:`;
+                  const retryBtnLabel = (camp.followPromptButtonLabel || 'Já segui ✅').slice(0, 20);
+
+                  const retryPayload = {
+                    recipient: { id: senderId },
+                    message: {
+                      attachment: {
+                        type: 'template',
+                        payload: {
+                          template_type: 'button',
+                          text: notFollowingMsg.slice(0, 640),
                           buttons: [
                             {
-                              type: 'web_url',
-                              url: camp.targetUrl,
-                              title: camp.linkButtonLabel || 'Acessar Link',
+                              type: 'postback',
+                              title: retryBtnLabel,
+                              payload: `QR_CHECK_FOLLOW_${camp.id}`,
                             },
                           ],
                         },
-                      ],
+                      },
+                    },
+                  };
+
+                  try {
+                    await supabase.from('queue').insert({
+                      contact_id: null,
+                      automation_id: null,
+                      message_type: 'private_reply',
+                      recipient_instagram_id: senderId,
+                      message_payload: retryPayload,
+                      status: 'pending',
+                    });
+                  } catch (e) {
+                    console.error('[Webhook] Erro ao enfileirar aviso de seguidor:', e);
+                  }
+                  continue;
+                }
+
+                console.log(`[Webhook-FollowGate] Usuário ${senderId} confirmado como seguidor ativo! Entregando material.`);
+              }
+
+              // Entregar o link / material (Generic Card Template ou texto)
+              if (camp.targetUrl) {
+                const buttons: any[] = [
+                  {
+                    type: 'web_url',
+                    url: camp.targetUrl,
+                    title: (camp.linkButtonLabel || 'Acessar Link').slice(0, 20),
+                  },
+                ];
+
+                if (camp.secondaryTargetUrl) {
+                  buttons.push({
+                    type: 'web_url',
+                    url: camp.secondaryTargetUrl,
+                    title: (camp.secondaryButtonLabel || 'Segundo Link').slice(0, 20),
+                  });
+                }
+
+                const deliverablePayload = {
+                  recipient: { id: senderId },
+                  message: {
+                    attachment: {
+                      type: 'template',
+                      payload: {
+                        template_type: 'generic',
+                        elements: [
+                          {
+                            title: (camp.cardTitle || camp.dmMessage || camp.name).slice(0, 80),
+                            subtitle: camp.cardSubtitle ? camp.cardSubtitle.slice(0, 80) : undefined,
+                            image_url: camp.cardImageUrl || undefined,
+                            buttons,
+                          },
+                        ],
+                      },
                     },
                   },
-                },
-              };
+                };
 
-              try {
-                await supabase.from('queue').insert({
-                  contact_id: null,
-                  automation_id: null,
-                  message_type: 'link',
-                  recipient_instagram_id: senderId,
-                  message_payload: linkPayload,
-                  status: 'pending',
-                });
-              } catch (e) {
-                console.error('[Webhook] Erro ao enfileirar link de campanha CreateFlow:', e);
+                try {
+                  await supabase.from('queue').insert({
+                    contact_id: null,
+                    automation_id: null,
+                    message_type: 'link',
+                    recipient_instagram_id: senderId,
+                    message_payload: deliverablePayload,
+                    status: 'pending',
+                  });
+                } catch (e) {
+                  console.error('[Webhook] Erro ao enfileirar entrega de link:', e);
+                }
+              } else {
+                const textPayload = {
+                  recipient: { id: senderId },
+                  message: { text: camp.dmMessage },
+                };
+
+                try {
+                  await supabase.from('queue').insert({
+                    contact_id: null,
+                    automation_id: null,
+                    message_type: 'private_reply',
+                    recipient_instagram_id: senderId,
+                    message_payload: textPayload,
+                    status: 'pending',
+                  });
+                } catch (e) {
+                  console.error('[Webhook] Erro ao enfileirar texto:', e);
+                }
               }
+
+              // Registrar envio de sucesso no log
+              await addDmLog({
+                campaignId: camp.id,
+                campaignName: camp.name,
+                platform: 'instagram',
+                commenterId: senderId,
+                commenterUsername: followerUsername || 'instagram_user',
+                commentText: isFollowGateCheck ? 'Follow-Gate: Confirmado ✅' : 'Botão: Iniciar',
+                status: 'SENT',
+                publicReplySent: false,
+              });
             }
             continue;
           }

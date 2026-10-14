@@ -211,6 +211,37 @@ export async function POST(req: NextRequest) {
           .replace('{username}', item.commenterUsername)
           .replace('{link}', campaign.targetUrl || '');
 
+        let messagePayload: any;
+        if (campaign.requireFollow) {
+          const promptText = (
+            campaign.followPromptMessage ||
+            'Ei {username}! Para liberar o link exclusivo, siga nosso perfil @{account} e toque no botão abaixo:'
+          )
+            .replace('{username}', item.commenterUsername || 'amigo(a)')
+            .replace('{account}', campaign.accountUsername || 'gabolonhez');
+
+          const btnTitle = (campaign.followPromptButtonLabel || 'Já segui ✅').slice(0, 20);
+
+          messagePayload = {
+            attachment: {
+              type: 'template',
+              payload: {
+                template_type: 'button',
+                text: promptText.slice(0, 640),
+                buttons: [
+                  {
+                    type: 'postback',
+                    title: btnTitle,
+                    payload: `QR_CHECK_FOLLOW_${campaign.id}`,
+                  },
+                ],
+              },
+            },
+          };
+        } else {
+          messagePayload = { text: messageText };
+        }
+
         const sendRes = await fetch(
           `https://graph.instagram.com/v21.0/me/messages?access_token=${accessToken}`,
           {
@@ -218,7 +249,7 @@ export async function POST(req: NextRequest) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               recipient: { comment_id: item.id },
-              message: { text: messageText },
+              message: messagePayload,
             }),
           }
         );

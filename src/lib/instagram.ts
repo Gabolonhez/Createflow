@@ -207,3 +207,43 @@ export async function publishInstagramMedia(
   return publishData.id;
 }
 
+/**
+ * Verifica se um usuário (IGSID) segue a conta profissional no Instagram.
+ * Consulta o campo oficial `is_user_follow_business` da Meta Graph API.
+ */
+export async function checkUserFollowsBusiness(
+  igScopedUserId: string,
+  accessToken: string
+): Promise<{ follows: boolean; username?: string; name?: string }> {
+  try {
+    const url = `${BASE_URL}/${igScopedUserId}?fields=name,username,is_user_follow_business&access_token=${accessToken}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      // Fallback para endpoint v21.0 se necessário
+      const fbUrl = `https://graph.facebook.com/v21.0/${igScopedUserId}?fields=name,username,is_user_follow_business&access_token=${accessToken}`;
+      const fbRes = await fetch(fbUrl);
+      if (fbRes.ok) {
+        const fbData = await fbRes.json();
+        return {
+          follows: Boolean(fbData.is_user_follow_business),
+          username: fbData.username,
+          name: fbData.name,
+        };
+      }
+      const err = await res.json().catch(() => ({}));
+      console.warn('[Instagram Follow Check] Resposta da API:', err);
+      return { follows: false };
+    }
+    const data = await res.json();
+    return {
+      follows: Boolean(data.is_user_follow_business),
+      username: data.username,
+      name: data.name,
+    };
+  } catch (err) {
+    console.error('[Instagram Follow Check] Falha ao verificar seguidor:', err);
+    return { follows: false };
+  }
+}
+
+
