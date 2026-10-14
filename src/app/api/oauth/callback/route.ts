@@ -65,8 +65,23 @@ export async function GET(req: NextRequest) {
       console.warn('[OAuth Callback] Aviso: A assinatura do Webhook retornou falso, mas prosseguindo.');
     }
 
+    // Atualizar também o estado global de conexões
+    try {
+      const { getConnectionsConfig, saveConnectionsConfig } = await import('@/lib/db');
+      const currentConn = await getConnectionsConfig();
+      await saveConnectionsConfig({
+        ...currentConn,
+        instagram_connected: true,
+        instagram_username: profile.username,
+        instagram_user_id: profile.user_id,
+        instagram_access_token: longTokenData.access_token,
+      });
+    } catch (saveErr) {
+      console.warn('[OAuth Callback] Aviso ao atualizar connections_config:', saveErr);
+    }
+
     console.log('[OAuth Callback] Login e configurações concluídos com sucesso!');
-    return NextResponse.redirect(new URL('/?connected=true', req.url));
+    return NextResponse.redirect(new URL('/?connected=instagram', req.url));
   } catch (err: any) {
     console.error('[OAuth Callback Error] Ocorreu uma falha no callback:', err);
     return NextResponse.redirect(

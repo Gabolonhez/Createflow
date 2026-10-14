@@ -277,288 +277,16 @@ const inMemoryStore: Record<string, Record<string, any>> = {
       linkedin_connected: true,
       linkedin_name: 'Gabriel Bolonhez',
       linkedin_publish_mode: 'manual',
-      instagram_connected: true,
+      instagram_connected: false,
       instagram_username: 'gabolonhez',
-      tiktok_connected: true,
+      tiktok_connected: false,
       tiktok_username: 'gabolonhez',
     },
   },
-  dm_campaigns: {
-    camp_1: {
-      id: 'camp_1',
-      name: 'Guia de Agentes de IA 2026',
-      platform: 'instagram',
-      accountId: 'ig_gabolonhez',
-      accountUsername: 'gabolonhez',
-      postId: 'ig_post_101',
-      postUrl: 'https://instagram.com/p/C7x9A1bL90',
-      postThumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&q=80',
-      scope: 'specific',
-      keywords: ['AGENTE', 'GUIA', 'IA'],
-      matchType: 'exact',
-      dmTriggerEnabled: true,
-      dmMessage: 'Fala {username}! Aqui está o Guia Completo de Arquitetura de Agentes de IA que prometi. Toque no botão abaixo para acessar.',
-      dmMessages: [
-        'Fala {username}! Aqui está o Guia Completo de Arquitetura de Agentes de IA que prometi. Toque no botão abaixo para acessar.',
-        'Opa {username}! Conforme prometido no Reels, aqui está o material sobre Agentes em produção.',
-      ],
-      openingDmEnabled: true,
-      openingDmMessage: 'Oi {username}! Quer desbloquear o material direto no navegador?',
-      openingDmButtonLabel: 'Sim, me manda! 🚀',
-      cardImageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80',
-      cardTitle: 'Guia Definitivo: Agentes de IA',
-      cardSubtitle: 'Aprenda a construir LLMs em produção sem alucinação e com baixa latência.',
-      linkButtonLabel: 'Acessar Guia Gratuito',
-      targetUrl: 'https://createflow.ai/docs/agentes-2026',
-      secondaryButtonLabel: 'Comunidade Discord',
-      secondaryTargetUrl: 'https://discord.gg/createflow',
-      requireFollow: true,
-      followPromptMessage: 'Ei {username}! Para receber o link, siga @gabolonhez e toque em "Já segui" abaixo!',
-      followPromptButtonLabel: 'Já segui ✅',
-      followUpEnabled: true,
-      followUpMessage: 'E aí {username}, conseguiu abrir o guia? Qualquer dúvida na implementação me dá um toque aqui!',
-      followUpDelayMinutes: 15,
-      publicReplyEnabled: true,
-      publicReplyMessages: [
-        'Te mandei no direct! 🚀',
-        'Acabei de enviar, confere suas mensagens! ✨',
-        'Enviado com sucesso! Dá uma olhada na DM 📩',
-      ],
-      isActive: true,
-      dmsSentCount: 384,
-      clicksCount: 112,
-      ctr: 29.1,
-      createdAt: new Date(Date.now() - 86400 * 1000 * 3).toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    camp_2: {
-      id: 'camp_2',
-      name: 'Viral Hooks TikTok (Ebook)',
-      platform: 'tiktok',
-      accountId: 'tt_gabolonhez',
-      accountUsername: 'gabolonhez',
-      scope: 'any',
-      keywords: ['VIRAL', 'HOOK', 'CREATOR'],
-      matchType: 'contains',
-      dmTriggerEnabled: true,
-      dmMessage: 'Oi {username}! Te mandei a lista dos 50 Hooks de Alta Retenção para TikTok & Reels. Baixe abaixo!',
-      dmMessages: ['Oi {username}! Te mandei a lista dos 50 Hooks de Alta Retenção para TikTok & Reels.'],
-      openingDmEnabled: false,
-      cardTitle: 'Planilha de Hooks Virais',
-      cardSubtitle: 'Testados em mais de 10M de visualizações orgânicas.',
-      linkButtonLabel: 'Baixar Planilha',
-      targetUrl: 'https://createflow.ai/resources/hooks',
-      requireFollow: false,
-      followUpEnabled: false,
-      followUpDelayMinutes: 0,
-      publicReplyEnabled: true,
-      publicReplyMessages: [
-        'Direct enviado! 🔥',
-        'Mandei lá no chat! 📱',
-        'Prontinho, confere a DM! 💡',
-      ],
-      isActive: true,
-      dmsSentCount: 148,
-      clicksCount: 47,
-      ctr: 31.7,
-      createdAt: new Date(Date.now() - 86400 * 1000 * 5).toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    camp_3: {
-      id: 'camp_3',
-      name: 'Próximo Reels: Template Next.js 16',
-      platform: 'instagram',
-      accountId: 'ig_gabolonhez',
-      accountUsername: 'gabolonhez',
-      scope: 'next',
-      keywords: ['NEXT', 'REPO', 'BOILERPLATE'],
-      matchType: 'exact',
-      dmTriggerEnabled: false,
-      dmMessage: 'Fala {username}! Aqui está o repositório do starter kit Next.js 16 com Tailwind v4 e Supabase.',
-      dmMessages: ['Fala {username}! Aqui está o repositório do starter kit Next.js 16.'],
-      openingDmEnabled: false,
-      cardTitle: 'Starter Kit Next.js 16',
-      cardSubtitle: 'Repositório GitHub limpo e pronto para produção.',
-      linkButtonLabel: 'Ver no GitHub',
-      targetUrl: 'https://github.com/gabolonhez/createflow-starter',
-      requireFollow: true,
-      followPromptMessage: 'Fala {username}! Segue o perfil para liberar o repo open-source!',
-      followPromptButtonLabel: 'Já segui 🔓',
-      followUpEnabled: false,
-      followUpDelayMinutes: 0,
-      publicReplyEnabled: true,
-      publicReplyMessages: ['Mandei o link no direct! 🚀', 'Confere seu direct, link enviado! ✨'],
-      isActive: true,
-      dmsSentCount: 89,
-      clicksCount: 34,
-      ctr: 38.2,
-      createdAt: new Date(Date.now() - 86400 * 1000 * 1).toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-  },
-  dm_logs: {
-    log_1: {
-      id: 'log_1',
-      campaignId: 'camp_1',
-      campaignName: 'Guia de Agentes de IA 2026',
-      platform: 'instagram',
-      commenterId: 'c_user_401',
-      commenterUsername: 'lucas_tech',
-      commentText: 'Quero muito esse GUIA, parabens pelo conteudo',
-      status: 'SENT',
-      publicReplySent: true,
-      createdAt: new Date(Date.now() - 1000 * 60 * 8).toISOString(),
-    },
-    log_2: {
-      id: 'log_2',
-      campaignId: 'camp_2',
-      campaignName: 'Viral Hooks TikTok (Ebook)',
-      platform: 'tiktok',
-      commenterId: 'tt_user_802',
-      commenterUsername: 'marina.creator',
-      commentText: 'VIRAL por favor manda',
-      status: 'SENT',
-      publicReplySent: true,
-      createdAt: new Date(Date.now() - 1000 * 60 * 25).toISOString(),
-    },
-    log_3: {
-      id: 'log_3',
-      campaignId: 'camp_1',
-      campaignName: 'Guia de Agentes de IA 2026',
-      platform: 'instagram',
-      commenterId: 'c_user_402',
-      commenterUsername: 'andre_devops',
-      commentText: 'manda o guia irmao',
-      status: 'SENT',
-      publicReplySent: true,
-      createdAt: new Date(Date.now() - 1000 * 60 * 42).toISOString(),
-    },
-    log_4: {
-      id: 'log_4',
-      campaignId: 'camp_1',
-      campaignName: 'Guia de Agentes de IA 2026',
-      platform: 'instagram',
-      commenterId: 'c_user_403',
-      commenterUsername: 'camila_ai',
-      commentText: 'AGENTE',
-      status: 'SKIPPED_WINDOW',
-      errorMessage: 'Usuário com privacidade de mensagens fechada para contas não seguidas',
-      publicReplySent: true,
-      createdAt: new Date(Date.now() - 1000 * 60 * 95).toISOString(),
-    },
-    log_5: {
-      id: 'log_5',
-      campaignId: 'camp_2',
-      campaignName: 'Viral Hooks TikTok (Ebook)',
-      platform: 'tiktok',
-      commenterId: 'tt_user_803',
-      commenterUsername: 'felipe_marketing',
-      commentText: 'HOOK quero testar no meu perfil',
-      status: 'SENT',
-      publicReplySent: true,
-      createdAt: new Date(Date.now() - 1000 * 60 * 140).toISOString(),
-    },
-  },
-  tracked_links: {
-    trk_1: {
-      id: 'trk_1',
-      campaignId: 'camp_1',
-      campaignName: 'Guia de Agentes de IA 2026',
-      platform: 'instagram',
-      label: 'Guia Agentes 2026',
-      destinationUrl: 'https://createflow.ai/docs/agentes-2026',
-      shortSlug: 'cf-agt26',
-      shortUrl: 'https://createflow.io/r/cf-agt26',
-      clicks: 112,
-      uniqueClicks: 94,
-      ctr: 29.1,
-      createdAt: new Date(Date.now() - 86400 * 1000 * 3).toISOString(),
-    },
-    trk_2: {
-      id: 'trk_2',
-      campaignId: 'camp_2',
-      campaignName: 'Viral Hooks TikTok (Ebook)',
-      platform: 'tiktok',
-      label: 'Planilha Hooks Virais',
-      destinationUrl: 'https://createflow.ai/resources/hooks',
-      shortSlug: 'cf-hooks',
-      shortUrl: 'https://createflow.io/r/cf-hooks',
-      clicks: 47,
-      uniqueClicks: 42,
-      ctr: 31.7,
-      createdAt: new Date(Date.now() - 86400 * 1000 * 5).toISOString(),
-    },
-    trk_3: {
-      id: 'trk_3',
-      campaignId: 'camp_3',
-      campaignName: 'Próximo Reels: Template Next.js 16',
-      platform: 'instagram',
-      label: 'GitHub Starter Kit',
-      destinationUrl: 'https://github.com/gabolonhez/createflow-starter',
-      shortSlug: 'cf-next16',
-      shortUrl: 'https://createflow.io/r/cf-next16',
-      clicks: 34,
-      uniqueClicks: 31,
-      ctr: 38.2,
-      createdAt: new Date(Date.now() - 86400 * 1000 * 1).toISOString(),
-    },
-  },
-  social_conversations: {
-    conv_1: {
-      id: 'conv_1',
-      platform: 'instagram',
-      participantId: 'user_lucas',
-      participantUsername: 'lucas_tech',
-      participantName: 'Lucas Ferreira',
-      participantAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80',
-      lastMessageText: 'Caraca mano, o guia de agentes ficou sensacional! Valeu!',
-      lastMessageTimestamp: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
-      unreadCount: 1,
-      isWindowOpen: true,
-      windowExpiresInHours: 23,
-      messages: [
-        {
-          id: 'm1',
-          sender: 'me',
-          text: 'Fala @lucas_tech! Aqui está o Guia Completo de Arquitetura de Agentes de IA que prometi. Toque no botão abaixo para acessar.',
-          timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-        },
-        {
-          id: 'm2',
-          sender: 'user',
-          text: 'Caraca mano, o guia de agentes ficou sensacional! Valeu!',
-          timestamp: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
-        },
-      ],
-    },
-    conv_2: {
-      id: 'conv_2',
-      platform: 'tiktok',
-      participantId: 'user_marina',
-      participantUsername: 'marina.creator',
-      participantName: 'Marina Bastos',
-      participantAvatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&q=80',
-      lastMessageText: 'Tem algum exemplo de hook para nicho de finanças?',
-      lastMessageTimestamp: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
-      unreadCount: 0,
-      isWindowOpen: true,
-      windowExpiresInHours: 21,
-      messages: [
-        {
-          id: 'm3',
-          sender: 'me',
-          text: 'Oi @marina.creator! Te mandei a lista dos 50 Hooks de Alta Retenção para TikTok & Reels. Baixe abaixo!',
-          timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-        },
-        {
-          id: 'm4',
-          sender: 'user',
-          text: 'Tem algum exemplo de hook para nicho de finanças?',
-          timestamp: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
-        },
-      ],
-    },
-  },
+  dm_campaigns: {},
+  dm_logs: {},
+  tracked_links: {},
+  social_conversations: {},
 };
 
 function getLocalStore(collectionName: string) {
@@ -977,6 +705,64 @@ export async function getConnectionsConfig(): Promise<ConnectionsConfig> {
       }
     } catch (ignore) {}
   }
+
+  // 3. Fallback for Instagram credentials & real connection state
+  if (!merged.instagram_client_id && process.env.INSTAGRAM_CLIENT_ID) {
+    merged.instagram_client_id = process.env.INSTAGRAM_CLIENT_ID;
+  }
+  if (!merged.instagram_client_secret && process.env.INSTAGRAM_CLIENT_SECRET) {
+    merged.instagram_client_secret = process.env.INSTAGRAM_CLIENT_SECRET;
+  }
+
+  try {
+    const { data: igConfig } = await supabase
+      .from('config')
+      .select('instagram_user_id, instagram_username, access_token')
+      .eq('id', 'instagram_config')
+      .single();
+
+    if (igConfig && igConfig.access_token) {
+      merged.instagram_connected = true;
+      if (igConfig.instagram_username) {
+        merged.instagram_username = igConfig.instagram_username;
+      }
+      if (igConfig.instagram_user_id) {
+        merged.instagram_user_id = igConfig.instagram_user_id;
+      }
+      merged.instagram_access_token = igConfig.access_token;
+    } else {
+      merged.instagram_connected = false;
+    }
+  } catch (ignore) {}
+
+  // 4. Fallback for TikTok credentials & real connection state
+  if (!merged.tiktok_client_key && process.env.TIKTOK_CLIENT_KEY) {
+    merged.tiktok_client_key = process.env.TIKTOK_CLIENT_KEY;
+  }
+  if (!merged.tiktok_client_secret && process.env.TIKTOK_CLIENT_SECRET) {
+    merged.tiktok_client_secret = process.env.TIKTOK_CLIENT_SECRET;
+  }
+
+  try {
+    const { data: ttConfig } = await supabase
+      .from('config')
+      .select('tiktok_open_id, tiktok_username, access_token')
+      .eq('id', 'tiktok_config')
+      .single();
+
+    if (ttConfig && ttConfig.access_token) {
+      merged.tiktok_connected = true;
+      if (ttConfig.tiktok_username) {
+        merged.tiktok_username = ttConfig.tiktok_username;
+      }
+      if (ttConfig.tiktok_open_id) {
+        merged.tiktok_user_id = ttConfig.tiktok_open_id;
+      }
+      merged.tiktok_access_token = ttConfig.access_token;
+    } else {
+      merged.tiktok_connected = false;
+    }
+  } catch (ignore) {}
 
   return merged;
 }

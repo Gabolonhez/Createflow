@@ -158,10 +158,14 @@ export interface ConnectionsConfig {
   instagram_username?: string;
   instagram_user_id?: string;
   instagram_access_token?: string;
+  instagram_client_id?: string;
+  instagram_client_secret?: string;
   tiktok_connected?: boolean;
   tiktok_username?: string;
   tiktok_user_id?: string;
   tiktok_access_token?: string;
+  tiktok_client_key?: string;
+  tiktok_client_secret?: string;
 }
 
 export interface MediaAsset {

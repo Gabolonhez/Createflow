@@ -34,11 +34,15 @@ export function ConnectionsView({
   const [liClientId, setLiClientId] = useState(connections.linkedin_client_id || '');
   const [liClientSecret, setLiClientSecret] = useState(connections.linkedin_client_secret || '');
 
-  const [igConnected, setIgConnected] = useState(connections.instagram_connected ?? true);
+  const [igConnected, setIgConnected] = useState(Boolean(connections.instagram_connected));
   const [igUsername, setIgUsername] = useState(connections.instagram_username || 'gabolonhez');
+  const [isConnectingInstagram, setIsConnectingInstagram] = useState(false);
 
-  const [ttConnected, setTtConnected] = useState(connections.tiktok_connected ?? true);
+  const [ttConnected, setTtConnected] = useState(Boolean(connections.tiktok_connected));
   const [ttUsername, setTtUsername] = useState(connections.tiktok_username || 'gabolonhez');
+  const [ttClientKey, setTtClientKey] = useState(connections.tiktok_client_key || '');
+  const [ttClientSecret, setTtClientSecret] = useState(connections.tiktok_client_secret || '');
+  const [isConnectingTikTok, setIsConnectingTikTok] = useState(false);
 
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
@@ -60,15 +64,27 @@ export function ConnectionsView({
     if (connections.instagram_username) {
       setIgUsername(connections.instagram_username);
     }
+    setIgConnected(Boolean(connections.instagram_connected));
     if (connections.tiktok_username) {
       setTtUsername(connections.tiktok_username);
+    }
+    setTtConnected(Boolean(connections.tiktok_connected));
+    if (connections.tiktok_client_key && !ttClientKey) {
+      setTtClientKey(connections.tiktok_client_key);
+    }
+    if (connections.tiktok_client_secret && !ttClientSecret) {
+      setTtClientSecret(connections.tiktok_client_secret);
     }
   }, [
     connections.linkedin_client_id,
     connections.linkedin_client_secret,
     connections.linkedin_publish_mode,
+    connections.instagram_connected,
     connections.instagram_username,
+    connections.tiktok_connected,
     connections.tiktok_username,
+    connections.tiktok_client_key,
+    connections.tiktok_client_secret,
   ]);
 
   const copyToClipboard = (text: string) => {
@@ -93,6 +109,8 @@ export function ConnectionsView({
         instagram_username: igUsername.replace('@', '').trim(),
         tiktok_connected: ttConnected,
         tiktok_username: ttUsername.replace('@', '').trim(),
+        tiktok_client_key: ttClientKey.trim() || undefined,
+        tiktok_client_secret: ttClientSecret.trim() || undefined,
       });
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 2500);
@@ -131,6 +149,46 @@ export function ConnectionsView({
     if (effectiveClientSecret) {
       url.searchParams.set('client_secret', effectiveClientSecret);
     }
+    window.location.href = url.toString();
+  };
+
+  const handleConnectInstagramOAuth = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsConnectingInstagram(true);
+    try {
+      await onSaveConnections({
+        instagram_username: igUsername.replace('@', '').trim(),
+      });
+    } catch (err) {
+      console.warn('Silent save failed before Instagram OAuth redirect:', err);
+    }
+    window.location.href = '/api/oauth/instagram';
+  };
+
+  const handleConnectTikTokOAuth = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    const effectiveKey = ttClientKey.trim() || connections.tiktok_client_key?.trim();
+    const effectiveSecret = ttClientSecret.trim() || connections.tiktok_client_secret?.trim();
+
+    if (!effectiveKey) {
+      setConnectError('Preencha o Client Key do TikTok abaixo antes de conectar.');
+      return;
+    }
+
+    setIsConnectingTikTok(true);
+    try {
+      await onSaveConnections({
+        tiktok_username: ttUsername.replace('@', '').trim(),
+        tiktok_client_key: effectiveKey,
+        tiktok_client_secret: effectiveSecret || undefined,
+      });
+    } catch (err) {
+      console.warn('Silent save failed before TikTok OAuth redirect:', err);
+    }
+
+    const url = new URL('/api/oauth/tiktok', window.location.origin);
+    url.searchParams.set('client_key', effectiveKey);
+    if (effectiveSecret) url.searchParams.set('client_secret', effectiveSecret);
     window.location.href = url.toString();
   };
 
@@ -413,7 +471,7 @@ export function ConnectionsView({
         {/* ========================================= */}
         {/* 3. INSTAGRAM PROFESSIONAL & META GRAPH API */}
         {/* ========================================= */}
-        <div className="p-5 rounded-2xl bg-[#111116] border border-white/[0.08] flex flex-col gap-5">
+        <div className="p-5 rounded-2xl bg-[#111116] border border-white/[0.08] flex flex-col gap-4">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <div className="size-10 rounded-xl bg-gradient-to-tr from-pink-600 via-rose-500 to-amber-500 flex items-center justify-center shadow-lg shadow-pink-600/20">
@@ -437,8 +495,37 @@ export function ConnectionsView({
                 igConnected ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
               }`}>
                 <span className={`size-1.5 rounded-full ${igConnected ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'}`} />
-                {igConnected ? 'Conectado' : 'Desconectado'}
+                {igConnected ? 'Conectado' : 'Não conectado'}
               </span>
+            </div>
+          </div>
+
+          {/* Instagram OAuth Action Bar */}
+          <div className="p-3 rounded-lg bg-black/30 border border-white/[0.06] flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-xs font-semibold text-white/90">
+                @{igUsername || 'gabolonhez'}
+              </span>
+              <span className="text-[11px] text-white/45">
+                {igConnected
+                  ? 'Autorizado via OAuth da Meta (Pronto para disparar DMs)'
+                  : 'Ainda não autenticado via OAuth da Meta (Necessário para disparar DMs)'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleConnectInstagramOAuth}
+                disabled={isConnectingInstagram}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white transition-all shadow-md shadow-pink-600/20 active:scale-[0.98] cursor-pointer disabled:opacity-50"
+              >
+                {isConnectingInstagram
+                  ? 'Abrindo Meta…'
+                  : igConnected
+                  ? 'Reconectar OAuth'
+                  : 'Conectar com Instagram'}
+              </button>
             </div>
           </div>
 
@@ -472,12 +559,35 @@ export function ConnectionsView({
               </div>
             </div>
           </div>
+
+          {/* OAuth Redirect URI Helper */}
+          <div className="p-3 rounded-lg bg-white/[0.02] border border-white/[0.06] flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono text-white/60">
+                URL de Redirecionamento (Cole na aba Business Login do Instagram na Meta):
+              </span>
+              <button
+                type="button"
+                onClick={() => copyToClipboard('https://createfloww.vercel.app/api/oauth/callback')}
+                className="flex items-center gap-1 text-[10px] font-mono text-pink-300 hover:underline"
+              >
+                <Copy size={11} />
+                <span>{copiedUrl === 'https://createfloww.vercel.app/api/oauth/callback' ? 'Copiado!' : 'Copiar URL'}</span>
+              </button>
+            </div>
+            <code className="text-[10px] font-mono text-white/80 bg-black/50 p-1.5 rounded border border-white/[0.04] break-all select-all">
+              https://createfloww.vercel.app/api/oauth/callback
+            </code>
+            <span className="text-[10px] text-white/40 leading-relaxed">
+              💡 <strong>Passo obrigatório na Meta:</strong> Adicione seu <code className="text-white/70">@{igUsername || 'username'}</code> em <em>Roles → Instagram Testers</em> e aceite o convite no app do celular (<em>Apps e Sites → Convites de testador</em>). Em seguida, clique em <strong>Conectar com Instagram</strong> acima.
+            </span>
+          </div>
         </div>
 
         {/* ========================================= */}
         {/* 4. TIKTOK FOR BUSINESS & CREATOR API      */}
         {/* ========================================= */}
-        <div className="p-5 rounded-2xl bg-[#111116] border border-white/[0.08] flex flex-col gap-5">
+        <div className="p-5 rounded-2xl bg-[#111116] border border-white/[0.08] flex flex-col gap-4">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <div className="size-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-rose-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
@@ -501,8 +611,37 @@ export function ConnectionsView({
                 ttConnected ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
               }`}>
                 <span className={`size-1.5 rounded-full ${ttConnected ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'}`} />
-                {ttConnected ? 'Conectado' : 'Desconectado'}
+                {ttConnected ? 'Conectado' : 'Não conectado'}
               </span>
+            </div>
+          </div>
+
+          {/* TikTok OAuth Action Bar */}
+          <div className="p-3 rounded-lg bg-black/30 border border-white/[0.06] flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-xs font-semibold text-white/90">
+                @{ttUsername || 'gabolonhez'}
+              </span>
+              <span className="text-[11px] text-white/45">
+                {ttConnected
+                  ? 'Autorizado via TikTok Login Kit'
+                  : 'Aguardando autorização via TikTok Login Kit'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleConnectTikTokOAuth}
+                disabled={isConnectingTikTok}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white transition-all shadow-md shadow-cyan-600/20 active:scale-[0.98] cursor-pointer disabled:opacity-50"
+              >
+                {isConnectingTikTok
+                  ? 'Abrindo TikTok…'
+                  : ttConnected
+                  ? 'Reconectar OAuth'
+                  : 'Conectar com TikTok'}
+              </button>
             </div>
           </div>
 
@@ -535,6 +674,54 @@ export function ConnectionsView({
                 </button>
               </div>
             </div>
+          </div>
+
+          {/* TikTok Credentials (Optional) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-mono text-white/40">TikTok Client Key (aba App Details)</label>
+              <input
+                type="text"
+                value={ttClientKey}
+                onChange={(e) => setTtClientKey(e.target.value)}
+                placeholder="Cole o Client Key do TikTok Developers..."
+                className="px-3 py-1.5 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs font-mono focus:outline-none focus:border-cyan-500/60"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-mono text-white/40">TikTok Client Secret</label>
+              <input
+                type="password"
+                value={ttClientSecret}
+                onChange={(e) => setTtClientSecret(e.target.value)}
+                placeholder="Cole o Client Secret do TikTok Developers..."
+                className="px-3 py-1.5 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs font-mono focus:outline-none focus:border-cyan-500/60"
+              />
+            </div>
+          </div>
+
+          {/* TikTok Redirect URI Helper */}
+          <div className="p-3 rounded-lg bg-white/[0.02] border border-white/[0.06] flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono text-white/60">
+                URL de Redirecionamento (Cole na aba Login Kit do TikTok Developer Portal):
+              </span>
+              <button
+                type="button"
+                onClick={() => copyToClipboard('https://createfloww.vercel.app/api/oauth/tiktok')}
+                className="flex items-center gap-1 text-[10px] font-mono text-cyan-300 hover:underline"
+              >
+                <Copy size={11} />
+                <span>{copiedUrl === 'https://createfloww.vercel.app/api/oauth/tiktok' ? 'Copiado!' : 'Copiar URL'}</span>
+              </button>
+            </div>
+            <code className="text-[10px] font-mono text-white/80 bg-black/50 p-1.5 rounded border border-white/[0.04] break-all select-all">
+              https://createfloww.vercel.app/api/oauth/tiktok
+            </code>
+            <span className="text-[10px] text-white/40 leading-relaxed">
+              💡 <strong>No TikTok Developer Portal:</strong> Na aba <em>Login Kit</em>, adicione a URL acima em <em>Redirect URI</em> para habilitar o login e permissões.
+            </span>
           </div>
         </div>
       </div>
