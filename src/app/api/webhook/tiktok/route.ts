@@ -3,6 +3,8 @@ import crypto from 'crypto';
 import { supabase } from '@/lib/supabase';
 import { addDmLog, getDmCampaigns } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 // 1. TikTok Webhook Handshake / Verification (GET)
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);

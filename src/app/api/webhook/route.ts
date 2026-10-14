@@ -6,6 +6,8 @@ import { after } from 'next/server';
 import { getDmCampaigns, addDmLog } from '@/lib/db';
 import type { DmCampaign } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 function verifySignature(body: string, signatureHeader: string | null): boolean {
   if (!signatureHeader) return false;
 
