@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "CreateFlow - Segundo Cérebro & Automação de Conteúdo",
   description: "Plataforma inteligente de criação de conteúdo por IA, segundo cérebro e automação para Instagram, TikTok e LinkedIn.",
   other: {
-    "tiktok-developers-site-verification": "R2WIbVyjtbxYvEN42SBR2JoT8z22dbhW",
+    "tiktok-developers-site-verification": "v5mpVFenrlYf6w0MpnDZWhqDcqLXl1M9",
   },
 };
 
