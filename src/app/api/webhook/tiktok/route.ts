@@ -9,11 +9,13 @@ export async function GET(req: NextRequest) {
   const challenge = searchParams.get('challenge');
   const verifyToken = searchParams.get('verify_token');
 
-  const configuredToken = process.env.TIKTOK_VERIFY_TOKEN || process.env.INSTAGRAM_VERIFY_TOKEN;
+  console.log('[TikTok Webhook] GET Handshake recebido:', { challenge, verifyToken });
 
-  if (verifyToken === configuredToken && challenge) {
-    console.log('[TikTok Webhook] Handshake bem-sucedido!');
-    return new Response(challenge, { status: 200 });
+  if (challenge) {
+    return new Response(challenge, {
+      status: 200,
+      headers: { 'Content-Type': 'text/plain' },
+    });
   }
 
   return new Response('Challenge accepted', { status: 200 });
@@ -24,6 +26,16 @@ export async function POST(req: NextRequest) {
   try {
     const rawBody = await req.text();
     const payload = JSON.parse(rawBody || '{}');
+
+    // Tratar verificação via POST (algumas versões do portal enviam challenge via POST)
+    if (payload.challenge || payload.type === 'url_verification') {
+      const challengeVal = (payload.challenge || payload.data?.challenge || 'ok').toString();
+      console.log('[TikTok Webhook] POST Handshake recebido:', challengeVal);
+      return new Response(challengeVal, {
+        status: 200,
+        headers: { 'Content-Type': 'text/plain' },
+      });
+    }
 
     // Salvar evento no histórico
     try {

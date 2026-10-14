@@ -55,6 +55,18 @@ function matchKeywords(text: string, keywords: string[], matchType: string): boo
 // 1. Handshake do Webhook (GET)
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
+
+  // TikTok Handshake (TikTok envia ?challenge=...)
+  if (searchParams.has('challenge')) {
+    const challenge = searchParams.get('challenge') || 'ok';
+    console.log('[Webhook] TikTok Handshake recebido via /api/webhook:', challenge);
+    return new Response(challenge, {
+      status: 200,
+      headers: { 'Content-Type': 'text/plain' },
+    });
+  }
+
+  // Meta / Instagram Handshake
   const mode = searchParams.get('hub.mode');
   const token = searchParams.get('hub.verify_token');
   const challenge = searchParams.get('hub.challenge');
@@ -64,7 +76,7 @@ export async function GET(req: NextRequest) {
     process.env.INSTAGRAM_VERIFY_TOKEN;
 
   if (mode === 'subscribe' && verifyToken && token === verifyToken) {
-    console.log('[Webhook] Handshake bem sucedido!');
+    console.log('[Webhook] Meta Handshake bem sucedido!');
     return new Response(challenge, { status: 200 });
   }
 
@@ -78,8 +90,23 @@ export async function POST(req: NextRequest) {
     const rawBody = await req.text();
     const signature = req.headers.get('x-hub-signature-256');
 
+    let payload: any = {};
+    try {
+      payload = JSON.parse(rawBody || '{}');
+    } catch {}
+
+    // Verificação de URL do TikTok (caso configurado nesta URL)
+    if (payload.challenge || payload.type === 'url_verification') {
+      const challengeVal = (payload.challenge || payload.data?.challenge || 'ok').toString();
+      console.log('[Webhook] TikTok POST Handshake recebido:', challengeVal);
+      return new Response(challengeVal, {
+        status: 200,
+        headers: { 'Content-Type': 'text/plain' },
+      });
+    }
+
     // Validar assinatura da Meta
-    if (!verifySignature(rawBody, signature)) {
+    if (signature && !verifySignature(rawBody, signature)) {
       console.warn('[Webhook] Assinatura inválida detectada.');
       return new Response('Invalid signature', { status: 401 });
     }
