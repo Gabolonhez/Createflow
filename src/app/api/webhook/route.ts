@@ -82,6 +82,11 @@ export async function GET(req: NextRequest) {
     return new Response(challenge, { status: 200 });
   }
 
+  // Se for ping de verificação genérico sem parâmetros Meta
+  if (!mode && !token) {
+    return new Response('OK', { status: 200 });
+  }
+
   console.warn('[Webhook] Falha no handshake. Token inválido.');
   return new Response('Forbidden', { status: 403 });
 }
@@ -95,7 +100,9 @@ export async function POST(req: NextRequest) {
     let payload: any = {};
     try {
       payload = JSON.parse(rawBody || '{}');
-    } catch {}
+    } catch {
+      payload = {};
+    }
 
     // Verificação de URL do TikTok (caso configurado nesta URL)
     if (payload.challenge || payload.type === 'url_verification') {
@@ -113,7 +120,14 @@ export async function POST(req: NextRequest) {
       return new Response('Invalid signature', { status: 401 });
     }
 
-    const payload = JSON.parse(rawBody);
+    // Se for teste do TikTok ou ping sem assinatura Meta e sem entries da Meta
+    if (!payload.entry && !signature) {
+      console.log('[Webhook] Evento ou teste TikTok/Ping recebido:', payload);
+      try {
+        await supabase.from('events').insert([{ payload, platform: 'tiktok' }]);
+      } catch {}
+      return NextResponse.json({ success: true, message: 'Event received' }, { status: 200 });
+    }
 
     // Salvar o evento bruto no banco de dados para histórico/depuração
     const { data: eventRow, error: eventErr } = await supabase
