@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
       'instagram_business_manage_insights',
     ].join(',');
 
-    const authUrl = `https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_reauth=true&client_id=${clientId}&redirect_uri=${encodeURIComponent(
+    const authUrl = `https://api.instagram.com/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
       redirectUri
     )}&scope=${scope}&response_type=code`;
 
