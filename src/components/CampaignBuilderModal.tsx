@@ -440,7 +440,19 @@ export function CampaignBuilderModal({
                 <div className="flex items-center gap-1.5 p-1 rounded-lg bg-white/[0.04] border border-white/[0.08]">
                   <button
                     type="button"
-                    onClick={() => setPlatform('instagram')}
+                    onClick={() => {
+                      setPlatform('instagram');
+                      if (
+                        publicReplyMessages.length === 3 &&
+                        publicReplyMessages[0]?.startsWith('Me manda ')
+                      ) {
+                        setPublicReplyMessages([
+                          'Te mandei no direct! 🚀',
+                          'Acabei de enviar, confere suas mensagens! ✨',
+                          'Enviado com sucesso! Dá uma olhada na DM 📩',
+                        ]);
+                      }
+                    }}
                     className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all ${
                       platform === 'instagram'
                         ? 'bg-pink-600/25 text-pink-300 border border-pink-500/40 shadow-sm'
@@ -452,7 +464,20 @@ export function CampaignBuilderModal({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setPlatform('tiktok')}
+                    onClick={() => {
+                      setPlatform('tiktok');
+                      if (
+                        publicReplyMessages.length === 3 &&
+                        publicReplyMessages[0] === 'Te mandei no direct! 🚀'
+                      ) {
+                        const kw = (keywords[0] || 'REA').replace(/^#/, '');
+                        setPublicReplyMessages([
+                          `Me manda "${kw}" no direct que o link chega na hora! 🚀`,
+                          `Clica no meu perfil e me manda "${kw}" na DM pra receber! ✨`,
+                          `Manda "${kw}" no chat aqui do perfil que te envio o link 📥`,
+                        ]);
+                      }
+                    }}
                     className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all ${
                       platform === 'tiktok'
                         ? 'bg-cyan-600/25 text-cyan-300 border border-cyan-500/40 shadow-sm'
@@ -935,6 +960,37 @@ export function CampaignBuilderModal({
 
               {publicReplyEnabled && (
                 <div className="space-y-2">
+                  {platform === 'tiktok' && (
+                    <div className="p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/20 space-y-2 mb-1">
+                      <div className="flex items-start gap-2.5">
+                        <Sparkles size={14} className="text-cyan-400 shrink-0 mt-0.5" />
+                        <div className="text-[11px] text-cyan-200/90 leading-relaxed">
+                          <span className="font-semibold text-cyan-300">Regra do TikTok:</span> A API do TikTok não permite enviar DM direta para quem apenas comentou no vídeo. O seguidor precisa abrir seu perfil e te mandar uma mensagem no chat para receber o link.
+                          <span className="block text-white/50 text-[10px] mt-0.5">
+                            Use as respostas públicas abaixo para orientá-lo a mandar a palavra-chave no seu Direct!
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 pt-0.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const kw = (keywords[0] || 'REA').replace(/^#/, '');
+                            setPublicReplyMessages([
+                              `Me manda "${kw}" no direct que o link chega na hora! 🚀`,
+                              `Clica no meu perfil e me manda "${kw}" na DM pra receber! ✨`,
+                              `Manda "${kw}" no chat aqui do perfil que te envio o link 📥`,
+                            ]);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 text-[11px] font-medium transition-colors flex items-center gap-1.5"
+                        >
+                          <Sparkles size={11} />
+                          <span>Preencher Respostas Recomendadas para TikTok</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-2">
                     <input
                       type="text"

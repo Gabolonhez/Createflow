@@ -30,28 +30,63 @@ export async function POST(req: NextRequest) {
       await supabase.from('events').insert([{ payload, platform: 'tiktok' }]);
     } catch (ignore) {}
 
-    // Eventos de comentário do TikTok: type === 'comment.create' ou 'comment'
-    const event = payload.event || payload.type;
-    const commentText = payload.content || payload.text || payload.data?.comment_text;
-    const commenterUsername = payload.user?.unique_id || payload.user?.nickname || 'tiktok_user';
-    const commenterId = payload.user?.open_id || payload.user?.id || `tt_${Date.now()}`;
+    // Eventos de comentário ou mensagem direta do TikTok
+    const event = (payload.event || payload.type || '').toString().toLowerCase();
+    
+    // Extrair texto (suporta formatos de comentário e de chat/DM do TikTok)
+    const incomingText = (
+      payload.content ||
+      payload.text ||
+      payload.data?.comment_text ||
+      payload.data?.text ||
+      payload.message?.text ||
+      payload.entry?.[0]?.changes?.[0]?.value?.text ||
+      ''
+    ).toString().trim();
 
-    if (commentText) {
-      console.log(`[TikTok Webhook] Novo comentário recebido: "${commentText}" por @${commenterUsername}`);
+    const commenterUsername =
+      payload.user?.unique_id ||
+      payload.user?.nickname ||
+      payload.sender?.nickname ||
+      payload.sender?.username ||
+      'tiktok_user';
+
+    const commenterId =
+      payload.user?.open_id ||
+      payload.user?.id ||
+      payload.sender?.open_id ||
+      payload.sender_id ||
+      `tt_${Date.now()}`;
+
+    const isDirectMessage =
+      event.includes('message') ||
+      event.includes('im.') ||
+      event.includes('chat') ||
+      Boolean(payload.conversation_id || payload.chat_id || payload.message);
+
+    if (incomingText) {
+      console.log(
+        `[TikTok Webhook] Novo evento (${isDirectMessage ? 'DM' : 'Comentário'}): "${incomingText}" por @${commenterUsername}`
+      );
 
       const campaigns = await getDmCampaigns();
       const matched = campaigns.find((c) => {
         if (!c.isActive || c.platform !== 'tiktok') return false;
-        const normalized = commentText.toLowerCase();
-        return c.keywords.some((kw) =>
-          c.matchType === 'exact'
-            ? normalized === kw.toLowerCase().trim()
-            : normalized.includes(kw.toLowerCase().trim())
-        );
+        const normalized = incomingText.toLowerCase();
+        return c.keywords.some((kw) => {
+          const cleanKw = kw.toLowerCase().trim().replace(/^#/, '');
+          return c.matchType === 'exact'
+            ? normalized === cleanKw || normalized === `#${cleanKw}`
+            : normalized.includes(cleanKw);
+        });
       });
 
       if (matched) {
-        console.log(`[TikTok Webhook] Disparando campanha Auto-DM: ${matched.name}`);
+        console.log(
+          `[TikTok Webhook] Disparando campanha Auto-DM: ${matched.name} | Tipo: ${
+            isDirectMessage ? 'Entrega de Link na DM' : 'Resposta Pública no Comentário'
+          }`
+        );
 
         // Grava no log de auditoria
         await addDmLog({
@@ -60,9 +95,9 @@ export async function POST(req: NextRequest) {
           platform: 'tiktok',
           commenterId,
           commenterUsername,
-          commentText,
+          commentText: incomingText,
           status: 'SENT',
-          publicReplySent: matched.publicReplyEnabled,
+          publicReplySent: !isDirectMessage && matched.publicReplyEnabled,
         });
       }
     }
