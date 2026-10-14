@@ -77,32 +77,40 @@ export function CampaignBuilderModal({
     campaignToEdit?.openingDmButtonLabel || 'Sim, me manda! 🚀'
   );
 
-  // Main Deliverable DM
+  // Main Deliverable DM & Links
   const [dmMessage, setDmMessage] = useState(
-    campaignToEdit?.dmMessage ||
-      'Fala {username}! Aqui está o seu acesso exclusivo conforme prometido. Toque no botão abaixo:'
-  );
-  const [cardImageUrl, setCardImageUrl] = useState(
-    campaignToEdit?.cardImageUrl ||
-      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80'
-  );
-  const [cardTitle, setCardTitle] = useState(
-    campaignToEdit?.cardTitle || 'Acesso Exclusivo CreateFlow'
-  );
-  const [cardSubtitle, setCardSubtitle] = useState(
-    campaignToEdit?.cardSubtitle || 'Material gratuito liberado em alta qualidade.'
-  );
-  const [linkButtonLabel, setLinkButtonLabel] = useState(
-    campaignToEdit?.linkButtonLabel || 'Acessar Conteúdo'
+    campaignToEdit?.dmMessage || 'O link {link}'
   );
   const [targetUrl, setTargetUrl] = useState(
-    campaignToEdit?.targetUrl || 'https://createflow.ai'
+    campaignToEdit?.targetUrl || ''
+  );
+  const [linkButtonLabel, setLinkButtonLabel] = useState(
+    campaignToEdit?.linkButtonLabel || 'Abrir link'
+  );
+
+  // Optional Second Link
+  const [secondLinkOpen, setSecondLinkOpen] = useState(
+    Boolean(campaignToEdit?.secondaryTargetUrl)
+  );
+  const [secondaryTargetUrl, setSecondaryTargetUrl] = useState(
+    campaignToEdit?.secondaryTargetUrl || ''
   );
   const [secondaryButtonLabel, setSecondaryButtonLabel] = useState(
     campaignToEdit?.secondaryButtonLabel || ''
   );
-  const [secondaryTargetUrl, setSecondaryTargetUrl] = useState(
-    campaignToEdit?.secondaryTargetUrl || ''
+
+  // Optional Card with Image (Default OFF)
+  const [cardOpen, setCardOpen] = useState(
+    Boolean(campaignToEdit?.cardImageUrl)
+  );
+  const [cardImageUrl, setCardImageUrl] = useState(
+    campaignToEdit?.cardImageUrl || ''
+  );
+  const [cardTitle, setCardTitle] = useState(
+    campaignToEdit?.cardTitle || ''
+  );
+  const [cardSubtitle, setCardSubtitle] = useState(
+    campaignToEdit?.cardSubtitle || ''
   );
 
   // Follow-gate
@@ -168,22 +176,17 @@ export function CampaignBuilderModal({
         campaignToEdit.openingDmButtonLabel || 'Sim, me manda! 🚀'
       );
       setDmMessage(
-        campaignToEdit.dmMessage ||
-          'Fala {username}! Aqui está o seu acesso exclusivo conforme prometido. Toque no botão abaixo:'
+        campaignToEdit.dmMessage || 'O link {link}'
       );
-      setCardImageUrl(
-        campaignToEdit.cardImageUrl ||
-          'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80'
-      );
-      setCardTitle(campaignToEdit.cardTitle || 'Acesso Exclusivo CreateFlow');
-      setCardSubtitle(
-        campaignToEdit.cardSubtitle ||
-          'Material gratuito liberado em alta qualidade.'
-      );
-      setLinkButtonLabel(campaignToEdit.linkButtonLabel || 'Acessar Conteúdo');
-      setTargetUrl(campaignToEdit.targetUrl || 'https://createflow.ai');
-      setSecondaryButtonLabel(campaignToEdit.secondaryButtonLabel || '');
+      setTargetUrl(campaignToEdit.targetUrl || '');
+      setLinkButtonLabel(campaignToEdit.linkButtonLabel || 'Abrir link');
+      setSecondLinkOpen(Boolean(campaignToEdit.secondaryTargetUrl));
       setSecondaryTargetUrl(campaignToEdit.secondaryTargetUrl || '');
+      setSecondaryButtonLabel(campaignToEdit.secondaryButtonLabel || '');
+      setCardOpen(Boolean(campaignToEdit.cardImageUrl));
+      setCardImageUrl(campaignToEdit.cardImageUrl || '');
+      setCardTitle(campaignToEdit.cardTitle || '');
+      setCardSubtitle(campaignToEdit.cardSubtitle || '');
       setRequireFollow(campaignToEdit.requireFollow ?? false);
       setFollowPromptMessage(
         campaignToEdit.followPromptMessage ||
@@ -206,6 +209,25 @@ export function CampaignBuilderModal({
           'Enviado com sucesso! Dá uma olhada na DM 📩',
         ]
       );
+    } else {
+      // Clean new campaign defaults
+      setName('');
+      setPostId('');
+      setPostUrl('');
+      setPostThumbnail('');
+      setDmMessage('O link {link}');
+      setTargetUrl('');
+      setLinkButtonLabel('Abrir link');
+      setSecondLinkOpen(false);
+      setSecondaryTargetUrl('');
+      setSecondaryButtonLabel('');
+      setCardOpen(false);
+      setCardImageUrl('');
+      setCardTitle('');
+      setCardSubtitle('');
+      setOpeningDmEnabled(false);
+      setRequireFollow(false);
+      setFollowUpEnabled(false);
     }
   }, [campaignToEdit, isOpen]);
 
@@ -217,13 +239,15 @@ export function CampaignBuilderModal({
     setOpeningDmMessage(tpl.openingDmMessage);
     setOpeningDmButtonLabel(tpl.openingDmButtonLabel);
     setDmMessage(tpl.dmMessage);
-    setCardImageUrl(tpl.cardImageUrl);
-    setCardTitle(tpl.cardTitle);
-    setCardSubtitle(tpl.cardSubtitle);
-    setLinkButtonLabel(tpl.linkButtonLabel);
-    setTargetUrl(tpl.targetUrl);
-    setSecondaryButtonLabel(tpl.secondaryButtonLabel || '');
+    setTargetUrl(tpl.targetUrl || '');
+    setLinkButtonLabel(tpl.linkButtonLabel || 'Abrir link');
+    setSecondLinkOpen(Boolean(tpl.secondaryTargetUrl));
     setSecondaryTargetUrl(tpl.secondaryTargetUrl || '');
+    setSecondaryButtonLabel(tpl.secondaryButtonLabel || '');
+    setCardOpen(Boolean(tpl.cardImageUrl));
+    setCardImageUrl(tpl.cardImageUrl || '');
+    setCardTitle(tpl.cardTitle || '');
+    setCardSubtitle(tpl.cardSubtitle || '');
     setRequireFollow(tpl.requireFollow);
     setFollowPromptMessage(tpl.followPromptMessage);
     setFollowPromptButtonLabel(tpl.followPromptButtonLabel);
@@ -249,13 +273,15 @@ export function CampaignBuilderModal({
     setOpeningDmMessage(camp.openingDmMessage || '');
     setOpeningDmButtonLabel(camp.openingDmButtonLabel || '');
     setDmMessage(camp.dmMessage);
+    setTargetUrl(camp.targetUrl || '');
+    setLinkButtonLabel(camp.linkButtonLabel || 'Abrir link');
+    setSecondLinkOpen(Boolean(camp.secondaryTargetUrl));
+    setSecondaryTargetUrl(camp.secondaryTargetUrl || '');
+    setSecondaryButtonLabel(camp.secondaryButtonLabel || '');
+    setCardOpen(Boolean(camp.cardImageUrl));
     setCardImageUrl(camp.cardImageUrl || '');
     setCardTitle(camp.cardTitle || '');
     setCardSubtitle(camp.cardSubtitle || '');
-    setLinkButtonLabel(camp.linkButtonLabel || 'Acessar Conteúdo');
-    setTargetUrl(camp.targetUrl || '');
-    setSecondaryButtonLabel(camp.secondaryButtonLabel || '');
-    setSecondaryTargetUrl(camp.secondaryTargetUrl || '');
     setRequireFollow(camp.requireFollow ?? false);
     setFollowPromptMessage(camp.followPromptMessage || '');
     setFollowPromptButtonLabel(camp.followPromptButtonLabel || '');
@@ -322,13 +348,13 @@ export function CampaignBuilderModal({
         openingDmEnabled,
         openingDmMessage,
         openingDmButtonLabel,
-        cardImageUrl,
-        cardTitle,
-        cardSubtitle,
-        linkButtonLabel,
-        targetUrl,
-        secondaryButtonLabel: secondaryButtonLabel || null,
-        secondaryTargetUrl: secondaryTargetUrl || null,
+        cardImageUrl: cardOpen && cardImageUrl.trim() ? cardImageUrl.trim() : null,
+        cardTitle: cardOpen && cardTitle.trim() ? cardTitle.trim() : null,
+        cardSubtitle: cardOpen && cardSubtitle.trim() ? cardSubtitle.trim() : null,
+        linkButtonLabel: targetUrl.trim() ? (linkButtonLabel.trim() || 'Abrir link') : null,
+        targetUrl: targetUrl.trim() || null,
+        secondaryButtonLabel: secondLinkOpen && secondaryTargetUrl.trim() ? (secondaryButtonLabel.trim() || 'Abrir link') : null,
+        secondaryTargetUrl: secondLinkOpen && secondaryTargetUrl.trim() ? secondaryTargetUrl.trim() : null,
         requireFollow,
         followPromptMessage,
         followPromptButtonLabel,
@@ -704,92 +730,180 @@ export function CampaignBuilderModal({
               )}
             </div>
 
-            {/* Step 5: Deliverable DM & Rich Card Template */}
-            <div className="space-y-3 pt-4 border-t border-white/[0.06]">
-              <span className="text-xs font-mono text-white/40 uppercase tracking-wider block">
-                05 // Direct Message Principal & Botões
-              </span>
+            {/* Step 5: Deliverable DM & Links */}
+            <div className="space-y-4 pt-4 border-t border-white/[0.06]">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono text-white/40 uppercase tracking-wider block">
+                  05 // Mensagem da DM & Links
+                </span>
+                <span className="text-[11px] text-white/40 font-mono">
+                  {'{link}'} insere o link; {'{username}'} personaliza
+                </span>
+              </div>
 
+              {/* Text of DM */}
               <div>
                 <label className="block text-xs font-medium text-white/80 mb-1.5">
-                  Texto da DM (Suporta <span className="text-indigo-400 font-mono">{'{username}'}</span>)
+                  Texto da DM
                 </label>
                 <textarea
                   rows={3}
                   value={dmMessage}
                   onChange={(e) => setDmMessage(e.target.value)}
+                  placeholder="O link {link}"
                   className="w-full px-3.5 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.1] text-xs text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 leading-relaxed"
                 />
               </div>
 
-              {/* Rich Card Fields */}
+              {/* Primary Link & Optional Expansions */}
               <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.08] space-y-3">
-                <div className="flex items-center gap-2 text-xs font-medium text-white">
-                  <ImageIcon size={14} className="text-indigo-400" />
-                  Card Interativo com Imagem & Link (Meta Generic Template)
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-white/80">
+                    Link de Destino (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={targetUrl}
+                    onChange={(e) => setTargetUrl(e.target.value)}
+                    placeholder="https://seusite.com/pagina"
+                    className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/[0.1] text-xs text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 font-mono"
+                  />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {targetUrl.trim() && (
                   <div>
                     <label className="block text-[11px] text-white/60 mb-1">
-                      Título do Card
-                    </label>
-                    <input
-                      type="text"
-                      value={cardTitle}
-                      onChange={(e) => setCardTitle(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded bg-black/40 border border-white/[0.1] text-xs text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] text-white/60 mb-1">
-                      Subtítulo do Card
-                    </label>
-                    <input
-                      type="text"
-                      value={cardSubtitle}
-                      onChange={(e) => setCardSubtitle(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded bg-black/40 border border-white/[0.1] text-xs text-white"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[11px] text-white/60 mb-1">
-                      Texto do Botão 1
+                      Texto do Botão
                     </label>
                     <input
                       type="text"
                       value={linkButtonLabel}
                       onChange={(e) => setLinkButtonLabel(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded bg-black/40 border border-white/[0.1] text-xs text-white"
+                      placeholder="Abrir link"
+                      maxLength={20}
+                      className="w-full px-3 py-1.5 rounded bg-black/40 border border-white/[0.1] text-xs text-white placeholder-white/30 focus:outline-none focus:border-indigo-500"
                     />
                   </div>
-                  <div>
-                    <label className="block text-[11px] text-white/60 mb-1">
-                      Link de Destino 1 (Rastreado)
-                    </label>
+                )}
+
+                {/* Optional Second Link */}
+                {secondLinkOpen ? (
+                  <div className="pt-3 border-t border-white/[0.06] space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-medium text-indigo-300">
+                        Segundo Link (Opcional)
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSecondLinkOpen(false);
+                          setSecondaryTargetUrl('');
+                          setSecondaryButtonLabel('');
+                        }}
+                        className="text-[10px] text-white/40 hover:text-rose-400 transition-colors"
+                      >
+                        ✕ Remover
+                      </button>
+                    </div>
                     <input
                       type="text"
-                      value={targetUrl}
-                      onChange={(e) => setTargetUrl(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded bg-black/40 border border-white/[0.1] text-xs text-white font-mono"
+                      value={secondaryTargetUrl}
+                      onChange={(e) => setSecondaryTargetUrl(e.target.value)}
+                      placeholder="https://..."
+                      className="w-full px-3 py-1.5 rounded bg-black/40 border border-white/[0.1] text-xs text-white placeholder-white/30 font-mono focus:outline-none"
+                    />
+                    <input
+                      type="text"
+                      value={secondaryButtonLabel}
+                      onChange={(e) => setSecondaryButtonLabel(e.target.value)}
+                      placeholder="Texto do segundo botão"
+                      maxLength={20}
+                      className="w-full px-3 py-1.5 rounded bg-black/40 border border-white/[0.1] text-xs text-white placeholder-white/30 focus:outline-none"
                     />
                   </div>
-                </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setSecondLinkOpen(true)}
+                    className="w-full py-2 rounded-lg border border-dashed border-white/[0.1] hover:border-white/[0.2] text-xs text-white/50 hover:text-white transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Plus size={13} />
+                    <span>Adicionar um segundo link</span>
+                  </button>
+                )}
 
-                <div>
-                  <label className="block text-[11px] text-white/60 mb-1">
-                    URL da Imagem de Capa do Card
-                  </label>
-                  <input
-                    type="text"
-                    value={cardImageUrl}
-                    onChange={(e) => setCardImageUrl(e.target.value)}
-                    className="w-full px-3 py-1.5 rounded bg-black/40 border border-white/[0.1] text-xs text-white font-mono"
-                  />
-                </div>
+                {/* Optional Card with Image */}
+                {cardOpen ? (
+                  <div className="pt-3 border-t border-white/[0.06] space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-white">
+                        <ImageIcon size={13} className="text-indigo-400" />
+                        <span>Card com Imagem (Meta Generic Template)</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCardOpen(false);
+                          setCardImageUrl('');
+                          setCardTitle('');
+                          setCardSubtitle('');
+                        }}
+                        className="text-[10px] text-white/40 hover:text-rose-400 transition-colors"
+                      >
+                        ✕ Remover imagem do card
+                      </button>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] text-white/60 mb-1">
+                        URL da Imagem de Capa do Card
+                      </label>
+                      <input
+                        type="text"
+                        value={cardImageUrl}
+                        onChange={(e) => setCardImageUrl(e.target.value)}
+                        placeholder="https://images.unsplash.com/..."
+                        className="w-full px-3 py-1.5 rounded bg-black/40 border border-white/[0.1] text-xs text-white font-mono placeholder-white/30 focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] text-white/60 mb-1">
+                          Título do Card (Opcional)
+                        </label>
+                        <input
+                          type="text"
+                          value={cardTitle}
+                          onChange={(e) => setCardTitle(e.target.value)}
+                          placeholder="Ex: Acesso Exclusivo"
+                          className="w-full px-3 py-1.5 rounded bg-black/40 border border-white/[0.1] text-xs text-white placeholder-white/30 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] text-white/60 mb-1">
+                          Subtítulo do Card (Opcional)
+                        </label>
+                        <input
+                          type="text"
+                          value={cardSubtitle}
+                          onChange={(e) => setCardSubtitle(e.target.value)}
+                          placeholder="Ex: Toque abaixo para abrir"
+                          className="w-full px-3 py-1.5 rounded bg-black/40 border border-white/[0.1] text-xs text-white placeholder-white/30 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setCardOpen(true)}
+                    className="w-full py-2 rounded-lg border border-dashed border-white/[0.1] hover:border-white/[0.2] text-xs text-white/50 hover:text-white transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <ImageIcon size={13} />
+                    <span>Deixar a DM com uma imagem (card)</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -980,47 +1094,74 @@ export function CampaignBuilderModal({
                   ) : (
                     /* Direct Message + Card Preview */
                     <div className="space-y-3 pt-1">
-                      {/* Incoming comment acknowledgment */}
+                      {/* Incoming comment acknowledgment / DM message bubble */}
                       <div className="max-w-[85%] p-2.5 rounded-2xl rounded-bl-sm bg-white/[0.07] text-[11px] text-white/90 leading-snug">
-                        {dmMessage.replace('{username}', 'Lucas')}
+                        {dmMessage
+                          .replace('{username}', 'Lucas')
+                          .replace('{link}', targetUrl || 'https://link.com')}
                       </div>
 
-                      {/* Rich Generic Card Template */}
-                      <div className="rounded-2xl bg-zinc-900 border border-white/[0.1] overflow-hidden shadow-lg">
-                        {cardImageUrl && (
-                          <div
-                            className="h-28 w-full bg-cover bg-center bg-zinc-800"
-                            style={{ backgroundImage: `url(${cardImageUrl})` }}
-                          />
-                        )}
-                        <div className="p-3 space-y-1">
-                          <h4 className="text-xs font-bold text-white line-clamp-1">
-                            {cardTitle || 'Acesso Exclusivo'}
-                          </h4>
-                          <p className="text-[10px] text-white/60 line-clamp-2 leading-tight">
-                            {cardSubtitle || 'Toque abaixo para abrir o material liberado.'}
-                          </p>
-                        </div>
+                      {/* Rich Generic Card Template - ONLY IF cardOpen */}
+                      {cardOpen && (cardImageUrl.trim() || cardTitle.trim()) ? (
+                        <div className="rounded-2xl bg-zinc-900 border border-white/[0.1] overflow-hidden shadow-lg animate-in fade-in">
+                          {cardImageUrl.trim() && (
+                            <div
+                              className="h-28 w-full bg-cover bg-center bg-zinc-800"
+                              style={{ backgroundImage: `url(${cardImageUrl.trim()})` }}
+                            />
+                          )}
+                          <div className="p-3 space-y-1">
+                            <h4 className="text-xs font-bold text-white line-clamp-1">
+                              {cardTitle || 'Acesso'}
+                            </h4>
+                            {cardSubtitle.trim() && (
+                              <p className="text-[10px] text-white/60 line-clamp-2 leading-tight">
+                                {cardSubtitle}
+                              </p>
+                            )}
+                          </div>
 
-                        {/* Card Buttons */}
-                        <div className="border-t border-white/[0.08] divide-y divide-white/[0.08]">
+                          {/* Card Buttons */}
+                          {targetUrl.trim() && (
+                            <div className="border-t border-white/[0.08] divide-y divide-white/[0.08]">
+                              <button
+                                type="button"
+                                className="w-full py-2 px-3 text-[11px] font-semibold text-indigo-400 hover:bg-white/[0.04] transition-colors flex items-center justify-center gap-1"
+                              >
+                                <span>{linkButtonLabel || 'Abrir link'}</span>
+                                <ExternalLink size={10} />
+                              </button>
+                              {secondLinkOpen && secondaryTargetUrl.trim() && (
+                                <button
+                                  type="button"
+                                  className="w-full py-2 px-3 text-[11px] font-semibold text-white/70 hover:bg-white/[0.04] transition-colors flex items-center justify-center gap-1"
+                                >
+                                  <span>{secondaryButtonLabel || 'Abrir link'}</span>
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ) : targetUrl.trim() ? (
+                        /* Simple link button preview when card is not used */
+                        <div className="max-w-[85%] rounded-xl overflow-hidden border border-white/[0.1] bg-white/[0.04]">
                           <button
                             type="button"
                             className="w-full py-2 px-3 text-[11px] font-semibold text-indigo-400 hover:bg-white/[0.04] transition-colors flex items-center justify-center gap-1"
                           >
-                            <span>{linkButtonLabel || 'Acessar Link'}</span>
+                            <span>{linkButtonLabel || 'Abrir link'}</span>
                             <ExternalLink size={10} />
                           </button>
-                          {secondaryButtonLabel && (
+                          {secondLinkOpen && secondaryTargetUrl.trim() && (
                             <button
                               type="button"
-                              className="w-full py-2 px-3 text-[11px] font-semibold text-white/70 hover:bg-white/[0.04] transition-colors flex items-center justify-center gap-1"
+                              className="w-full py-2 px-3 text-[11px] font-semibold text-white/70 border-t border-white/[0.08] hover:bg-white/[0.04] transition-colors flex items-center justify-center gap-1"
                             >
-                              <span>{secondaryButtonLabel}</span>
+                              <span>{secondaryButtonLabel || 'Abrir link'}</span>
                             </button>
                           )}
                         </div>
-                      </div>
+                      ) : null}
 
                       {/* Follow-gate prompt simulated badge if enabled */}
                       {requireFollow && (
