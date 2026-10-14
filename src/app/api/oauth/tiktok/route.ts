@@ -36,9 +36,11 @@ export async function GET(req: NextRequest) {
         );
       }
 
-      const scope = 'user.info.basic';
+      const scope = 'user.info.basic,user.info.profile,user.info.stats,video.list';
       const state = `tt_${Date.now()}`;
-      const authUrl = `https://www.tiktok.com/v2/auth/authorize/?client_key=${clientKey}&scope=${scope}&response_type=code&redirect_uri=${encodeURIComponent(
+      const authUrl = `https://www.tiktok.com/v2/auth/authorize/?client_key=${clientKey}&scope=${encodeURIComponent(
+        scope
+      )}&response_type=code&redirect_uri=${encodeURIComponent(
         redirectUri
       )}&state=${state}`;
 
