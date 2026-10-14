@@ -180,10 +180,19 @@ export function AppSidebar({
       title: 'DESEMPENHO',
       items: [
         {
+          id: 'instagram-analytics',
+          section: 'results' as MainSection,
+          subView: 'instagram-analytics' as ActiveSubView,
+          label: 'Analytics Instagram',
+          icon: <InstagramLogo className="size-4 text-pink-400" />,
+          badge: 'Live',
+          badgeColor: 'bg-pink-500/15 text-pink-400 border border-pink-500/30',
+        },
+        {
           id: 'performance',
           section: 'results' as MainSection,
           subView: 'performance' as ActiveSubView,
-          label: 'Métricas & Histórico',
+          label: 'Fila & Posts',
           icon: <BarChart3 size={17} />,
         },
       ],
@@ -195,7 +204,7 @@ export function AppSidebar({
           id: 'connection',
           section: 'settings' as MainSection,
           subView: 'connection' as ActiveSubView,
-          label: 'Conexões X & LinkedIn',
+          label: 'Conexões & Contas',
           icon: <Link2 size={17} />,
         },
       ],
@@ -353,22 +362,6 @@ export function AppSidebar({
                   <span className="text-[9px] text-amber-400">Off</span>
                 )}
               </div>
-
-              <div
-                className={`flex items-center justify-between px-2 py-1 rounded bg-white/[0.03] border ${
-                  tiktokConnected ? 'border-cyan-500/30 text-white' : 'border-red-500/20 text-white/40'
-                }`}
-              >
-                <div className="flex items-center gap-1.5">
-                  <TikTokLogo className="size-3 text-cyan-400" />
-                  <span className="text-[10px] font-mono">TT</span>
-                </div>
-                {tiktokConnected ? (
-                  <CheckCircle2 size={10} className="text-emerald-400" />
-                ) : (
-                  <span className="text-[9px] text-amber-400">Off</span>
-                )}
-              </div>
             </div>
           </div>
         ) : (
@@ -376,7 +369,6 @@ export function AppSidebar({
             <XLogo className={`size-3.5 ${xConnected ? 'text-white' : 'text-white/30'}`} />
             <LinkedInLogo className={`size-3.5 ${linkedinConnected ? 'text-[#0A66C2]' : 'text-white/30'}`} />
             <InstagramLogo className={`size-3.5 ${instagramConnected ? 'text-pink-400' : 'text-white/30'}`} />
-            <TikTokLogo className={`size-3.5 ${tiktokConnected ? 'text-cyan-400' : 'text-white/30'}`} />
           </div>
         )}
 

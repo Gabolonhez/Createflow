@@ -652,11 +652,11 @@ export default function Dashboard({
     },
     'dm-campaigns': {
       title: 'Campanhas de Auto-DM',
-      subtitle: 'Regras de resposta automática por comentário para Instagram e TikTok.',
+      subtitle: 'Regras de resposta automática por comentário para Instagram.',
     },
     'dm-inbox': {
       title: 'Inbox Social Unificada',
-      subtitle: 'Responda mensagens diretas do Instagram e TikTok dentro da janela de 24h oficial.',
+      subtitle: 'Responda mensagens diretas do Instagram dentro da janela de 24h oficial.',
     },
     'tracked-links': {
       title: 'Links Rastreados (CTR)',
@@ -664,7 +664,7 @@ export default function Dashboard({
     },
     'dm-logs': {
       title: 'Logs de Disparos e Auditoria',
-      subtitle: 'Histórico detalhado de webhooks, entregas de DMs e status da Meta & TikTok.',
+      subtitle: 'Histórico detalhado de webhooks, entregas de DMs e status da Meta.',
     },
     'my-ideas': {
       title: 'Minhas Ideias',
@@ -694,13 +694,17 @@ export default function Dashboard({
       title: 'Memória da IA',
       subtitle: 'O que a IA aprendeu a partir das suas revisões e rejeições.',
     },
+    'instagram-analytics': {
+      title: 'Analytics do Instagram & Auto-DM',
+      subtitle: 'Métricas ao vivo da Meta Graph API v25.0, engajamento e funis de conversão de Auto-DM.',
+    },
     performance: {
       title: 'Desempenho & Métricas',
       subtitle: 'Estatísticas de postagens acumuladas no X e no LinkedIn.',
     },
     connection: {
-      title: 'Conexões X & LinkedIn',
-      subtitle: 'Configurações de envio automático via API ou modo manual em 1 clique.',
+      title: 'Conexões & Redes Sociais',
+      subtitle: 'Configurações de envio automático via API oficial e webhooks.',
     },
   };
 
@@ -816,6 +820,7 @@ export default function Dashboard({
               onSaveCampaign={handleSaveDmCampaign}
               onDeleteCampaign={handleDeleteDmCampaign}
               onToggleCampaign={handleToggleDmCampaign}
+              onNavigateToAnalytics={() => handleNavigate('results', 'instagram-analytics')}
             />
           )}
 
@@ -898,8 +903,13 @@ export default function Dashboard({
             />
           )}
 
-          {currentSubView === 'performance' && (
-            <PerformanceView posts={posts} />
+          {(currentSubView === 'performance' || currentSubView === 'instagram-analytics') && (
+            <PerformanceView
+              posts={posts}
+              campaigns={dmCampaigns}
+              onOpenCampaignModal={() => handleNavigate('automations', 'dm-campaigns')}
+              initialTab={currentSubView === 'instagram-analytics' ? 'instagram' : 'posts'}
+            />
           )}
 
           {currentSubView === 'connection' && (

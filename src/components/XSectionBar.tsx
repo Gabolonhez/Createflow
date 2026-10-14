@@ -54,7 +54,10 @@ const SECTION_CONFIG: {
   {
     id: 'results',
     label: 'Desempenho',
-    subViews: [{ id: 'performance', label: 'Métricas' }],
+    subViews: [
+      { id: 'instagram-analytics', label: 'Analytics Instagram' },
+      { id: 'performance', label: 'Fila & Posts' },
+    ],
   },
   {
     id: 'settings',

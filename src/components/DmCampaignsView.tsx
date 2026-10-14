@@ -34,6 +34,7 @@ interface DmCampaignsViewProps {
   onSaveCampaign: (campaign: Partial<DmCampaign>) => Promise<void>;
   onDeleteCampaign: (id: string) => Promise<void>;
   onToggleCampaign: (id: string, isActive: boolean) => Promise<void>;
+  onNavigateToAnalytics?: () => void;
 }
 
 export function DmCampaignsView({
@@ -41,6 +42,7 @@ export function DmCampaignsView({
   onSaveCampaign,
   onDeleteCampaign,
   onToggleCampaign,
+  onNavigateToAnalytics,
 }: DmCampaignsViewProps) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
@@ -154,14 +156,28 @@ export function DmCampaignsView({
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={handleOpenCreate}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-xs font-semibold text-white shadow-lg shadow-violet-600/25 transition-all active:scale-[0.98] shrink-0"
-          >
-            <Plus size={15} />
-            Nova Campanha
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            {onNavigateToAnalytics && (
+              <button
+                type="button"
+                onClick={onNavigateToAnalytics}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-xs font-semibold text-zinc-300 border border-zinc-700/80 transition-all active:scale-[0.98] font-mono"
+              >
+                <InstagramLogo className="size-3.5 text-pink-400" />
+                <span>Analytics Instagram</span>
+                <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={handleOpenCreate}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-xs font-semibold text-white shadow-lg shadow-violet-600/25 transition-all active:scale-[0.98] shrink-0"
+            >
+              <Plus size={15} />
+              Nova Campanha
+            </button>
+          </div>
         </div>
 
         {/* 4 Stat Cards Grid */}

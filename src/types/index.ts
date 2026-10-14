@@ -322,7 +322,7 @@ export type PlanSubView = 'posts' | 'calendar';
 export type IdeasSubView = 'my-ideas' | 'topics' | 'facts' | 'references' | 'media-library';
 export type AutomationsSubView = 'dm-campaigns' | 'dm-inbox' | 'tracked-links' | 'dm-logs';
 export type VoiceSubView = 'manual' | 'learnings';
-export type ResultsSubView = 'performance';
+export type ResultsSubView = 'performance' | 'instagram-analytics';
 export type SettingsSubView = 'connection';
 
 export type ActiveSubView = 
@@ -332,4 +332,75 @@ export type ActiveSubView =
   | VoiceSubView 
   | ResultsSubView 
   | SettingsSubView;
+
+// ==========================================
+// INSTAGRAM ACCOUNT & CAMPAIGN ANALYTICS TYPES
+// ==========================================
+
+export interface InstagramMetricTimeSeries {
+  date: string;
+  value: number;
+}
+
+export interface InstagramMediaItemWithInsights {
+  id: string;
+  caption: string;
+  mediaType: string;
+  mediaUrl?: string;
+  thumbnailUrl?: string;
+  permalink: string;
+  timestamp: string;
+  likeCount: number;
+  commentsCount: number;
+  views: number;
+  reach: number;
+  totalInteractions: number;
+  shares: number;
+  saved: number;
+  campaignId?: string;
+  campaignName?: string;
+  dmsSentCount: number;
+}
+
+export interface InstagramAccountStats {
+  id: string;
+  username: string;
+  name: string;
+  accountType: string;
+  profilePictureUrl?: string;
+  followersCount: number;
+  followsCount: number;
+  mediaCount: number;
+}
+
+export interface InstagramKpis {
+  reach: number;
+  views: number;
+  totalInteractions: number;
+  accountsEngaged: number;
+  profileViews: number;
+  engagementRate: number;
+}
+
+export interface InstagramFunnelStats {
+  commentsDetected: number;
+  dmsSent: number;
+  dmsDeliveredRate: number;
+  followGateChecked: number;
+  followGateConverted: number;
+  followGateConversionRate: number;
+  linkClicks: number;
+  overallCtr: number;
+}
+
+export interface InstagramInsightsPayload {
+  success: boolean;
+  error?: string;
+  account: InstagramAccountStats;
+  kpis: InstagramKpis;
+  funnel: InstagramFunnelStats;
+  dailyReach: InstagramMetricTimeSeries[];
+  media: InstagramMediaItemWithInsights[];
+  lastUpdated: string;
+}
 
