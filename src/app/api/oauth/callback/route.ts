@@ -26,9 +26,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(new URL('/?error=Codigo_ausente', req.url));
     }
 
-    // Construir o redirect_uri utilizado na autorização original
+    // Construir o redirect_uri dinamicamente para suportar tanto /api/oauth/callback quanto /api/instagram/callback
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || `${req.nextUrl.protocol}//${req.nextUrl.host}`;
-    const redirectUri = `${appUrl}/api/oauth/callback`;
+    const redirectUri = `${appUrl}${req.nextUrl.pathname}`;
 
     console.log('[OAuth Callback] Trocando código por token curto...');
     const shortTokenData = await exchangeCodeForShortToken(code, redirectUri);

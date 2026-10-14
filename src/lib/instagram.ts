@@ -8,13 +8,13 @@ export interface InstagramProfile {
 }
 
 export function getOAuthUrl(redirectUri: string): string {
-  // Tenta o ID do Instagram ou o ID principal da Meta (1750226409653397)
-  const clientId = process.env.INSTAGRAM_CLIENT_ID || '1750226409653397';
+  const clientId = process.env.INSTAGRAM_APP_ID || process.env.INSTAGRAM_CLIENT_ID || '1750226409653397';
 
   const scope = [
     'instagram_business_basic',
     'instagram_business_manage_messages',
     'instagram_business_manage_comments',
+    'instagram_business_manage_insights',
   ].join(',');
 
   return `https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_reauth=true&client_id=${clientId}&redirect_uri=${encodeURIComponent(
@@ -26,11 +26,11 @@ export async function exchangeCodeForShortToken(
   code: string,
   redirectUri: string
 ): Promise<{ access_token: string; user_id: string }> {
-  const clientId = process.env.INSTAGRAM_CLIENT_ID;
-  const clientSecret = process.env.INSTAGRAM_CLIENT_SECRET;
+  const clientId = process.env.INSTAGRAM_APP_ID || process.env.INSTAGRAM_CLIENT_ID;
+  const clientSecret = process.env.INSTAGRAM_APP_SECRET || process.env.INSTAGRAM_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
-    throw new Error('INSTAGRAM_CLIENT_ID and INSTAGRAM_CLIENT_SECRET must be defined');
+    throw new Error('INSTAGRAM_CLIENT_ID (ou INSTAGRAM_APP_ID) e INSTAGRAM_CLIENT_SECRET devem estar definidos');
   }
 
   const formData = new URLSearchParams();
@@ -56,8 +56,8 @@ export async function exchangeCodeForShortToken(
 export async function exchangeShortTokenForLongToken(
   shortToken: string
 ): Promise<{ access_token: string; expires_in: number }> {
-  const clientSecret = process.env.INSTAGRAM_CLIENT_SECRET;
-  if (!clientSecret) throw new Error('INSTAGRAM_CLIENT_SECRET must be defined');
+  const clientSecret = process.env.INSTAGRAM_APP_SECRET || process.env.INSTAGRAM_CLIENT_SECRET;
+  if (!clientSecret) throw new Error('INSTAGRAM_APP_SECRET ou INSTAGRAM_CLIENT_SECRET deve estar definido');
 
   const url = `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${clientSecret}&access_token=${shortToken}`;
 

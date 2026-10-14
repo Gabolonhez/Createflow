@@ -12,21 +12,27 @@ function verifySignature(body: string, signatureHeader: string | null): boolean 
   const [algorithm, signature] = signatureHeader.split('=');
   if (algorithm !== 'sha256' || !signature) return false;
 
-  const appSecret = process.env.INSTAGRAM_CLIENT_SECRET;
-  if (!appSecret) {
-    console.error('INSTAGRAM_CLIENT_SECRET is not configured');
+  const secrets = [
+    process.env.FACEBOOK_APP_SECRET,
+    process.env.INSTAGRAM_APP_SECRET,
+    process.env.INSTAGRAM_CLIENT_SECRET,
+  ].filter((s): s is string => Boolean(s));
+
+  if (secrets.length === 0) {
+    console.error('[Webhook] Nenhum segredo (FACEBOOK_APP_SECRET, INSTAGRAM_APP_SECRET, INSTAGRAM_CLIENT_SECRET) configurado');
     return false;
   }
 
-  const hmac = crypto.createHmac('sha256', appSecret);
-  hmac.update(body);
-  const digest = hmac.digest('hex');
-
-  try {
-    return crypto.timingSafeEqual(Buffer.from(digest), Buffer.from(signature));
-  } catch (e) {
-    return false;
-  }
+  return secrets.some((secret) => {
+    try {
+      const hmac = crypto.createHmac('sha256', secret);
+      hmac.update(body);
+      const digest = hmac.digest('hex');
+      return crypto.timingSafeEqual(Buffer.from(digest), Buffer.from(signature));
+    } catch {
+      return false;
+    }
+  });
 }
 
 function matchKeywords(text: string, keywords: string[], matchType: string): boolean {
@@ -53,9 +59,11 @@ export async function GET(req: NextRequest) {
   const token = searchParams.get('hub.verify_token');
   const challenge = searchParams.get('hub.challenge');
 
-  const verifyToken = process.env.INSTAGRAM_VERIFY_TOKEN;
+  const verifyToken =
+    process.env.WEBHOOK_VERIFY_TOKEN ||
+    process.env.INSTAGRAM_VERIFY_TOKEN;
 
-  if (mode === 'subscribe' && token === verifyToken) {
+  if (mode === 'subscribe' && verifyToken && token === verifyToken) {
     console.log('[Webhook] Handshake bem sucedido!');
     return new Response(challenge, { status: 200 });
   }
@@ -168,24 +176,31 @@ export async function POST(req: NextRequest) {
 
               if (!contactId) continue;
 
-              // Enfileirar DM Privada de Boas-Vindas
-              const privatePayload = {
-                recipient: { comment_id: commentId },
-                message: matchedAutomation.quick_reply_button
-                  ? {
-                      text: matchedAutomation.welcome_dm,
-                      quick_replies: [
-                        {
-                          content_type: 'text',
-                          title: matchedAutomation.quick_reply_button,
-                          payload: `QR_AUTO_${matchedAutomation.id}`,
+              // Enfileirar DM Privada de Boas-Vindas usando template de botão Meta oficial (AutoDM)
+              const privatePayload = matchedAutomation.quick_reply_button
+                ? {
+                    recipient: { comment_id: commentId },
+                    message: {
+                      attachment: {
+                        type: 'template',
+                        payload: {
+                          template_type: 'button',
+                          text: matchedAutomation.welcome_dm.slice(0, 640),
+                          buttons: [
+                            {
+                              type: 'postback',
+                              title: matchedAutomation.quick_reply_button.slice(0, 20),
+                              payload: `QR_AUTO_${matchedAutomation.id}`,
+                            },
+                          ],
                         },
-                      ],
-                    }
-                  : {
-                      text: matchedAutomation.welcome_dm,
+                      },
                     },
-              };
+                  }
+                : {
+                    recipient: { comment_id: commentId },
+                    message: { text: matchedAutomation.welcome_dm },
+                  };
 
               await supabase.from('queue').insert({
                 contact_id: contactId,
@@ -281,14 +296,20 @@ export async function POST(req: NextRequest) {
                     ? {
                         recipient: { comment_id: commentId },
                         message: {
-                          text: dmBody,
-                          quick_replies: [
-                            {
-                              content_type: 'text',
-                              title: matchedDmCamp.openingDmButtonLabel,
-                              payload: `QR_CAMP_${matchedDmCamp.id}`,
+                          attachment: {
+                            type: 'template',
+                            payload: {
+                              template_type: 'button',
+                              text: (matchedDmCamp.openingDmMessage || dmBody).slice(0, 640),
+                              buttons: [
+                                {
+                                  type: 'postback',
+                                  title: matchedDmCamp.openingDmButtonLabel.slice(0, 20),
+                                  payload: `QR_CAMP_${matchedDmCamp.id}`,
+                                },
+                              ],
                             },
-                          ],
+                          },
                         },
                       }
                     : matchedDmCamp.targetUrl

@@ -67,48 +67,47 @@ export async function drainQueue() {
       }
 
       try {
-        // Buscar informações do contato para checar a janela de 24h
-        const { data: contact, error: contactErr } = await supabase
-          .from('contacts')
-          .select('last_response_at')
-          .eq('id', item.contact_id)
-          .single();
-
-        if (contactErr || !contact) {
-          throw new Error(`Contato não encontrado: ${item.contact_id}`);
-        }
-
         // Validação da Janela de 24 Horas
-        // Resposta privada (private_reply) para comentários fura a janela de 24h (pode ser enviada em até 7 dias)
-        // Public reply é um comentário, não tem janela de 24h
+        // Resposta privada (private_reply) para comentários fura a janela de 24h (pode ser enviada em até 7 dias, segundo a Meta)
+        // Public reply é um comentário público, não tem janela de 24h
         if (item.message_type === 'link' || item.message_type === 'reminder') {
-          const now = new Date();
-          const lastResponse = contact.last_response_at ? new Date(contact.last_response_at) : null;
-          const isWindowOpen = lastResponse && (now.getTime() - lastResponse.getTime()) < 24 * 60 * 60 * 1000;
+          if (item.contact_id) {
+            const { data: contact } = await supabase
+              .from('contacts')
+              .select('last_response_at')
+              .eq('id', item.contact_id)
+              .maybeSingle();
 
-          if (!isWindowOpen) {
-            console.log(`[Queue Worker] Item ${item.id} pulado. Fora da janela de 24h para o contato.`);
-            
-            await supabase
-              .from('queue')
-              .update({
-                status: 'skipped',
-                error_message: 'Fora da janela de 24h do contato',
-                updated_at: new Date().toISOString(),
-              })
-              .eq('id', item.id);
+            if (contact) {
+              const now = new Date();
+              const lastResponse = contact.last_response_at ? new Date(contact.last_response_at) : null;
+              const isWindowOpen = lastResponse && (now.getTime() - lastResponse.getTime()) < 24 * 60 * 60 * 1000;
 
-            // Atualizar status do followup se houver
-            const step = item.message_type;
-            await supabase
-              .from('followups')
-              .update({ status: 'cancelled' })
-              .eq('contact_id', item.contact_id)
-              .eq('automation_id', item.automation_id)
-              .eq('step', step)
-              .eq('status', 'pending');
+              if (!isWindowOpen) {
+                console.log(`[Queue Worker] Item ${item.id} pulado. Fora da janela de 24h para o contato.`);
+                
+                await supabase
+                  .from('queue')
+                  .update({
+                    status: 'skipped',
+                    error_message: 'Fora da janela de 24h do contato',
+                    updated_at: new Date().toISOString(),
+                  })
+                  .eq('id', item.id);
 
-            continue;
+                // Atualizar status do followup se houver
+                const step = item.message_type;
+                await supabase
+                  .from('followups')
+                  .update({ status: 'cancelled' })
+                  .eq('contact_id', item.contact_id)
+                  .eq('automation_id', item.automation_id)
+                  .eq('step', step)
+                  .eq('status', 'pending');
+
+                continue;
+              }
+            }
           }
         }
 
