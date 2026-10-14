@@ -65,14 +65,31 @@ export async function POST(req: NextRequest) {
     // 3. Determinar o post a ser varrido
     let targetPostId = campaign.postId;
 
-    if (!targetPostId) {
-      // Buscar post mais recente da conta
+    // Se postId for uma URL ou não for ID numérico puro, resolver via permalink/shortcode
+    if (!targetPostId || !/^\d+$/.test(targetPostId.trim())) {
+      const urlToMatch = (campaign.postUrl || campaign.postId || '').trim().toLowerCase();
       const recentRes = await fetch(
-        `https://graph.instagram.com/me/media?fields=id,caption&limit=1&access_token=${accessToken}`
+        `https://graph.instagram.com/me/media?fields=id,caption,permalink&limit=25&access_token=${accessToken}`
       );
       if (recentRes.ok) {
         const recentData = await recentRes.json();
-        targetPostId = recentData?.data?.[0]?.id || null;
+        const mediaList: any[] = recentData?.data || [];
+        if (urlToMatch) {
+          const shortcodeMatch = urlToMatch.match(/reel(?:s)?\/([A-Za-z0-9_-]+)/);
+          const shortcode = shortcodeMatch ? shortcodeMatch[1] : '';
+
+          const matched = mediaList.find((m) => {
+            const permalink = (m.permalink || '').toLowerCase();
+            return (
+              (shortcode && permalink.includes(shortcode)) ||
+              permalink.includes(urlToMatch) ||
+              urlToMatch.includes(permalink)
+            );
+          });
+          targetPostId = matched?.id || mediaList[0]?.id || null;
+        } else {
+          targetPostId = mediaList[0]?.id || null;
+        }
       }
     }
 
