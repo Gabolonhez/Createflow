@@ -236,7 +236,8 @@ export async function POST(req: NextRequest) {
               // Também verificar campanhas registradas no CreateFlow (dm_campaigns)
               const allCampaigns = await getDmCampaigns();
               const matchedDmCamp = allCampaigns.find((c) => {
-                if (!c.isActive || c.platform !== 'instagram') return false;
+                if (!c.isActive) return false;
+                if (c.platform !== 'instagram' && c.platform !== 'both') return false;
                 if (c.scope === 'specific' && c.postId && c.postId !== mediaId) return false;
                 return matchKeywords(commentText, c.keywords, c.matchType);
               });

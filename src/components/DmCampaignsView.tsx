@@ -20,6 +20,10 @@ import {
   Copy,
   Edit2,
   Power,
+  History,
+  AlertTriangle,
+  Loader2,
+  X,
 } from 'lucide-react';
 import { InstagramLogo, TikTokLogo } from './BrandIcons';
 import { CampaignBuilderModal } from './CampaignBuilderModal';
@@ -45,6 +49,20 @@ export function DmCampaignsView({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<DmCampaign | null>(null);
 
+  // Backlog state
+  const [backlogCampaign, setBacklogCampaign] = useState<DmCampaign | null>(null);
+  const [isBacklogRunning, setIsBacklogRunning] = useState(false);
+  const [backlogResult, setBacklogResult] = useState<{
+    success: boolean;
+    message?: string;
+    totalFound?: number;
+    processed?: number;
+    skippedOld?: number;
+    skippedDuplicate?: number;
+    skippedSelf?: number;
+    error?: string;
+  } | null>(null);
+
   // KPIs
   const stats = useMemo(() => {
     const totalActive = campaigns.filter((c) => c.isActive).length;
@@ -57,7 +75,7 @@ export function DmCampaignsView({
   // Filtered campaigns
   const filtered = useMemo(() => {
     return campaigns.filter((c) => {
-      if (platformFilter !== 'all' && c.platform !== platformFilter) return false;
+      if (platformFilter !== 'all' && c.platform !== platformFilter && c.platform !== 'both') return false;
       if (statusFilter === 'active' && !c.isActive) return false;
       if (statusFilter === 'inactive' && c.isActive) return false;
       if (search.trim()) {
@@ -94,6 +112,29 @@ export function DmCampaignsView({
     };
     setEditingCampaign(cloned);
     setIsModalOpen(true);
+  };
+
+  const handleRunBacklog = async () => {
+    if (!backlogCampaign) return;
+    setIsBacklogRunning(true);
+    setBacklogResult(null);
+    try {
+      const res = await fetch('/api/campaigns/process-backlog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaignId: backlogCampaign.id, batchLimit: 15 }),
+      });
+      const data = await res.json();
+      setBacklogResult(data);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Falha ao processar comentários anteriores.';
+      setBacklogResult({
+        success: false,
+        error: msg,
+      });
+    } finally {
+      setIsBacklogRunning(false);
+    }
   };
 
   return (
@@ -283,19 +324,26 @@ export function DmCampaignsView({
                   <div className="flex items-center gap-2">
                     <div
                       className={`size-7 rounded-lg flex items-center justify-center ${
-                        camp.platform === 'instagram'
+                        camp.platform === 'both'
+                          ? 'bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-cyan-500/20 text-white border border-indigo-500/30'
+                          : camp.platform === 'instagram'
                           ? 'bg-pink-500/15 text-pink-300 border border-pink-500/25'
                           : 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/25'
                       }`}
                     >
-                      {camp.platform === 'instagram' ? (
+                      {camp.platform === 'both' ? (
+                        <div className="flex items-center -space-x-1">
+                          <InstagramLogo className="size-2.5 text-pink-400" />
+                          <TikTokLogo className="size-2.5 text-cyan-400" />
+                        </div>
+                      ) : camp.platform === 'instagram' ? (
                         <InstagramLogo className="size-3.5" />
                       ) : (
                         <TikTokLogo className="size-3.5" />
                       )}
                     </div>
                     <span className="text-[11px] font-mono text-white/60">
-                      @{camp.accountUsername}
+                      @{camp.accountUsername} {camp.platform === 'both' && <span className="text-[9px] px-1 py-0.2 rounded bg-indigo-500/20 text-indigo-300">Ambos</span>}
                     </span>
                   </div>
 
@@ -394,6 +442,20 @@ export function DmCampaignsView({
                       </span>
                     )}
                   </div>
+
+                  {/* Safe Backlog Comment Processing Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBacklogCampaign(camp);
+                      setBacklogResult(null);
+                    }}
+                    className="mt-1 w-full py-1.5 px-2.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-indigo-300 text-[11px] font-medium transition-colors flex items-center justify-center gap-1.5"
+                    title="Disparar com segurança para quem comentou antes com proteção anti-ban e janela de 7 dias"
+                  >
+                    <History size={12} className="text-indigo-400" />
+                    <span>Responder Comentários Anteriores</span>
+                  </button>
                 </div>
 
                 {/* Card Footer: Metrics Strip */}
@@ -415,6 +477,105 @@ export function DmCampaignsView({
           </div>
         )}
       </div>
+
+      {/* Backlog Safe Processor Modal */}
+      {backlogCampaign && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+          <div className="w-full max-w-md rounded-2xl bg-[#101015] border border-white/[0.1] shadow-2xl p-5 space-y-4">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="size-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                  <History size={16} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-white">
+                    Responder Comentários Anteriores
+                  </h3>
+                  <p className="text-[11px] text-white/50">
+                    Campanha: {backlogCampaign.name}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setBacklogCampaign(null)}
+                className="p-1 rounded text-white/40 hover:text-white"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Anti-Flood & Anti-Ban Guarantees */}
+            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-2 text-xs text-amber-200/90">
+              <div className="flex items-center gap-1.5 font-semibold text-amber-300">
+                <ShieldCheck size={14} />
+                <span>Proteção Ativa Anti-Ban & Anti-Flood:</span>
+              </div>
+              <ul className="space-y-1 text-[11px] text-amber-100/80 list-disc list-inside">
+                <li>Janela de 7 Dias: descarta comentários mais antigos que a Meta bloqueia</li>
+                <li>Deduplicação: quem já recebeu direct nunca recebe repetido</li>
+                <li>Pausa Inteligente (Jitter): espera de 2.5s a 4.5s entre cada envio</li>
+                <li>Lote Seguro: limitado a no máximo 15 envios por vez</li>
+              </ul>
+            </div>
+
+            {backlogResult && (
+              <div
+                className={`p-3 rounded-xl border text-xs space-y-1 ${
+                  backlogResult.success
+                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
+                    : 'bg-rose-500/10 border-rose-500/20 text-rose-300'
+                }`}
+              >
+                <div className="font-semibold flex items-center gap-1.5">
+                  <CheckCircle2 size={13} />
+                  <span>
+                    {backlogResult.success ? 'Lote Processado com Sucesso' : 'Aviso ao Processar'}
+                  </span>
+                </div>
+                <p className="text-[11px] opacity-90">
+                  {backlogResult.message || backlogResult.error}
+                </p>
+                {backlogResult.success && (
+                  <div className="text-[10px] text-white/70 pt-1 flex flex-wrap gap-2">
+                    <span>Enviados: <strong>{backlogResult.processed}</strong></span>
+                    <span>Fora do prazo: <strong>{backlogResult.skippedOld}</strong></span>
+                    <span>Já atendidos: <strong>{backlogResult.skippedDuplicate}</strong></span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/[0.08]">
+              <button
+                type="button"
+                onClick={() => setBacklogCampaign(null)}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-white/60 hover:text-white"
+              >
+                Fechar
+              </button>
+              <button
+                type="button"
+                onClick={handleRunBacklog}
+                disabled={isBacklogRunning}
+                className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-xs font-semibold text-white flex items-center gap-1.5 shadow-sm"
+              >
+                {isBacklogRunning ? (
+                  <>
+                    <Loader2 size={13} className="animate-spin" />
+                    <span>Disparando com Segurança...</span>
+                  </>
+                ) : (
+                  <>
+                    <Zap size={13} />
+                    <span>Iniciar Envio Seguro</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Campaign Builder Modal */}
       <CampaignBuilderModal

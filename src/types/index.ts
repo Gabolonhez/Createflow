@@ -1,5 +1,5 @@
 export type Platform = 'x' | 'linkedin' | 'instagram' | 'tiktok';
-export type DmAutomationPlatform = 'instagram' | 'tiktok';
+export type DmAutomationPlatform = 'instagram' | 'tiktok' | 'both';
 
 export type PostStatus = 
   | 'DRAFT' 
@@ -246,6 +246,7 @@ export interface DmCampaign {
   followUpDelayMinutes: number;
   publicReplyEnabled: boolean;
   publicReplyMessages: string[];
+  tiktokPublicReplyMessages?: string[];
   isActive: boolean;
   dmsSentCount: number;
   clicksCount: number;

@@ -71,7 +71,8 @@ export async function POST(req: NextRequest) {
 
       const campaigns = await getDmCampaigns();
       const matched = campaigns.find((c) => {
-        if (!c.isActive || c.platform !== 'tiktok') return false;
+        if (!c.isActive) return false;
+        if (c.platform !== 'tiktok' && c.platform !== 'both') return false;
         const normalized = incomingText.toLowerCase();
         return c.keywords.some((kw) => {
           const cleanKw = kw.toLowerCase().trim().replace(/^#/, '');

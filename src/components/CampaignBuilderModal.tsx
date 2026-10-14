@@ -148,6 +148,14 @@ export function CampaignBuilderModal({
       'Enviado com sucesso! Dá uma olhada na DM 📩',
     ]
   );
+  const [tiktokPublicReplyMessages, setTiktokPublicReplyMessages] = useState<string[]>(
+    campaignToEdit?.tiktokPublicReplyMessages || [
+      'Me manda "REA" no direct que o link chega na hora! 🚀',
+      'Clica no meu perfil e me manda "REA" na DM pra receber! ✨',
+      'Manda "REA" no chat aqui do perfil que te envio o link 📥',
+    ]
+  );
+  const [repliesTab, setRepliesTab] = useState<'instagram' | 'tiktok'>('instagram');
   const [newReplyInput, setNewReplyInput] = useState('');
 
   // Modals for Templates and Clone
@@ -207,6 +215,13 @@ export function CampaignBuilderModal({
           'Te mandei no direct! 🚀',
           'Acabei de enviar, confere suas mensagens! ✨',
           'Enviado com sucesso! Dá uma olhada na DM 📩',
+        ]
+      );
+      setTiktokPublicReplyMessages(
+        campaignToEdit.tiktokPublicReplyMessages || [
+          `Me manda "${campaignToEdit.keywords?.[0]?.replace(/^#/, '') || 'REA'}" no direct que o link chega na hora! 🚀`,
+          `Clica no meu perfil e me manda "${campaignToEdit.keywords?.[0]?.replace(/^#/, '') || 'REA'}" na DM pra receber! ✨`,
+          `Manda "${campaignToEdit.keywords?.[0]?.replace(/^#/, '') || 'REA'}" no chat aqui do perfil que te envio o link 📥`,
         ]
       );
     } else {
@@ -316,13 +331,28 @@ export function CampaignBuilderModal({
   const handleAddPublicReply = () => {
     const trimmed = newReplyInput.trim();
     if (trimmed) {
-      setPublicReplyMessages([...publicReplyMessages, trimmed]);
+      if (platform === 'both') {
+        if (repliesTab === 'tiktok') {
+          setTiktokPublicReplyMessages([...tiktokPublicReplyMessages, trimmed]);
+        } else {
+          setPublicReplyMessages([...publicReplyMessages, trimmed]);
+        }
+      } else if (platform === 'tiktok') {
+        setTiktokPublicReplyMessages([...tiktokPublicReplyMessages, trimmed]);
+        setPublicReplyMessages([...publicReplyMessages, trimmed]);
+      } else {
+        setPublicReplyMessages([...publicReplyMessages, trimmed]);
+      }
       setNewReplyInput('');
     }
   };
 
   const handleRemovePublicReply = (index: number) => {
-    setPublicReplyMessages(publicReplyMessages.filter((_, i) => i !== index));
+    if (platform === 'both' && repliesTab === 'tiktok') {
+      setTiktokPublicReplyMessages(tiktokPublicReplyMessages.filter((_, i) => i !== index));
+    } else {
+      setPublicReplyMessages(publicReplyMessages.filter((_, i) => i !== index));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -334,7 +364,7 @@ export function CampaignBuilderModal({
         id: campaignToEdit?.id,
         name,
         platform,
-        accountId: platform === 'instagram' ? 'ig_gabolonhez' : 'tt_gabolonhez',
+        accountId: platform === 'both' ? 'omni_gabolonhez' : platform === 'instagram' ? 'ig_gabolonhez' : 'tt_gabolonhez',
         accountUsername: 'gabolonhez',
         scope,
         postId: scope === 'specific' ? postId : null,
@@ -363,6 +393,7 @@ export function CampaignBuilderModal({
         followUpDelayMinutes,
         publicReplyEnabled,
         publicReplyMessages,
+        tiktokPublicReplyMessages: platform === 'both' ? tiktokPublicReplyMessages : undefined,
         isActive: campaignToEdit?.isActive ?? true,
       });
       onClose();
@@ -486,6 +517,23 @@ export function CampaignBuilderModal({
                   >
                     <TikTokLogo className="size-3.5" />
                     TikTok
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPlatform('both');
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                      platform === 'both'
+                        ? 'bg-gradient-to-r from-pink-600/30 via-violet-600/30 to-cyan-600/30 text-white border border-indigo-500/40 shadow-sm'
+                        : 'text-white/50 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center -space-x-1">
+                      <InstagramLogo className="size-3 text-pink-400" />
+                      <TikTokLogo className="size-3 text-cyan-400" />
+                    </div>
+                    <span>Ambos (Insta + TikTok)</span>
                   </button>
                 </div>
               </div>
@@ -960,7 +1008,36 @@ export function CampaignBuilderModal({
 
               {publicReplyEnabled && (
                 <div className="space-y-2">
-                  {platform === 'tiktok' && (
+                  {platform === 'both' && (
+                    <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white/[0.04] border border-white/[0.08] mb-2 w-fit">
+                      <button
+                        type="button"
+                        onClick={() => setRepliesTab('instagram')}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                          repliesTab === 'instagram'
+                            ? 'bg-pink-600/25 text-pink-300 border border-pink-500/30 shadow-sm'
+                            : 'text-white/50 hover:text-white'
+                        }`}
+                      >
+                        <InstagramLogo className="size-3.5" />
+                        <span>Respostas do Instagram ({publicReplyMessages.length})</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRepliesTab('tiktok')}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                          repliesTab === 'tiktok'
+                            ? 'bg-cyan-600/25 text-cyan-300 border border-cyan-500/30 shadow-sm'
+                            : 'text-white/50 hover:text-white'
+                        }`}
+                      >
+                        <TikTokLogo className="size-3.5" />
+                        <span>Respostas do TikTok ({tiktokPublicReplyMessages.length})</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {(platform === 'tiktok' || (platform === 'both' && repliesTab === 'tiktok')) && (
                     <div className="p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/20 space-y-2 mb-1">
                       <div className="flex items-start gap-2.5">
                         <Sparkles size={14} className="text-cyan-400 shrink-0 mt-0.5" />
@@ -976,11 +1053,17 @@ export function CampaignBuilderModal({
                           type="button"
                           onClick={() => {
                             const kw = (keywords[0] || 'REA').replace(/^#/, '');
-                            setPublicReplyMessages([
+                            const ttDefaults = [
                               `Me manda "${kw}" no direct que o link chega na hora! 🚀`,
                               `Clica no meu perfil e me manda "${kw}" na DM pra receber! ✨`,
                               `Manda "${kw}" no chat aqui do perfil que te envio o link 📥`,
-                            ]);
+                            ];
+                            if (platform === 'both') {
+                              setTiktokPublicReplyMessages(ttDefaults);
+                            } else {
+                              setPublicReplyMessages(ttDefaults);
+                              setTiktokPublicReplyMessages(ttDefaults);
+                            }
                           }}
                           className="px-2.5 py-1 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 text-[11px] font-medium transition-colors flex items-center gap-1.5"
                         >
@@ -1002,7 +1085,7 @@ export function CampaignBuilderModal({
                           handleAddPublicReply();
                         }
                       }}
-                      placeholder="Nova variação de resposta..."
+                      placeholder={`Nova variação de resposta ${platform === 'both' ? `(${repliesTab === 'tiktok' ? 'TikTok' : 'Instagram'})` : ''}...`}
                       className="flex-1 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.1] text-xs text-white placeholder-white/30 focus:outline-none"
                     />
                     <button
@@ -1015,7 +1098,10 @@ export function CampaignBuilderModal({
                   </div>
 
                   <div className="space-y-1.5">
-                    {publicReplyMessages.map((msg, idx) => (
+                    {((platform === 'both' && repliesTab === 'tiktok')
+                      ? tiktokPublicReplyMessages
+                      : publicReplyMessages
+                    ).map((msg, idx) => (
                       <div
                         key={idx}
                         className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/[0.02] border border-white/[0.06] text-xs text-white/80"
@@ -1097,7 +1183,13 @@ export function CampaignBuilderModal({
                       gabolonhez
                     </span>
                     <span className="text-[9px] text-white/40 font-mono">
-                      {platform === 'instagram' ? 'Instagram Direct' : 'TikTok Chat'}
+                      {platform === 'instagram'
+                        ? 'Instagram Direct'
+                        : platform === 'tiktok'
+                        ? 'TikTok Chat'
+                        : repliesTab === 'tiktok'
+                        ? 'TikTok Chat'
+                        : 'Instagram Direct'}
                     </span>
                   </div>
                 </div>
@@ -1143,7 +1235,9 @@ export function CampaignBuilderModal({
                           </span>
                         </div>
                         <p className="text-[11px] text-white/90">
-                          {publicReplyMessages[0] || 'Te mandei no direct! 🚀'}
+                          {((platform === 'both' && repliesTab === 'tiktok') || platform === 'tiktok'
+                            ? tiktokPublicReplyMessages[0]
+                            : publicReplyMessages[0]) || 'Te mandei no direct! 🚀'}
                         </p>
                       </div>
                     </div>
