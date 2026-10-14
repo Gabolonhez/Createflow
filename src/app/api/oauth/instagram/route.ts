@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
       connections.instagram_client_id ||
       process.env.INSTAGRAM_APP_ID ||
       process.env.INSTAGRAM_CLIENT_ID ||
-      '1750226409653397';
+      '1679209616511892';
 
     const scope = [
       'instagram_business_basic',

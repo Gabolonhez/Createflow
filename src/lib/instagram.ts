@@ -8,7 +8,7 @@ export interface InstagramProfile {
 }
 
 export function getOAuthUrl(redirectUri: string): string {
-  const clientId = process.env.INSTAGRAM_APP_ID || process.env.INSTAGRAM_CLIENT_ID || '1750226409653397';
+  const clientId = process.env.INSTAGRAM_APP_ID || process.env.INSTAGRAM_CLIENT_ID || '1679209616511892';
 
   const scope = [
     'instagram_business_basic',
