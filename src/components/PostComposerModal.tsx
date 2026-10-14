@@ -285,9 +285,7 @@ export function PostComposerModal({
   const syncAutoDmIfEnabled = async (postId?: string) => {
     if (autoDmEnabled && onSaveAutoDm) {
       try {
-        const targetPlatform: DmAutomationPlatform = platforms.includes('tiktok')
-          ? 'tiktok'
-          : 'instagram';
+        const targetPlatform: DmAutomationPlatform = 'instagram';
 
         await onSaveAutoDm({
           name: `Funil [${autoDmKeyword.toUpperCase()}] - ${(text || 'Post').slice(0, 30)}`,
@@ -490,8 +488,8 @@ export function PostComposerModal({
               </select>
             </div>
 
-            {/* Quick Auto-DM Activation for Instagram & TikTok */}
-            {(platforms.includes('instagram') || platforms.includes('tiktok')) && (
+            {/* Quick Auto-DM Activation for Instagram */}
+            {platforms.includes('instagram') && (
               <div className="p-3 rounded-xl bg-violet-600/10 border border-violet-500/25 flex flex-col gap-2.5 animate-in fade-in">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">

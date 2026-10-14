@@ -801,8 +801,144 @@ export async function saveConnectionsConfig(cfg: Partial<ConnectionsConfig>): Pr
 // AUTO-DM & GROWTH FUNNEL DB ACCESSORS
 // ==========================================
 
+function toDbCampaign(c: Partial<DmCampaign>): any {
+  return {
+    id: c.id,
+    name: c.name || 'Nova Campanha',
+    platform: c.platform || 'instagram',
+    account_id: c.accountId || '17841406769803181',
+    account_username: c.accountUsername || 'gabolonhez',
+    post_id: c.postId ?? null,
+    post_url: c.postUrl ?? null,
+    post_thumbnail: c.postThumbnail ?? null,
+    scope: c.scope || 'any',
+    keywords: c.keywords || [],
+    match_type: c.matchType || 'exact',
+    dm_trigger_enabled: c.dmTriggerEnabled ?? true,
+    dm_message: c.dmMessage || 'Olá {username}! Aqui está o seu acesso exclusivo.',
+    dm_messages: c.dmMessages || (c.dmMessage ? [c.dmMessage] : []),
+    opening_dm_enabled: c.openingDmEnabled ?? false,
+    opening_dm_message: c.openingDmMessage ?? null,
+    opening_dm_button_label: c.openingDmButtonLabel ?? null,
+    card_image_url: c.cardImageUrl ?? null,
+    card_title: c.cardTitle ?? null,
+    card_subtitle: c.cardSubtitle ?? null,
+    link_button_label: c.linkButtonLabel || 'Acessar Link',
+    target_url: c.targetUrl ?? null,
+    secondary_button_label: c.secondaryButtonLabel ?? null,
+    secondary_target_url: c.secondaryTargetUrl ?? null,
+    require_follow: c.requireFollow ?? false,
+    follow_prompt_message: c.followPromptMessage ?? null,
+    follow_prompt_button_label: c.followPromptButtonLabel ?? null,
+    follow_up_enabled: c.followUpEnabled ?? false,
+    follow_up_message: c.followUpMessage ?? null,
+    follow_up_delay_minutes: c.followUpDelayMinutes ?? 15,
+    public_reply_enabled: c.publicReplyEnabled ?? true,
+    public_reply_messages: c.publicReplyMessages || ['Enviado no direct! 🚀'],
+    is_active: c.isActive ?? true,
+    dms_sent_count: c.dmsSentCount || 0,
+    clicks_count: c.clicksCount || 0,
+    ctr: c.ctr || 0,
+    created_at: c.createdAt || new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+}
+
+function fromDbCampaign(row: any): DmCampaign {
+  return {
+    id: row.id,
+    name: row.name,
+    platform: row.platform || 'instagram',
+    accountId: row.account_id || row.accountId || '17841406769803181',
+    accountUsername: row.account_username || row.accountUsername || 'gabolonhez',
+    postId: row.post_id ?? row.postId ?? null,
+    postUrl: row.post_url ?? row.postUrl ?? null,
+    postThumbnail: row.post_thumbnail ?? row.postThumbnail ?? null,
+    scope: row.scope || 'any',
+    keywords: row.keywords || [],
+    matchType: row.match_type || row.matchType || 'exact',
+    dmTriggerEnabled: row.dm_trigger_enabled ?? row.dmTriggerEnabled ?? true,
+    dmMessage: row.dm_message || row.dmMessage || '',
+    dmMessages: row.dm_messages || row.dmMessages || [],
+    openingDmEnabled: row.opening_dm_enabled ?? row.openingDmEnabled ?? false,
+    openingDmMessage: row.opening_dm_message ?? row.openingDmMessage ?? null,
+    openingDmButtonLabel: row.opening_dm_button_label ?? row.openingDmButtonLabel ?? null,
+    cardImageUrl: row.card_image_url ?? row.cardImageUrl ?? null,
+    cardTitle: row.card_title ?? row.cardTitle ?? null,
+    cardSubtitle: row.card_subtitle ?? row.cardSubtitle ?? null,
+    linkButtonLabel: row.link_button_label || row.linkButtonLabel || 'Acessar Link',
+    targetUrl: row.target_url ?? row.targetUrl ?? null,
+    secondaryButtonLabel: row.secondary_button_label ?? row.secondaryButtonLabel ?? null,
+    secondaryTargetUrl: row.secondary_target_url ?? row.secondaryTargetUrl ?? null,
+    requireFollow: row.require_follow ?? row.requireFollow ?? false,
+    followPromptMessage: row.follow_prompt_message ?? row.followPromptMessage ?? null,
+    followPromptButtonLabel: row.follow_prompt_button_label ?? row.followPromptButtonLabel ?? null,
+    followUpEnabled: row.follow_up_enabled ?? row.followUpEnabled ?? false,
+    followUpMessage: row.follow_up_message ?? row.followUpMessage ?? null,
+    followUpDelayMinutes: row.follow_up_delay_minutes ?? row.followUpDelayMinutes ?? 15,
+    publicReplyEnabled: row.public_reply_enabled ?? row.publicReplyEnabled ?? true,
+    publicReplyMessages: row.public_reply_messages || row.publicReplyMessages || [],
+    isActive: row.is_active ?? row.isActive ?? true,
+    dmsSentCount: row.dms_sent_count || row.dmsSentCount || 0,
+    clicksCount: row.clicks_count || row.clicksCount || 0,
+    ctr: Number(row.ctr) || row.ctr || 0,
+    createdAt: row.created_at || row.createdAt || new Date().toISOString(),
+    updatedAt: row.updated_at || row.updatedAt || new Date().toISOString(),
+  };
+}
+
+function toDbLog(l: Partial<DmLog>): any {
+  return {
+    id: l.id,
+    campaign_id: l.campaignId || null,
+    campaign_name: l.campaignName || 'Campanha',
+    platform: l.platform || 'instagram',
+    commenter_id: l.commenterId || '',
+    commenter_username: l.commenterUsername || 'usuario',
+    comment_text: l.commentText || '',
+    status: l.status || 'SENT',
+    error_message: l.errorMessage || null,
+    public_reply_sent: l.publicReplySent ?? true,
+    created_at: l.createdAt || new Date().toISOString(),
+  };
+}
+
+function fromDbLog(row: any): DmLog {
+  return {
+    id: row.id,
+    campaignId: row.campaign_id || row.campaignId || '',
+    campaignName: row.campaign_name || row.campaignName || '',
+    platform: row.platform || 'instagram',
+    commenterId: row.commenter_id || row.commenterId || '',
+    commenterUsername: row.commenter_username || row.commenterUsername || '',
+    commentText: row.comment_text ?? row.commentText ?? '',
+    status: row.status || 'SENT',
+    errorMessage: row.error_message ?? row.errorMessage ?? null,
+    publicReplySent: row.public_reply_sent ?? row.publicReplySent ?? true,
+    createdAt: row.created_at || row.createdAt || new Date().toISOString(),
+  };
+}
+
 export async function getDmCampaigns(): Promise<DmCampaign[]> {
-  return getCollectionData<DmCampaign>('dm_campaigns', 'createdAt');
+  try {
+    const { data, error } = await supabase
+      .from('dm_campaigns')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      const mapped = data.map(fromDbCampaign);
+      const store = getLocalStore('dm_campaigns');
+      mapped.forEach((item) => {
+        store[item.id] = item;
+      });
+      return mapped;
+    }
+  } catch (e) {
+    // Fallback silencioso para memória
+  }
+  const store = getLocalStore('dm_campaigns');
+  return Object.values(store) as DmCampaign[];
 }
 
 export async function saveDmCampaign(campaign: Partial<DmCampaign>): Promise<DmCampaign> {
@@ -814,8 +950,8 @@ export async function saveDmCampaign(campaign: Partial<DmCampaign>): Promise<DmC
     id,
     name: campaign.name || 'Nova Campanha',
     platform: campaign.platform || 'instagram',
-    accountId: campaign.accountId || 'ig_default',
-    accountUsername: campaign.accountUsername || 'creator',
+    accountId: campaign.accountId || '17841406769803181',
+    accountUsername: campaign.accountUsername || 'gabolonhez',
     postId: campaign.postId || null,
     postUrl: campaign.postUrl || null,
     postThumbnail: campaign.postThumbnail || null,
@@ -852,30 +988,55 @@ export async function saveDmCampaign(campaign: Partial<DmCampaign>): Promise<DmC
     ...campaign,
   };
 
-  await setDocData('dm_campaigns', id, fullCampaign);
+  // Guardar em memória
+  const store = getLocalStore('dm_campaigns');
+  store[id] = fullCampaign;
+
+  // Persistir no Supabase com mapeamento snake_case correto
+  try {
+    const dbRow = toDbCampaign(fullCampaign);
+    const { error } = await supabase.from('dm_campaigns').upsert(dbRow);
+    if (error) {
+      console.error('[DB] Erro ao persistir dm_campaigns no Supabase:', error);
+    }
+  } catch (err) {
+    console.error('[DB] Exceção ao persistir dm_campaigns:', err);
+  }
+
   return fullCampaign;
 }
 
 export async function deleteDmCampaign(id: string): Promise<void> {
-  await deleteDocData('dm_campaigns', id);
+  const store = getLocalStore('dm_campaigns');
+  delete store[id];
+  try {
+    await supabase.from('dm_campaigns').delete().eq('id', id);
+  } catch (e) {}
 }
 
 export async function toggleDmCampaign(id: string, isActive: boolean): Promise<DmCampaign> {
-  const existing = await getDocById<DmCampaign>('dm_campaigns', id);
+  const campaigns = await getDmCampaigns();
+  const existing = campaigns.find((c) => c.id === id);
   if (!existing) {
     throw new Error(`Campanha ${id} não encontrada`);
   }
-  const updated: DmCampaign = {
-    ...existing,
-    isActive,
-    updatedAt: new Date().toISOString(),
-  };
-  await setDocData('dm_campaigns', id, updated);
-  return updated;
+  return saveDmCampaign({ ...existing, isActive });
 }
 
 export async function getDmLogs(): Promise<DmLog[]> {
-  return getCollectionData<DmLog>('dm_logs', 'createdAt');
+  try {
+    const { data, error } = await supabase
+      .from('dm_logs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    if (!error && data) {
+      return data.map(fromDbLog);
+    }
+  } catch (e) {}
+  const store = getLocalStore('dm_logs');
+  return Object.values(store) as DmLog[];
 }
 
 export async function addDmLog(log: Partial<DmLog>): Promise<DmLog> {
@@ -894,7 +1055,17 @@ export async function addDmLog(log: Partial<DmLog>): Promise<DmLog> {
     createdAt: new Date().toISOString(),
     ...log,
   };
-  await setDocData('dm_logs', id, fullLog);
+
+  const store = getLocalStore('dm_logs');
+  store[id] = fullLog;
+
+  try {
+    const dbRow = toDbLog(fullLog);
+    await supabase.from('dm_logs').upsert(dbRow);
+  } catch (err) {
+    console.error('[DB] Erro ao persistir dm_log:', err);
+  }
+
   return fullLog;
 }
 

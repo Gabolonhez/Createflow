@@ -42,13 +42,20 @@ function matchKeywords(text: string, keywords: string[], matchType: string): boo
   if (!text || !keywords || keywords.length === 0) return false;
 
   const normalizedText = text.toLowerCase().trim();
+  const cleanComment = normalizedText.replace(/^#/, '');
 
   if (matchType === 'exact') {
-    return keywords.some((k) => normalizedText === k.toLowerCase().trim());
+    return keywords.some((k) => {
+      const cleanK = k.toLowerCase().trim().replace(/^#/, '');
+      return cleanComment === cleanK || normalizedText === k.toLowerCase().trim();
+    });
   }
 
   if (matchType === 'contains') {
-    return keywords.some((k) => normalizedText.includes(k.toLowerCase().trim()));
+    return keywords.some((k) => {
+      const cleanK = k.toLowerCase().trim().replace(/^#/, '');
+      return cleanComment.includes(cleanK) || normalizedText.includes(k.toLowerCase().trim());
+    });
   }
 
   return false;
@@ -280,8 +287,16 @@ export async function POST(req: NextRequest) {
               const allCampaigns = await getDmCampaigns();
               const matchedDmCamp = allCampaigns.find((c) => {
                 if (!c.isActive) return false;
-                if (c.platform !== 'instagram' && c.platform !== 'both') return false;
-                if (c.scope === 'specific' && c.postId && c.postId !== mediaId) return false;
+                if (c.scope === 'specific') {
+                  if (c.postId && c.postId !== mediaId) {
+                    const postRef = (c.postUrl || c.postId || '').toLowerCase();
+                    if (mediaId && !postRef.includes(mediaId.toLowerCase())) {
+                      if (/^\d+$/.test(c.postId.trim()) && /^\d+$/.test(mediaId.trim())) {
+                        return false;
+                      }
+                    }
+                  }
+                }
                 return matchKeywords(commentText, c.keywords, c.matchType);
               });
 

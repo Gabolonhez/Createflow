@@ -25,9 +25,9 @@ import {
   Loader2,
   X,
 } from 'lucide-react';
-import { InstagramLogo, TikTokLogo } from './BrandIcons';
+import { InstagramLogo } from './BrandIcons';
 import { CampaignBuilderModal } from './CampaignBuilderModal';
-import type { DmCampaign, DmAutomationPlatform } from '@/types';
+import type { DmCampaign } from '@/types';
 
 interface DmCampaignsViewProps {
   campaigns: DmCampaign[];
@@ -43,7 +43,6 @@ export function DmCampaignsView({
   onToggleCampaign,
 }: DmCampaignsViewProps) {
   const [search, setSearch] = useState('');
-  const [platformFilter, setPlatformFilter] = useState<'all' | DmAutomationPlatform>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -75,7 +74,6 @@ export function DmCampaignsView({
   // Filtered campaigns
   const filtered = useMemo(() => {
     return campaigns.filter((c) => {
-      if (platformFilter !== 'all' && c.platform !== platformFilter && c.platform !== 'both') return false;
       if (statusFilter === 'active' && !c.isActive) return false;
       if (statusFilter === 'inactive' && c.isActive) return false;
       if (search.trim()) {
@@ -86,7 +84,7 @@ export function DmCampaignsView({
       }
       return true;
     });
-  }, [campaigns, platformFilter, statusFilter, search]);
+  }, [campaigns, statusFilter, search]);
 
   const handleOpenCreate = () => {
     setEditingCampaign(null);
@@ -147,12 +145,12 @@ export function DmCampaignsView({
               <h1 className="text-xl font-bold text-white tracking-tight">
                 Campanhas de Auto-DM
               </h1>
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-violet-500/20 text-violet-300 border border-violet-500/30">
-                Instagram & TikTok
+              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-pink-500/20 text-pink-300 border border-pink-500/30">
+                Instagram Direct
               </span>
             </div>
             <p className="text-xs text-white/50 mt-1">
-              Transforme comentários em vendas e leads instantâneos com funis oficiais da Meta e TikTok.
+              Transforme comentários em vendas e leads instantâneos com funis oficiais da Meta no Instagram.
             </p>
           </div>
 
@@ -240,45 +238,6 @@ export function DmCampaignsView({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Platform Filter */}
-          <div className="flex items-center p-0.5 rounded-lg bg-white/[0.03] border border-white/[0.07]">
-            <button
-              type="button"
-              onClick={() => setPlatformFilter('all')}
-              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all ${
-                platformFilter === 'all'
-                  ? 'bg-white/15 text-white'
-                  : 'text-white/40 hover:text-white'
-              }`}
-            >
-              Todos
-            </button>
-            <button
-              type="button"
-              onClick={() => setPlatformFilter('instagram')}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-medium transition-all ${
-                platformFilter === 'instagram'
-                  ? 'bg-pink-600/25 text-pink-300 border border-pink-500/30'
-                  : 'text-white/40 hover:text-white'
-              }`}
-            >
-              <InstagramLogo className="size-3" />
-              IG
-            </button>
-            <button
-              type="button"
-              onClick={() => setPlatformFilter('tiktok')}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-medium transition-all ${
-                platformFilter === 'tiktok'
-                  ? 'bg-cyan-600/25 text-cyan-300 border border-cyan-500/30'
-                  : 'text-white/40 hover:text-white'
-              }`}
-            >
-              <TikTokLogo className="size-3" />
-              TT
-            </button>
-          </div>
-
           {/* Status Filter */}
           <select
             value={statusFilter}
@@ -301,7 +260,7 @@ export function DmCampaignsView({
             </div>
             <h3 className="text-sm font-semibold text-white">Nenhuma campanha encontrada</h3>
             <p className="text-xs text-white/50">
-              Crie sua primeira regra de Auto-DM para Instagram ou TikTok e comece a enviar links no direct.
+              Crie sua primeira regra de Auto-DM para Instagram e comece a enviar links no direct.
             </p>
             <button
               type="button"
@@ -322,28 +281,11 @@ export function DmCampaignsView({
                 {/* Card Header */}
                 <div className="p-4 pb-3 border-b border-white/[0.05] flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div
-                      className={`size-7 rounded-lg flex items-center justify-center ${
-                        camp.platform === 'both'
-                          ? 'bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-cyan-500/20 text-white border border-indigo-500/30'
-                          : camp.platform === 'instagram'
-                          ? 'bg-pink-500/15 text-pink-300 border border-pink-500/25'
-                          : 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/25'
-                      }`}
-                    >
-                      {camp.platform === 'both' ? (
-                        <div className="flex items-center -space-x-1">
-                          <InstagramLogo className="size-2.5 text-pink-400" />
-                          <TikTokLogo className="size-2.5 text-cyan-400" />
-                        </div>
-                      ) : camp.platform === 'instagram' ? (
-                        <InstagramLogo className="size-3.5" />
-                      ) : (
-                        <TikTokLogo className="size-3.5" />
-                      )}
+                    <div className="size-7 rounded-lg flex items-center justify-center bg-pink-500/15 text-pink-300 border border-pink-500/25">
+                      <InstagramLogo className="size-3.5" />
                     </div>
                     <span className="text-[11px] font-mono text-white/60">
-                      @{camp.accountUsername} {camp.platform === 'both' && <span className="text-[9px] px-1 py-0.2 rounded bg-indigo-500/20 text-indigo-300">Ambos</span>}
+                      @{camp.accountUsername || 'gabolonhez'}
                     </span>
                   </div>
 
