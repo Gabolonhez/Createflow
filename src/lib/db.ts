@@ -10,6 +10,11 @@ import type {
   ConnectionsConfig,
   PostStatus,
   Platform,
+  DmCampaign,
+  DmLog,
+  TrackedLinkItem,
+  SocialConversation,
+  SocialMessage,
 } from '@/types';
 
 // ARMAZENAMENTO EM MEMÓRIA LOCAL DE FALLBACK COM SEED INICIAL RICO
@@ -268,10 +273,290 @@ const inMemoryStore: Record<string, Record<string, any>> = {
       id: 'connections_config',
       x_connected: true,
       x_username: 'gabolonhez',
-      x_publish_mode: 'manual', // 'automatic' | 'manual'
+      x_publish_mode: 'manual',
       linkedin_connected: true,
       linkedin_name: 'Gabriel Bolonhez',
       linkedin_publish_mode: 'manual',
+      instagram_connected: true,
+      instagram_username: 'gabolonhez',
+      tiktok_connected: true,
+      tiktok_username: 'gabolonhez',
+    },
+  },
+  dm_campaigns: {
+    camp_1: {
+      id: 'camp_1',
+      name: 'Guia de Agentes de IA 2026',
+      platform: 'instagram',
+      accountId: 'ig_gabolonhez',
+      accountUsername: 'gabolonhez',
+      postId: 'ig_post_101',
+      postUrl: 'https://instagram.com/p/C7x9A1bL90',
+      postThumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&q=80',
+      scope: 'specific',
+      keywords: ['AGENTE', 'GUIA', 'IA'],
+      matchType: 'exact',
+      dmTriggerEnabled: true,
+      dmMessage: 'Fala {username}! Aqui está o Guia Completo de Arquitetura de Agentes de IA que prometi. Toque no botão abaixo para acessar.',
+      dmMessages: [
+        'Fala {username}! Aqui está o Guia Completo de Arquitetura de Agentes de IA que prometi. Toque no botão abaixo para acessar.',
+        'Opa {username}! Conforme prometido no Reels, aqui está o material sobre Agentes em produção.',
+      ],
+      openingDmEnabled: true,
+      openingDmMessage: 'Oi {username}! Quer desbloquear o material direto no navegador?',
+      openingDmButtonLabel: 'Sim, me manda! 🚀',
+      cardImageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80',
+      cardTitle: 'Guia Definitivo: Agentes de IA',
+      cardSubtitle: 'Aprenda a construir LLMs em produção sem alucinação e com baixa latência.',
+      linkButtonLabel: 'Acessar Guia Gratuito',
+      targetUrl: 'https://createflow.ai/docs/agentes-2026',
+      secondaryButtonLabel: 'Comunidade Discord',
+      secondaryTargetUrl: 'https://discord.gg/createflow',
+      requireFollow: true,
+      followPromptMessage: 'Ei {username}! Para receber o link, siga @gabolonhez e toque em "Já segui" abaixo!',
+      followPromptButtonLabel: 'Já segui ✅',
+      followUpEnabled: true,
+      followUpMessage: 'E aí {username}, conseguiu abrir o guia? Qualquer dúvida na implementação me dá um toque aqui!',
+      followUpDelayMinutes: 15,
+      publicReplyEnabled: true,
+      publicReplyMessages: [
+        'Te mandei no direct! 🚀',
+        'Acabei de enviar, confere suas mensagens! ✨',
+        'Enviado com sucesso! Dá uma olhada na DM 📩',
+      ],
+      isActive: true,
+      dmsSentCount: 384,
+      clicksCount: 112,
+      ctr: 29.1,
+      createdAt: new Date(Date.now() - 86400 * 1000 * 3).toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    camp_2: {
+      id: 'camp_2',
+      name: 'Viral Hooks TikTok (Ebook)',
+      platform: 'tiktok',
+      accountId: 'tt_gabolonhez',
+      accountUsername: 'gabolonhez',
+      scope: 'any',
+      keywords: ['VIRAL', 'HOOK', 'CREATOR'],
+      matchType: 'contains',
+      dmTriggerEnabled: true,
+      dmMessage: 'Oi {username}! Te mandei a lista dos 50 Hooks de Alta Retenção para TikTok & Reels. Baixe abaixo!',
+      dmMessages: ['Oi {username}! Te mandei a lista dos 50 Hooks de Alta Retenção para TikTok & Reels.'],
+      openingDmEnabled: false,
+      cardTitle: 'Planilha de Hooks Virais',
+      cardSubtitle: 'Testados em mais de 10M de visualizações orgânicas.',
+      linkButtonLabel: 'Baixar Planilha',
+      targetUrl: 'https://createflow.ai/resources/hooks',
+      requireFollow: false,
+      followUpEnabled: false,
+      followUpDelayMinutes: 0,
+      publicReplyEnabled: true,
+      publicReplyMessages: [
+        'Direct enviado! 🔥',
+        'Mandei lá no chat! 📱',
+        'Prontinho, confere a DM! 💡',
+      ],
+      isActive: true,
+      dmsSentCount: 148,
+      clicksCount: 47,
+      ctr: 31.7,
+      createdAt: new Date(Date.now() - 86400 * 1000 * 5).toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    camp_3: {
+      id: 'camp_3',
+      name: 'Próximo Reels: Template Next.js 16',
+      platform: 'instagram',
+      accountId: 'ig_gabolonhez',
+      accountUsername: 'gabolonhez',
+      scope: 'next',
+      keywords: ['NEXT', 'REPO', 'BOILERPLATE'],
+      matchType: 'exact',
+      dmTriggerEnabled: false,
+      dmMessage: 'Fala {username}! Aqui está o repositório do starter kit Next.js 16 com Tailwind v4 e Supabase.',
+      dmMessages: ['Fala {username}! Aqui está o repositório do starter kit Next.js 16.'],
+      openingDmEnabled: false,
+      cardTitle: 'Starter Kit Next.js 16',
+      cardSubtitle: 'Repositório GitHub limpo e pronto para produção.',
+      linkButtonLabel: 'Ver no GitHub',
+      targetUrl: 'https://github.com/gabolonhez/createflow-starter',
+      requireFollow: true,
+      followPromptMessage: 'Fala {username}! Segue o perfil para liberar o repo open-source!',
+      followPromptButtonLabel: 'Já segui 🔓',
+      followUpEnabled: false,
+      followUpDelayMinutes: 0,
+      publicReplyEnabled: true,
+      publicReplyMessages: ['Mandei o link no direct! 🚀', 'Confere seu direct, link enviado! ✨'],
+      isActive: true,
+      dmsSentCount: 89,
+      clicksCount: 34,
+      ctr: 38.2,
+      createdAt: new Date(Date.now() - 86400 * 1000 * 1).toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+  },
+  dm_logs: {
+    log_1: {
+      id: 'log_1',
+      campaignId: 'camp_1',
+      campaignName: 'Guia de Agentes de IA 2026',
+      platform: 'instagram',
+      commenterId: 'c_user_401',
+      commenterUsername: 'lucas_tech',
+      commentText: 'Quero muito esse GUIA, parabens pelo conteudo',
+      status: 'SENT',
+      publicReplySent: true,
+      createdAt: new Date(Date.now() - 1000 * 60 * 8).toISOString(),
+    },
+    log_2: {
+      id: 'log_2',
+      campaignId: 'camp_2',
+      campaignName: 'Viral Hooks TikTok (Ebook)',
+      platform: 'tiktok',
+      commenterId: 'tt_user_802',
+      commenterUsername: 'marina.creator',
+      commentText: 'VIRAL por favor manda',
+      status: 'SENT',
+      publicReplySent: true,
+      createdAt: new Date(Date.now() - 1000 * 60 * 25).toISOString(),
+    },
+    log_3: {
+      id: 'log_3',
+      campaignId: 'camp_1',
+      campaignName: 'Guia de Agentes de IA 2026',
+      platform: 'instagram',
+      commenterId: 'c_user_402',
+      commenterUsername: 'andre_devops',
+      commentText: 'manda o guia irmao',
+      status: 'SENT',
+      publicReplySent: true,
+      createdAt: new Date(Date.now() - 1000 * 60 * 42).toISOString(),
+    },
+    log_4: {
+      id: 'log_4',
+      campaignId: 'camp_1',
+      campaignName: 'Guia de Agentes de IA 2026',
+      platform: 'instagram',
+      commenterId: 'c_user_403',
+      commenterUsername: 'camila_ai',
+      commentText: 'AGENTE',
+      status: 'SKIPPED_WINDOW',
+      errorMessage: 'Usuário com privacidade de mensagens fechada para contas não seguidas',
+      publicReplySent: true,
+      createdAt: new Date(Date.now() - 1000 * 60 * 95).toISOString(),
+    },
+    log_5: {
+      id: 'log_5',
+      campaignId: 'camp_2',
+      campaignName: 'Viral Hooks TikTok (Ebook)',
+      platform: 'tiktok',
+      commenterId: 'tt_user_803',
+      commenterUsername: 'felipe_marketing',
+      commentText: 'HOOK quero testar no meu perfil',
+      status: 'SENT',
+      publicReplySent: true,
+      createdAt: new Date(Date.now() - 1000 * 60 * 140).toISOString(),
+    },
+  },
+  tracked_links: {
+    trk_1: {
+      id: 'trk_1',
+      campaignId: 'camp_1',
+      campaignName: 'Guia de Agentes de IA 2026',
+      platform: 'instagram',
+      label: 'Guia Agentes 2026',
+      destinationUrl: 'https://createflow.ai/docs/agentes-2026',
+      shortSlug: 'cf-agt26',
+      shortUrl: 'https://createflow.io/r/cf-agt26',
+      clicks: 112,
+      uniqueClicks: 94,
+      ctr: 29.1,
+      createdAt: new Date(Date.now() - 86400 * 1000 * 3).toISOString(),
+    },
+    trk_2: {
+      id: 'trk_2',
+      campaignId: 'camp_2',
+      campaignName: 'Viral Hooks TikTok (Ebook)',
+      platform: 'tiktok',
+      label: 'Planilha Hooks Virais',
+      destinationUrl: 'https://createflow.ai/resources/hooks',
+      shortSlug: 'cf-hooks',
+      shortUrl: 'https://createflow.io/r/cf-hooks',
+      clicks: 47,
+      uniqueClicks: 42,
+      ctr: 31.7,
+      createdAt: new Date(Date.now() - 86400 * 1000 * 5).toISOString(),
+    },
+    trk_3: {
+      id: 'trk_3',
+      campaignId: 'camp_3',
+      campaignName: 'Próximo Reels: Template Next.js 16',
+      platform: 'instagram',
+      label: 'GitHub Starter Kit',
+      destinationUrl: 'https://github.com/gabolonhez/createflow-starter',
+      shortSlug: 'cf-next16',
+      shortUrl: 'https://createflow.io/r/cf-next16',
+      clicks: 34,
+      uniqueClicks: 31,
+      ctr: 38.2,
+      createdAt: new Date(Date.now() - 86400 * 1000 * 1).toISOString(),
+    },
+  },
+  social_conversations: {
+    conv_1: {
+      id: 'conv_1',
+      platform: 'instagram',
+      participantId: 'user_lucas',
+      participantUsername: 'lucas_tech',
+      participantName: 'Lucas Ferreira',
+      participantAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80',
+      lastMessageText: 'Caraca mano, o guia de agentes ficou sensacional! Valeu!',
+      lastMessageTimestamp: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
+      unreadCount: 1,
+      isWindowOpen: true,
+      windowExpiresInHours: 23,
+      messages: [
+        {
+          id: 'm1',
+          sender: 'me',
+          text: 'Fala @lucas_tech! Aqui está o Guia Completo de Arquitetura de Agentes de IA que prometi. Toque no botão abaixo para acessar.',
+          timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+        },
+        {
+          id: 'm2',
+          sender: 'user',
+          text: 'Caraca mano, o guia de agentes ficou sensacional! Valeu!',
+          timestamp: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
+        },
+      ],
+    },
+    conv_2: {
+      id: 'conv_2',
+      platform: 'tiktok',
+      participantId: 'user_marina',
+      participantUsername: 'marina.creator',
+      participantName: 'Marina Bastos',
+      participantAvatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&q=80',
+      lastMessageText: 'Tem algum exemplo de hook para nicho de finanças?',
+      lastMessageTimestamp: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
+      unreadCount: 0,
+      isWindowOpen: true,
+      windowExpiresInHours: 21,
+      messages: [
+        {
+          id: 'm3',
+          sender: 'me',
+          text: 'Oi @marina.creator! Te mandei a lista dos 50 Hooks de Alta Retenção para TikTok & Reels. Baixe abaixo!',
+          timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+        },
+        {
+          id: 'm4',
+          sender: 'user',
+          text: 'Tem algum exemplo de hook para nicho de finanças?',
+          timestamp: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
+        },
+      ],
     },
   },
 };
@@ -725,3 +1010,180 @@ export async function saveConnectionsConfig(cfg: Partial<ConnectionsConfig>): Pr
   // 3. Persist core fields to Postgres connections_config table
   await setDocData('connections_config', 'main_config', cfg);
 }
+
+// ==========================================
+// AUTO-DM & GROWTH FUNNEL DB ACCESSORS
+// ==========================================
+
+export async function getDmCampaigns(): Promise<DmCampaign[]> {
+  return getCollectionData<DmCampaign>('dm_campaigns', 'createdAt');
+}
+
+export async function saveDmCampaign(campaign: Partial<DmCampaign>): Promise<DmCampaign> {
+  const id = campaign.id || `camp_${Date.now()}`;
+  const now = new Date().toISOString();
+  const existing = await getDocById<DmCampaign>('dm_campaigns', id);
+
+  const fullCampaign: DmCampaign = {
+    id,
+    name: campaign.name || 'Nova Campanha',
+    platform: campaign.platform || 'instagram',
+    accountId: campaign.accountId || 'ig_default',
+    accountUsername: campaign.accountUsername || 'creator',
+    postId: campaign.postId || null,
+    postUrl: campaign.postUrl || null,
+    postThumbnail: campaign.postThumbnail || null,
+    scope: campaign.scope || 'any',
+    keywords: campaign.keywords || [],
+    matchType: campaign.matchType || 'exact',
+    dmTriggerEnabled: campaign.dmTriggerEnabled ?? true,
+    dmMessage: campaign.dmMessage || 'Olá {username}! Aqui está o seu acesso exclusivo.',
+    dmMessages: campaign.dmMessages || [campaign.dmMessage || 'Olá {username}! Aqui está o seu acesso exclusivo.'],
+    openingDmEnabled: campaign.openingDmEnabled ?? false,
+    openingDmMessage: campaign.openingDmMessage || null,
+    openingDmButtonLabel: campaign.openingDmButtonLabel || null,
+    cardImageUrl: campaign.cardImageUrl || null,
+    cardTitle: campaign.cardTitle || null,
+    cardSubtitle: campaign.cardSubtitle || null,
+    linkButtonLabel: campaign.linkButtonLabel || 'Acessar Link',
+    targetUrl: campaign.targetUrl || null,
+    secondaryButtonLabel: campaign.secondaryButtonLabel || null,
+    secondaryTargetUrl: campaign.secondaryTargetUrl || null,
+    requireFollow: campaign.requireFollow ?? false,
+    followPromptMessage: campaign.followPromptMessage || null,
+    followPromptButtonLabel: campaign.followPromptButtonLabel || null,
+    followUpEnabled: campaign.followUpEnabled ?? false,
+    followUpMessage: campaign.followUpMessage || null,
+    followUpDelayMinutes: campaign.followUpDelayMinutes ?? 15,
+    publicReplyEnabled: campaign.publicReplyEnabled ?? true,
+    publicReplyMessages: campaign.publicReplyMessages || ['Enviado no direct! 🚀'],
+    isActive: campaign.isActive ?? true,
+    dmsSentCount: existing ? existing.dmsSentCount : 0,
+    clicksCount: existing ? existing.clicksCount : 0,
+    ctr: existing ? existing.ctr : 0,
+    createdAt: existing?.createdAt || now,
+    updatedAt: now,
+    ...campaign,
+  };
+
+  await setDocData('dm_campaigns', id, fullCampaign);
+  return fullCampaign;
+}
+
+export async function deleteDmCampaign(id: string): Promise<void> {
+  await deleteDocData('dm_campaigns', id);
+}
+
+export async function toggleDmCampaign(id: string, isActive: boolean): Promise<DmCampaign> {
+  const existing = await getDocById<DmCampaign>('dm_campaigns', id);
+  if (!existing) {
+    throw new Error(`Campanha ${id} não encontrada`);
+  }
+  const updated: DmCampaign = {
+    ...existing,
+    isActive,
+    updatedAt: new Date().toISOString(),
+  };
+  await setDocData('dm_campaigns', id, updated);
+  return updated;
+}
+
+export async function getDmLogs(): Promise<DmLog[]> {
+  return getCollectionData<DmLog>('dm_logs', 'createdAt');
+}
+
+export async function addDmLog(log: Partial<DmLog>): Promise<DmLog> {
+  const id = log.id || `log_${Date.now()}`;
+  const fullLog: DmLog = {
+    id,
+    campaignId: log.campaignId || '',
+    campaignName: log.campaignName || 'Campanha',
+    platform: log.platform || 'instagram',
+    commenterId: log.commenterId || '',
+    commenterUsername: log.commenterUsername || 'usuario',
+    commentText: log.commentText || '',
+    status: log.status || 'SENT',
+    errorMessage: log.errorMessage || null,
+    publicReplySent: log.publicReplySent ?? true,
+    createdAt: new Date().toISOString(),
+    ...log,
+  };
+  await setDocData('dm_logs', id, fullLog);
+  return fullLog;
+}
+
+export async function getTrackedLinks(): Promise<TrackedLinkItem[]> {
+  return getCollectionData<TrackedLinkItem>('tracked_links', 'createdAt');
+}
+
+export async function saveTrackedLink(link: Partial<TrackedLinkItem>): Promise<TrackedLinkItem> {
+  const id = link.id || `trk_${Date.now()}`;
+  const fullLink: TrackedLinkItem = {
+    id,
+    campaignId: link.campaignId || '',
+    campaignName: link.campaignName || 'Campanha',
+    platform: link.platform || 'instagram',
+    label: link.label || 'Link',
+    destinationUrl: link.destinationUrl || 'https://createflow.ai',
+    shortSlug: link.shortSlug || `cf-${Date.now().toString(36)}`,
+    shortUrl: link.shortUrl || `https://createflow.io/r/${link.shortSlug || Date.now().toString(36)}`,
+    clicks: link.clicks || 0,
+    uniqueClicks: link.uniqueClicks || 0,
+    ctr: link.ctr || 0,
+    createdAt: new Date().toISOString(),
+    ...link,
+  };
+  await setDocData('tracked_links', id, fullLink);
+  return fullLink;
+}
+
+export async function getSocialConversations(): Promise<SocialConversation[]> {
+  return getCollectionData<SocialConversation>('social_conversations', 'lastMessageTimestamp');
+}
+
+export async function sendSocialMessage(conversationId: string, text: string): Promise<SocialMessage> {
+  const conv = await getDocById<SocialConversation>('social_conversations', conversationId);
+  const newMsg: SocialMessage = {
+    id: `msg_${Date.now()}`,
+    sender: 'me',
+    text,
+    timestamp: new Date().toISOString(),
+  };
+
+  if (conv) {
+    const updatedConv: SocialConversation = {
+      ...conv,
+      lastMessageText: text,
+      lastMessageTimestamp: newMsg.timestamp,
+      messages: [...conv.messages, newMsg],
+    };
+    await setDocData('social_conversations', conversationId, updatedConv);
+  }
+
+  return newMsg;
+}
+
+export async function getTrackedLinkBySlug(slug: string): Promise<TrackedLinkItem | null> {
+  const links = await getTrackedLinks();
+  return links.find((l) => l.shortSlug === slug) || null;
+}
+
+export async function recordLinkClick(slug: string): Promise<string | null> {
+  const link = await getTrackedLinkBySlug(slug);
+  if (!link) return null;
+
+  const clicks = (link.clicks || 0) + 1;
+  const uniqueClicks = (link.uniqueClicks || 0) + 1;
+  const ctr = Number(((uniqueClicks / Math.max(clicks, 1)) * 100).toFixed(1));
+
+  const updated: TrackedLinkItem = {
+    ...link,
+    clicks,
+    uniqueClicks,
+    ctr,
+  };
+  await setDocData('tracked_links', link.id, updated);
+  return link.destinationUrl;
+}
+
+

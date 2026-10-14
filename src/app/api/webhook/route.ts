@@ -3,6 +3,8 @@ import crypto from 'crypto';
 import { supabase } from '@/lib/supabase';
 import { drainQueue } from '@/lib/queue-processor';
 import { after } from 'next/server';
+import { getDmCampaigns, addDmLog } from '@/lib/db';
+import type { DmCampaign } from '@/types';
 
 function verifySignature(body: string, signatureHeader: string | null): boolean {
   if (!signatureHeader) return false;
@@ -215,6 +217,146 @@ export async function POST(req: NextRequest) {
                   status: 'pending',
                 });
               }
+            } else {
+              // Também verificar campanhas registradas no CreateFlow (dm_campaigns)
+              const allCampaigns = await getDmCampaigns();
+              const matchedDmCamp = allCampaigns.find((c) => {
+                if (!c.isActive || c.platform !== 'instagram') return false;
+                if (c.scope === 'specific' && c.postId && c.postId !== mediaId) return false;
+                return matchKeywords(commentText, c.keywords, c.matchType);
+              });
+
+              if (matchedDmCamp) {
+                console.log(`[Webhook] Comentário correspondente em dm_campaigns: ${matchedDmCamp.name}`);
+                await addDmLog({
+                  campaignId: matchedDmCamp.id,
+                  campaignName: matchedDmCamp.name,
+                  platform: 'instagram',
+                  commenterId,
+                  commenterUsername: commenterUsername || 'instagram_user',
+                  commentText,
+                  status: 'SENT',
+                  publicReplySent: matchedDmCamp.publicReplyEnabled,
+                });
+
+                let contactId: string | null = null;
+                try {
+                  const { data: contact } = await supabase
+                    .from('contacts')
+                    .select('id')
+                    .eq('instagram_scoped_id', commenterId)
+                    .single();
+
+                  if (contact) {
+                    contactId = contact.id;
+                    await supabase
+                      .from('contacts')
+                      .update({
+                        username: commenterUsername,
+                        updated_at: new Date().toISOString(),
+                      })
+                      .eq('id', contactId);
+                  } else {
+                    const { data: newContact } = await supabase
+                      .from('contacts')
+                      .insert({
+                        instagram_scoped_id: commenterId,
+                        username: commenterUsername,
+                      })
+                      .select('id')
+                      .single();
+                    contactId = newContact?.id || null;
+                  }
+                } catch (e) {
+                  // Fallback se tabela contacts estiver sem permissão
+                }
+
+                const dmBody =
+                  matchedDmCamp.openingDmEnabled && matchedDmCamp.openingDmMessage
+                    ? matchedDmCamp.openingDmMessage
+                    : matchedDmCamp.dmMessage;
+
+                const privatePayload =
+                  matchedDmCamp.openingDmEnabled && matchedDmCamp.openingDmButtonLabel
+                    ? {
+                        recipient: { comment_id: commentId },
+                        message: {
+                          text: dmBody,
+                          quick_replies: [
+                            {
+                              content_type: 'text',
+                              title: matchedDmCamp.openingDmButtonLabel,
+                              payload: `QR_CAMP_${matchedDmCamp.id}`,
+                            },
+                          ],
+                        },
+                      }
+                    : matchedDmCamp.targetUrl
+                    ? {
+                        recipient: { comment_id: commentId },
+                        message: {
+                          attachment: {
+                            type: 'template',
+                            payload: {
+                              template_type: 'generic',
+                              elements: [
+                                {
+                                  title: matchedDmCamp.cardTitle || dmBody,
+                                  subtitle: matchedDmCamp.cardSubtitle || undefined,
+                                  image_url: matchedDmCamp.cardImageUrl || undefined,
+                                  buttons: [
+                                    {
+                                      type: 'web_url',
+                                      url: matchedDmCamp.targetUrl,
+                                      title: matchedDmCamp.linkButtonLabel || 'Acessar Link',
+                                    },
+                                  ],
+                                },
+                              ],
+                            },
+                          },
+                        },
+                      }
+                    : {
+                        recipient: { comment_id: commentId },
+                        message: { text: dmBody },
+                      };
+
+                try {
+                  await supabase.from('queue').insert({
+                    contact_id: contactId,
+                    automation_id: null,
+                    message_type: 'private_reply',
+                    recipient_instagram_id: commentId,
+                    comment_id: commentId,
+                    message_payload: privatePayload,
+                    status: 'pending',
+                  });
+
+                  if (
+                    matchedDmCamp.publicReplyEnabled &&
+                    matchedDmCamp.publicReplyMessages?.length > 0
+                  ) {
+                    const randomReply =
+                      matchedDmCamp.publicReplyMessages[
+                        Math.floor(
+                          Math.random() * matchedDmCamp.publicReplyMessages.length
+                        )
+                      ];
+                    await supabase.from('queue').insert({
+                      contact_id: contactId,
+                      automation_id: null,
+                      message_type: 'public_reply',
+                      recipient_instagram_id: commentId,
+                      comment_id: commentId,
+                      message_payload: { message: randomReply },
+                      status: 'pending',
+                    });
+                  }
+                } catch (e) {
+                  console.error('[Webhook] Erro ao enfileirar no Supabase:', e);
+                }
+              }
             }
           }
         }
@@ -356,6 +498,54 @@ export async function POST(req: NextRequest) {
                     scheduled_for: scheduledFor,
                   });
                 }
+              }
+            }
+            continue;
+          }
+
+          if (payloadStr && payloadStr.startsWith('QR_CAMP_')) {
+            const campId = payloadStr.replace('QR_CAMP_', '');
+            const allCamps = await getDmCampaigns();
+            const camp = allCamps.find((c) => c.id === campId);
+            if (camp && camp.targetUrl) {
+              console.log(`[Webhook] Quick Reply acionada para campanha CreateFlow: ${camp.name}`);
+              const linkPayload = {
+                recipient: { id: senderId },
+                message: {
+                  attachment: {
+                    type: 'template',
+                    payload: {
+                      template_type: 'generic',
+                      elements: [
+                        {
+                          title: camp.cardTitle || camp.name,
+                          subtitle: camp.cardSubtitle || undefined,
+                          image_url: camp.cardImageUrl || undefined,
+                          buttons: [
+                            {
+                              type: 'web_url',
+                              url: camp.targetUrl,
+                              title: camp.linkButtonLabel || 'Acessar Link',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  },
+                },
+              };
+
+              try {
+                await supabase.from('queue').insert({
+                  contact_id: null,
+                  automation_id: null,
+                  message_type: 'link',
+                  recipient_instagram_id: senderId,
+                  message_payload: linkPayload,
+                  status: 'pending',
+                });
+              } catch (e) {
+                console.error('[Webhook] Erro ao enfileirar link de campanha CreateFlow:', e);
               }
             }
             continue;

@@ -12,7 +12,7 @@ import {
   Copy,
   Info,
 } from 'lucide-react';
-import { XLogo, LinkedInLogo } from './BrandIcons';
+import { XLogo, LinkedInLogo, InstagramLogo, TikTokLogo } from './BrandIcons';
 import type { ConnectionsConfig } from '@/types';
 
 interface ConnectionsViewProps {
@@ -33,6 +33,13 @@ export function ConnectionsView({
   const [liMode, setLiMode] = useState(connections.linkedin_publish_mode || 'manual');
   const [liClientId, setLiClientId] = useState(connections.linkedin_client_id || '');
   const [liClientSecret, setLiClientSecret] = useState(connections.linkedin_client_secret || '');
+
+  const [igConnected, setIgConnected] = useState(connections.instagram_connected ?? true);
+  const [igUsername, setIgUsername] = useState(connections.instagram_username || 'gabolonhez');
+
+  const [ttConnected, setTtConnected] = useState(connections.tiktok_connected ?? true);
+  const [ttUsername, setTtUsername] = useState(connections.tiktok_username || 'gabolonhez');
+
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
   const [isSaving, setIsSaving] = useState(false);
@@ -50,7 +57,19 @@ export function ConnectionsView({
     if (connections.linkedin_publish_mode) {
       setLiMode(connections.linkedin_publish_mode);
     }
-  }, [connections.linkedin_client_id, connections.linkedin_client_secret, connections.linkedin_publish_mode]);
+    if (connections.instagram_username) {
+      setIgUsername(connections.instagram_username);
+    }
+    if (connections.tiktok_username) {
+      setTtUsername(connections.tiktok_username);
+    }
+  }, [
+    connections.linkedin_client_id,
+    connections.linkedin_client_secret,
+    connections.linkedin_publish_mode,
+    connections.instagram_username,
+    connections.tiktok_username,
+  ]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -70,6 +89,10 @@ export function ConnectionsView({
         linkedin_publish_mode: liMode,
         linkedin_client_id: liClientId.trim() || undefined,
         linkedin_client_secret: liClientSecret.trim() || undefined,
+        instagram_connected: igConnected,
+        instagram_username: igUsername.replace('@', '').trim(),
+        tiktok_connected: ttConnected,
+        tiktok_username: ttUsername.replace('@', '').trim(),
       });
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 2500);
@@ -382,6 +405,134 @@ export function ConnectionsView({
                     </span>
                   </div>
                 </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ========================================= */}
+        {/* 3. INSTAGRAM PROFESSIONAL & META GRAPH API */}
+        {/* ========================================= */}
+        <div className="p-5 rounded-2xl bg-[#111116] border border-white/[0.08] flex flex-col gap-5">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <div className="size-10 rounded-xl bg-gradient-to-tr from-pink-600 via-rose-500 to-amber-500 flex items-center justify-center shadow-lg shadow-pink-600/20">
+                <InstagramLogo className="size-5 text-white" />
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-white text-sm">Instagram Professional</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-pink-500/15 text-pink-300 border border-pink-500/30">
+                    Meta Graph API v25
+                  </span>
+                </div>
+                <span className="text-white/40 text-xs">
+                  Automação oficial de comentários, DMs e respostas públicas.
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-medium ${
+                igConnected ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+              }`}>
+                <span className={`size-1.5 rounded-full ${igConnected ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'}`} />
+                {igConnected ? 'Conectado' : 'Desconectado'}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-mono text-white/50">Username do Instagram (@):</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={igUsername}
+                  onChange={(e) => setIgUsername(e.target.value)}
+                  placeholder="gabolonhez"
+                  className="flex-1 px-3 py-2 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs font-mono focus:outline-none focus:border-pink-500/60"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-mono text-white/50">Webhook Endpoint URL (Meta Developer App):</label>
+              <div className="flex items-center gap-1.5">
+                <code className="flex-1 px-2.5 py-2 rounded-lg bg-black/50 border border-white/[0.04] text-[10px] font-mono text-white/80 truncate">
+                  https://createfloww.vercel.app/api/webhook
+                </code>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard('https://createfloww.vercel.app/api/webhook')}
+                  className="px-2 py-2 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-[11px] text-white font-mono shrink-0"
+                >
+                  <Copy size={12} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ========================================= */}
+        {/* 4. TIKTOK FOR BUSINESS & CREATOR API      */}
+        {/* ========================================= */}
+        <div className="p-5 rounded-2xl bg-[#111116] border border-white/[0.08] flex flex-col gap-5">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <div className="size-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-rose-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                <TikTokLogo className="size-5 text-white" />
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-white text-sm">TikTok Creator & Business</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                    Content & Messaging API
+                  </span>
+                </div>
+                <span className="text-white/40 text-xs">
+                  Publicação direta de vídeos e resposta automática por Direct Message.
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-medium ${
+                ttConnected ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+              }`}>
+                <span className={`size-1.5 rounded-full ${ttConnected ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'}`} />
+                {ttConnected ? 'Conectado' : 'Desconectado'}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-mono text-white/50">Username do TikTok (@):</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={ttUsername}
+                  onChange={(e) => setTtUsername(e.target.value)}
+                  placeholder="gabolonhez"
+                  className="flex-1 px-3 py-2 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs font-mono focus:outline-none focus:border-cyan-500/60"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-mono text-white/50">Webhook Endpoint URL (TikTok Developer Portal):</label>
+              <div className="flex items-center gap-1.5">
+                <code className="flex-1 px-2.5 py-2 rounded-lg bg-black/50 border border-white/[0.04] text-[10px] font-mono text-white/80 truncate">
+                  https://createfloww.vercel.app/api/webhook/tiktok
+                </code>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard('https://createfloww.vercel.app/api/webhook/tiktok')}
+                  className="px-2 py-2 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-[11px] text-white font-mono shrink-0"
+                >
+                  <Copy size={12} />
+                </button>
               </div>
             </div>
           </div>

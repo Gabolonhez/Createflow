@@ -34,6 +34,16 @@ const SECTION_CONFIG: {
     ],
   },
   {
+    id: 'automations',
+    label: 'Funis & Auto-DM',
+    subViews: [
+      { id: 'dm-campaigns', label: 'Campanhas de DM' },
+      { id: 'dm-inbox', label: 'Inbox Social' },
+      { id: 'tracked-links', label: 'Links & Cliques' },
+      { id: 'dm-logs', label: 'Logs de Disparos' },
+    ],
+  },
+  {
     id: 'voice',
     label: 'Voz e Ajustes',
     subViews: [

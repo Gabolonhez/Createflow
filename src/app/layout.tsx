@@ -14,7 +14,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "CreateFlow - Segundo Cérebro & Automação de Conteúdo",
-  description: "Plataforma inteligente de criação de conteúdo por IA, segundo cérebro e automação para Instagram e LinkedIn.",
+  description: "Plataforma inteligente de criação de conteúdo por IA, segundo cérebro e automação para Instagram, TikTok e LinkedIn.",
+  other: {
+    "tiktok-developers-site-verification": "R2WIbVyjtbxYvEN42SBR2JoT8z22dbhW",
+  },
 };
 
 export default function RootLayout({

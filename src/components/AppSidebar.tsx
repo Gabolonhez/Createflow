@@ -19,8 +19,12 @@ import {
   CheckCircle2,
   LogOut,
   Image as ImageIcon,
+  Send,
+  MessageSquare,
+  Link as LinkIcon,
+  ScrollText,
 } from 'lucide-react';
-import { XLogo, LinkedInLogo } from './BrandIcons';
+import { XLogo, LinkedInLogo, InstagramLogo, TikTokLogo } from './BrandIcons';
 import type { MainSection, ActiveSubView } from '@/types';
 
 interface AppSidebarProps {
@@ -33,6 +37,8 @@ interface AppSidebarProps {
   onToggleCollapse: () => void;
   xConnected?: boolean;
   linkedinConnected?: boolean;
+  instagramConnected?: boolean;
+  tiktokConnected?: boolean;
   userEmail?: string | null;
   onSignOut?: () => void;
 }
@@ -47,6 +53,8 @@ export function AppSidebar({
   onToggleCollapse,
   xConnected = true,
   linkedinConnected = true,
+  instagramConnected = true,
+  tiktokConnected = true,
   userEmail,
   onSignOut,
 }: AppSidebarProps) {
@@ -71,6 +79,41 @@ export function AppSidebar({
           subView: 'calendar' as ActiveSubView,
           label: 'Calendário',
           icon: <Calendar size={17} />,
+        },
+      ],
+    },
+    {
+      title: 'FUNIS & AUTO-DM',
+      items: [
+        {
+          id: 'dm-campaigns',
+          section: 'automations' as MainSection,
+          subView: 'dm-campaigns' as ActiveSubView,
+          label: 'Campanhas de DM',
+          icon: <Send size={17} />,
+        },
+        {
+          id: 'dm-inbox',
+          section: 'automations' as MainSection,
+          subView: 'dm-inbox' as ActiveSubView,
+          label: 'Inbox Social',
+          icon: <MessageSquare size={17} />,
+          badge: '3',
+          badgeColor: 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30',
+        },
+        {
+          id: 'tracked-links',
+          section: 'automations' as MainSection,
+          subView: 'tracked-links' as ActiveSubView,
+          label: 'Links & Cliques',
+          icon: <LinkIcon size={17} />,
+        },
+        {
+          id: 'dm-logs',
+          section: 'automations' as MainSection,
+          subView: 'dm-logs' as ActiveSubView,
+          label: 'Logs de Disparos',
+          icon: <ScrollText size={17} />,
         },
       ],
     },
@@ -262,36 +305,68 @@ export function AppSidebar({
                 Live
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="grid grid-cols-2 gap-1.5">
               <div
-                className={`flex-1 flex items-center justify-between px-2 py-1 rounded bg-white/[0.03] border ${
+                className={`flex items-center justify-between px-2 py-1 rounded bg-white/[0.03] border ${
                   xConnected ? 'border-white/[0.12] text-white' : 'border-red-500/20 text-white/40'
                 }`}
               >
                 <div className="flex items-center gap-1.5">
                   <XLogo className="size-3" />
-                  <span className="text-[11px] font-mono">X</span>
+                  <span className="text-[10px] font-mono">X</span>
                 </div>
                 {xConnected ? (
-                  <CheckCircle2 size={11} className="text-emerald-400" />
+                  <CheckCircle2 size={10} className="text-emerald-400" />
                 ) : (
-                  <span className="text-[9px] text-amber-400">Offline</span>
+                  <span className="text-[9px] text-amber-400">Off</span>
                 )}
               </div>
 
               <div
-                className={`flex-1 flex items-center justify-between px-2 py-1 rounded bg-white/[0.03] border ${
+                className={`flex items-center justify-between px-2 py-1 rounded bg-white/[0.03] border ${
                   linkedinConnected ? 'border-sky-500/30 text-white' : 'border-red-500/20 text-white/40'
                 }`}
               >
                 <div className="flex items-center gap-1.5">
                   <LinkedInLogo className="size-3 text-[#0A66C2]" />
-                  <span className="text-[11px] font-mono">in</span>
+                  <span className="text-[10px] font-mono">in</span>
                 </div>
                 {linkedinConnected ? (
-                  <CheckCircle2 size={11} className="text-emerald-400" />
+                  <CheckCircle2 size={10} className="text-emerald-400" />
                 ) : (
-                  <span className="text-[9px] text-amber-400">Offline</span>
+                  <span className="text-[9px] text-amber-400">Off</span>
+                )}
+              </div>
+
+              <div
+                className={`flex items-center justify-between px-2 py-1 rounded bg-white/[0.03] border ${
+                  instagramConnected ? 'border-pink-500/30 text-white' : 'border-red-500/20 text-white/40'
+                }`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <InstagramLogo className="size-3 text-pink-400" />
+                  <span className="text-[10px] font-mono">IG</span>
+                </div>
+                {instagramConnected ? (
+                  <CheckCircle2 size={10} className="text-emerald-400" />
+                ) : (
+                  <span className="text-[9px] text-amber-400">Off</span>
+                )}
+              </div>
+
+              <div
+                className={`flex items-center justify-between px-2 py-1 rounded bg-white/[0.03] border ${
+                  tiktokConnected ? 'border-cyan-500/30 text-white' : 'border-red-500/20 text-white/40'
+                }`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <TikTokLogo className="size-3 text-cyan-400" />
+                  <span className="text-[10px] font-mono">TT</span>
+                </div>
+                {tiktokConnected ? (
+                  <CheckCircle2 size={10} className="text-emerald-400" />
+                ) : (
+                  <span className="text-[9px] text-amber-400">Off</span>
                 )}
               </div>
             </div>
@@ -300,6 +375,8 @@ export function AppSidebar({
           <div className="flex flex-col items-center gap-2">
             <XLogo className={`size-3.5 ${xConnected ? 'text-white' : 'text-white/30'}`} />
             <LinkedInLogo className={`size-3.5 ${linkedinConnected ? 'text-[#0A66C2]' : 'text-white/30'}`} />
+            <InstagramLogo className={`size-3.5 ${instagramConnected ? 'text-pink-400' : 'text-white/30'}`} />
+            <TikTokLogo className={`size-3.5 ${tiktokConnected ? 'text-cyan-400' : 'text-white/30'}`} />
           </div>
         )}
 

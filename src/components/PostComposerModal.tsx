@@ -24,7 +24,7 @@ import {
   ShieldCheck,
   ShieldAlert,
 } from 'lucide-react';
-import { XLogo, LinkedInLogo } from './BrandIcons';
+import { XLogo, LinkedInLogo, InstagramLogo, TikTokLogo } from './BrandIcons';
 import { PostPreviewCard } from './PostPreviewCard';
 import { MediaLibraryView } from './MediaLibraryView';
 import { AiImageModal } from './AiImageModal';
@@ -32,7 +32,7 @@ import { generateXIntentUrl } from '@/lib/twitter';
 import { generateLinkedInIntentUrl } from '@/lib/linkedin';
 import { uploadPostImageAction, translatePostAction } from '@/app/actions';
 import { detectAiMarkers, humanizeText } from '@/lib/humanizer';
-import type { CreatorPost, Platform, ThreadStyle } from '@/types';
+import type { CreatorPost, Platform, ThreadStyle, DmCampaign, DmAutomationPlatform } from '@/types';
 
 interface PostComposerModalProps {
   isOpen: boolean;
@@ -46,6 +46,7 @@ interface PostComposerModalProps {
     instruction?: string,
     platform?: Platform | 'both'
   ) => Promise<{ text: string; voiceCheck: any }>;
+  onSaveAutoDm?: (campaign: Partial<DmCampaign>) => Promise<void>;
   authorHandle?: string;
   authorName?: string;
   authorHeadline?: string;
@@ -59,6 +60,7 @@ export function PostComposerModal({
   onApprove,
   onPublishNow,
   onRewrite,
+  onSaveAutoDm,
   authorHandle = '@gabolonhez',
   authorName = 'Gabriel Bolonhez',
   authorHeadline = 'Software Engineer & Tech Founder | Building CreateFlow',
@@ -76,8 +78,8 @@ export function PostComposerModal({
   const [platforms, setPlatforms] = useState<Platform[]>(
     initialPost?.platforms || ['x', 'linkedin']
   );
-  const [activeEditorTab, setActiveEditorTab] = useState<'x' | 'linkedin'>(
-    initialPost?.platforms?.includes('x') ? 'x' : 'linkedin'
+  const [activeEditorTab, setActiveEditorTab] = useState<Platform>(
+    initialPost?.platforms?.[0] || 'x'
   );
   const [threadStyle, setThreadStyle] = useState<ThreadStyle>(
     initialPost?.threadStyle || 'single'
@@ -88,6 +90,9 @@ export function PostComposerModal({
   const [isAiImageModalOpen, setIsAiImageModalOpen] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [autoDmEnabled, setAutoDmEnabled] = useState(false);
+  const [autoDmKeyword, setAutoDmKeyword] = useState('GUIA');
+  const [autoDmLink, setAutoDmLink] = useState('https://createflow.ai');
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -277,6 +282,44 @@ export function PostComposerModal({
     }
   };
 
+  const syncAutoDmIfEnabled = async (postId?: string) => {
+    if (autoDmEnabled && onSaveAutoDm) {
+      try {
+        const targetPlatform: DmAutomationPlatform = platforms.includes('tiktok')
+          ? 'tiktok'
+          : 'instagram';
+
+        await onSaveAutoDm({
+          name: `Funil [${autoDmKeyword.toUpperCase()}] - ${(text || 'Post').slice(0, 30)}`,
+          platform: targetPlatform,
+          accountId: authorHandle,
+          accountUsername: authorHandle.replace('@', ''),
+          postId: postId || initialPost?.id || undefined,
+          keywords: [autoDmKeyword.trim() || 'GUIA'],
+          matchType: 'contains',
+          scope: postId ? 'specific' : 'any',
+          dmTriggerEnabled: true,
+          dmMessage: `Olá! Aqui está o conteúdo exclusivo solicitado: ${autoDmLink}`,
+          dmMessages: [`Olá! Aqui está o conteúdo exclusivo solicitado: ${autoDmLink}`],
+          targetUrl: autoDmLink,
+          linkButtonLabel: 'Acessar Conteúdo',
+          requireFollow: true,
+          followPromptMessage: 'Notei que você ainda não me segue! Siga o perfil para liberar o link exclusivo imediatamente.',
+          followPromptButtonLabel: 'Já estou seguindo',
+          publicReplyEnabled: true,
+          publicReplyMessages: [
+            'Acabei de enviar no seu Direct! Confere lá 🚀',
+            'Enviado no privado com sucesso! 📥',
+            'Link enviado na DM, aproveite o conteúdo! ✨',
+          ],
+          isActive: true,
+        });
+      } catch (err) {
+        console.error('Erro ao sincronizar Auto-DM:', err);
+      }
+    }
+  };
+
   const handleSaveDraft = async () => {
     setIsSaving(true);
     try {
@@ -292,6 +335,7 @@ export function PostComposerModal({
         scheduledFor: scheduledFor ? new Date(scheduledFor).toISOString() : null,
         status: initialPost?.status || 'DRAFT',
       });
+      await syncAutoDmIfEnabled(initialPost?.id);
       onClose();
     } finally {
       setIsSaving(false);
@@ -317,6 +361,7 @@ export function PostComposerModal({
         initialPost.id,
         scheduledFor ? new Date(scheduledFor).toISOString() : undefined
       );
+      await syncAutoDmIfEnabled(initialPost.id);
       onClose();
     } finally {
       setIsSaving(false);
@@ -331,6 +376,7 @@ export function PostComposerModal({
     setIsPublishing(true);
     try {
       await onPublishNow(initialPost.id);
+      await syncAutoDmIfEnabled(initialPost.id);
       onClose();
     } finally {
       setIsPublishing(false);
@@ -375,7 +421,7 @@ export function PostComposerModal({
           <div className="flex flex-col gap-4 min-w-0">
             {/* Platform Selection & Pillar */}
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-[11px] font-mono text-white/40">Canais:</span>
                 <button
                   type="button"
@@ -387,7 +433,7 @@ export function PostComposerModal({
                   }`}
                 >
                   <XLogo className="size-3" />
-                  <span>X (Twitter)</span>
+                  <span>X</span>
                 </button>
 
                 <button
@@ -401,6 +447,32 @@ export function PostComposerModal({
                 >
                   <LinkedInLogo className="size-3 text-white" />
                   <span>LinkedIn</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => togglePlatform('instagram')}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-all ${
+                    platforms.includes('instagram')
+                      ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white font-semibold shadow-sm'
+                      : 'bg-white/[0.05] text-white/40 hover:text-white'
+                  }`}
+                >
+                  <InstagramLogo className="size-3" />
+                  <span>Instagram</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => togglePlatform('tiktok')}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-all ${
+                    platforms.includes('tiktok')
+                      ? 'bg-gradient-to-r from-cyan-600 to-teal-600 text-white font-semibold shadow-sm'
+                      : 'bg-white/[0.05] text-white/40 hover:text-white'
+                  }`}
+                >
+                  <TikTokLogo className="size-3" />
+                  <span>TikTok</span>
                 </button>
               </div>
 
@@ -417,6 +489,62 @@ export function PostComposerModal({
                 <option value="case-study">Estudo de Caso</option>
               </select>
             </div>
+
+            {/* Quick Auto-DM Activation for Instagram & TikTok */}
+            {(platforms.includes('instagram') || platforms.includes('tiktok')) && (
+              <div className="p-3 rounded-xl bg-violet-600/10 border border-violet-500/25 flex flex-col gap-2.5 animate-in fade-in">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={14} className="text-violet-400" />
+                    <span className="text-xs font-semibold text-white">
+                      ⚡ Ativar Funil Auto-DM (Comentário → Direct)
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAutoDmEnabled(!autoDmEnabled)}
+                    className={`relative w-9 h-5 rounded-full transition-colors ${
+                      autoDmEnabled ? 'bg-violet-600' : 'bg-white/20'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 size-4 rounded-full bg-white transition-transform ${
+                        autoDmEnabled ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {autoDmEnabled && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-violet-500/20">
+                    <div>
+                      <label className="text-[10px] font-mono text-violet-300 block mb-1">
+                        Palavra-chave Gatilho:
+                      </label>
+                      <input
+                        type="text"
+                        value={autoDmKeyword}
+                        onChange={(e) => setAutoDmKeyword(e.target.value.toUpperCase())}
+                        placeholder="Ex: GUIA"
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-black/60 border border-violet-500/30 text-xs text-white font-mono uppercase focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-mono text-violet-300 block mb-1">
+                        Link entregue na DM:
+                      </label>
+                      <input
+                        type="url"
+                        value={autoDmLink}
+                        onChange={(e) => setAutoDmLink(e.target.value)}
+                        placeholder="https://createflow.ai/..."
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-black/60 border border-violet-500/30 text-xs text-white font-mono focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Platform Sub-Tabs when Cross-posting to both */}
             {isX && isLinkedIn && (

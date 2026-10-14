@@ -11,6 +11,10 @@
     {
       "path": "/api/cron/publisher",
       "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/drain",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

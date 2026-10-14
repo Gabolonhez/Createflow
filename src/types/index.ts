@@ -1,4 +1,5 @@
-export type Platform = 'x' | 'linkedin';
+export type Platform = 'x' | 'linkedin' | 'instagram' | 'tiktok';
+export type DmAutomationPlatform = 'instagram' | 'tiktok';
 
 export type PostStatus = 
   | 'DRAFT' 
@@ -153,6 +154,14 @@ export interface ConnectionsConfig {
   linkedin_publish_mode: 'automatic' | 'manual';
   linkedin_client_id?: string;
   linkedin_client_secret?: string;
+  instagram_connected?: boolean;
+  instagram_username?: string;
+  instagram_user_id?: string;
+  instagram_access_token?: string;
+  tiktok_connected?: boolean;
+  tiktok_username?: string;
+  tiktok_user_id?: string;
+  tiktok_access_token?: string;
 }
 
 export interface MediaAsset {
@@ -193,10 +202,120 @@ export interface TranslatePostResult {
   linkedinText?: string;
 }
 
-export type MainSection = 'plan' | 'ideas' | 'voice' | 'results' | 'settings';
+// ==========================================
+// AUTO-DM & GROWTH FUNNEL TYPES (INSTAGRAM & TIKTOK)
+// ==========================================
+
+export type DmScope = 'specific' | 'any' | 'next';
+export type DmMatchMode = 'exact' | 'contains' | 'any';
+
+export interface DmCampaign {
+  id: string;
+  name: string;
+  platform: DmAutomationPlatform;
+  accountId: string;
+  accountUsername: string;
+  postId?: string | null;
+  postUrl?: string | null;
+  postThumbnail?: string | null;
+  scope: DmScope;
+  keywords: string[];
+  matchType: DmMatchMode;
+  dmTriggerEnabled: boolean;
+  dmMessage: string;
+  dmMessages: string[];
+  openingDmEnabled: boolean;
+  openingDmMessage?: string | null;
+  openingDmButtonLabel?: string | null;
+  cardImageUrl?: string | null;
+  cardTitle?: string | null;
+  cardSubtitle?: string | null;
+  linkButtonLabel?: string | null;
+  targetUrl?: string | null;
+  secondaryButtonLabel?: string | null;
+  secondaryTargetUrl?: string | null;
+  requireFollow: boolean;
+  followPromptMessage?: string | null;
+  followPromptButtonLabel?: string | null;
+  followUpEnabled: boolean;
+  followUpMessage?: string | null;
+  followUpDelayMinutes: number;
+  publicReplyEnabled: boolean;
+  publicReplyMessages: string[];
+  isActive: boolean;
+  dmsSentCount: number;
+  clicksCount: number;
+  ctr: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type DmLogStatus = 
+  | 'SENT' 
+  | 'FAILED' 
+  | 'PENDING' 
+  | 'SKIPPED_WINDOW' 
+  | 'SKIPPED_RATE_LIMIT' 
+  | 'DEFERRED';
+
+export interface DmLog {
+  id: string;
+  campaignId: string;
+  campaignName: string;
+  platform: DmAutomationPlatform;
+  commenterId: string;
+  commenterUsername: string;
+  commenterAvatar?: string;
+  commentText: string;
+  status: DmLogStatus;
+  errorMessage?: string | null;
+  publicReplySent?: boolean;
+  createdAt: string;
+}
+
+export interface TrackedLinkItem {
+  id: string;
+  campaignId: string;
+  campaignName: string;
+  platform: DmAutomationPlatform;
+  label: string;
+  destinationUrl: string;
+  shortSlug: string;
+  shortUrl: string;
+  clicks: number;
+  uniqueClicks: number;
+  ctr: number;
+  createdAt: string;
+}
+
+export interface SocialMessage {
+  id: string;
+  sender: 'me' | 'user';
+  text: string;
+  timestamp: string;
+  isQuickReply?: boolean;
+}
+
+export interface SocialConversation {
+  id: string;
+  platform: DmAutomationPlatform;
+  participantId: string;
+  participantUsername: string;
+  participantName: string;
+  participantAvatar?: string;
+  lastMessageText: string;
+  lastMessageTimestamp: string;
+  unreadCount: number;
+  isWindowOpen: boolean;
+  windowExpiresInHours: number;
+  messages: SocialMessage[];
+}
+
+export type MainSection = 'plan' | 'ideas' | 'automations' | 'voice' | 'results' | 'settings';
 
 export type PlanSubView = 'posts' | 'calendar';
 export type IdeasSubView = 'my-ideas' | 'topics' | 'facts' | 'references' | 'media-library';
+export type AutomationsSubView = 'dm-campaigns' | 'dm-inbox' | 'tracked-links' | 'dm-logs';
 export type VoiceSubView = 'manual' | 'learnings';
 export type ResultsSubView = 'performance';
 export type SettingsSubView = 'connection';
@@ -204,6 +323,8 @@ export type SettingsSubView = 'connection';
 export type ActiveSubView = 
   | PlanSubView 
   | IdeasSubView 
+  | AutomationsSubView
   | VoiceSubView 
   | ResultsSubView 
   | SettingsSubView;
+
