@@ -20,6 +20,7 @@ import {
   Image as ImageIcon,
 } from 'lucide-react';
 import { InstagramLogo, TikTokLogo } from './BrandIcons';
+import { PostPicker } from './PostPicker';
 import type { DmCampaign, DmAutomationPlatform, DmScope, DmMatchMode } from '@/types';
 
 interface CampaignBuilderModalProps {
@@ -46,6 +47,7 @@ export function CampaignBuilderModal({
   const [postId, setPostId] = useState(campaignToEdit?.postId || '');
   const [postUrl, setPostUrl] = useState(campaignToEdit?.postUrl || '');
   const [postThumbnail, setPostThumbnail] = useState(campaignToEdit?.postThumbnail || '');
+  const [manualPostInput, setManualPostInput] = useState(false);
   const [keywords, setKeywords] = useState<string[]>(
     campaignToEdit?.keywords || ['GUIA', 'FLUXO']
   );
@@ -339,20 +341,94 @@ export function CampaignBuilderModal({
               </div>
 
               {scope === 'specific' && (
-                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.08] space-y-2.5">
-                  <label className="block text-xs font-medium text-white/70">
-                    URL ou ID do Post / Reels
-                  </label>
-                  <input
-                    type="text"
-                    value={postUrl}
-                    onChange={(e) => {
-                      setPostUrl(e.target.value);
-                      setPostId(e.target.value);
-                    }}
-                    placeholder="https://instagram.com/p/..."
-                    className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/[0.1] text-xs text-white placeholder-white/30 focus:outline-none focus:border-indigo-500"
-                  />
+                <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.08] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-white/90">
+                      {platform === 'instagram' ? 'Selecione o Post ou Reels' : 'Vincular Vídeo do TikTok'}
+                    </label>
+                    {platform === 'instagram' && (
+                      <button
+                        type="button"
+                        onClick={() => setManualPostInput(!manualPostInput)}
+                        className="text-[11px] text-indigo-400 hover:text-indigo-300 transition-colors"
+                      >
+                        {manualPostInput ? 'Escolher da grade' : 'Colar link manualmente'}
+                      </button>
+                    )}
+                  </div>
+
+                  {platform === 'instagram' && !manualPostInput ? (
+                    <PostPicker
+                      selectedPostId={postId}
+                      onSelect={(p) => {
+                        setPostId(p.id);
+                        if (p.permalink) setPostUrl(p.permalink);
+                        if (p.thumbnail_url) setPostThumbnail(p.thumbnail_url);
+                        if (!name && p.caption) {
+                          setName(p.caption.slice(0, 35) + '...');
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div className="space-y-1.5">
+                      <input
+                        type="text"
+                        value={postUrl}
+                        onChange={(e) => {
+                          setPostUrl(e.target.value);
+                          setPostId(e.target.value);
+                        }}
+                        placeholder={
+                          platform === 'instagram'
+                            ? 'https://instagram.com/p/... ou ID da mídia'
+                            : 'https://tiktok.com/@usuario/video/... ou ID'
+                        }
+                        className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/[0.1] text-xs text-white placeholder-white/30 focus:outline-none focus:border-indigo-500"
+                      />
+                      <p className="text-[11px] text-white/40">
+                        {platform === 'instagram'
+                          ? 'Cole o link direto da publicação ou Reels.'
+                          : 'Cole o link do vídeo do TikTok.'}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Card do Post Selecionado */}
+                  {postId && (
+                    <div className="flex items-center gap-3 p-2.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
+                      {postThumbnail ? (
+                        <img
+                          src={postThumbnail}
+                          alt="Post selecionado"
+                          className="size-11 rounded-md object-cover border border-white/10 shrink-0"
+                        />
+                      ) : (
+                        <div className="size-11 rounded-md bg-white/10 flex items-center justify-center shrink-0">
+                          <ImageIcon size={18} className="text-white/40" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[10px] font-mono text-indigo-400 block uppercase">
+                          Post Selecionado
+                        </span>
+                        <p className="text-xs text-white font-medium truncate">
+                          {postUrl || postId}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPostId('');
+                          setPostUrl('');
+                          setPostThumbnail('');
+                        }}
+                        className="p-1 rounded text-white/40 hover:text-white transition-colors"
+                        title="Desvincular post"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -704,7 +780,24 @@ export function CampaignBuilderModal({
                 <div className="flex-1 p-3 overflow-y-auto space-y-3 bg-[#0a0a0d] custom-scrollbar">
                   {previewTab === 'comment' ? (
                     /* Comment Preview */
-                    <div className="space-y-2 pt-2">
+                    <div className="space-y-2 pt-1">
+                      {postThumbnail && (
+                        <div className="flex items-center gap-2 p-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] mb-2">
+                          <img
+                            src={postThumbnail}
+                            alt="Post Capa"
+                            className="size-8 rounded-md object-cover"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <span className="text-[9px] font-mono text-indigo-400 block uppercase">
+                              Post Selecionado
+                            </span>
+                            <span className="text-[10px] text-white/70 truncate block">
+                              {postUrl || 'Reels vinculado'}
+                            </span>
+                          </div>
+                        </div>
+                      )}
                       <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] space-y-1">
                         <div className="flex items-center gap-1.5 text-[10px]">
                           <span className="font-bold text-white">seguidor_tech</span>
