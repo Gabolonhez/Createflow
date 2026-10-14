@@ -184,10 +184,9 @@ export default function Dashboard({
     };
   }, []);
 
-  // Fetch Protected Data only after verified Authentication
+  // Fetch Dashboard Data on mount and session updates
   useEffect(() => {
     let active = true;
-    if (!sessionUser) return;
 
     setDataLoading(true);
     loadDashboardDataAction()
@@ -207,7 +206,7 @@ export default function Dashboard({
         if (data.conversations) setConversations(data.conversations);
       })
       .catch((err) => {
-        console.error('Falha ao carregar dados pós-auth:', err);
+        console.error('Falha ao carregar dados:', err);
       })
       .finally(() => {
         if (active) setDataLoading(false);
