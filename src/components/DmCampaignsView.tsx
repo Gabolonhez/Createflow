@@ -80,6 +80,22 @@ export function DmCampaignsView({
     setIsModalOpen(true);
   };
 
+  const handleCloneCampaign = (camp: DmCampaign) => {
+    const cloned: DmCampaign = {
+      ...camp,
+      id: '',
+      name: `${camp.name} (Cópia)`,
+      postId: null,
+      postUrl: null,
+      postThumbnail: null,
+      dmsSentCount: 0,
+      clicksCount: 0,
+      ctr: 0,
+    };
+    setEditingCampaign(cloned);
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#0a0a0c] overflow-y-auto custom-scrollbar">
       {/* Top Header & Metrics Strip */}
@@ -304,7 +320,17 @@ export function DmCampaignsView({
 
                     <button
                       type="button"
+                      onClick={() => handleCloneCampaign(camp)}
+                      title="Clonar esta campanha"
+                      className="p-1 rounded text-white/40 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
+                    >
+                      <Copy size={13} />
+                    </button>
+
+                    <button
+                      type="button"
                       onClick={() => handleOpenEdit(camp)}
+                      title="Editar campanha"
                       className="p-1 rounded text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
                     >
                       <Edit2 size={13} />
@@ -313,6 +339,7 @@ export function DmCampaignsView({
                     <button
                       type="button"
                       onClick={() => onDeleteCampaign(camp.id)}
+                      title="Excluir campanha"
                       className="p-1 rounded text-white/40 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
                     >
                       <Trash2 size={13} />
@@ -395,6 +422,7 @@ export function DmCampaignsView({
         onClose={() => setIsModalOpen(false)}
         campaignToEdit={editingCampaign}
         onSave={onSaveCampaign}
+        existingCampaigns={campaigns}
       />
     </div>
   );

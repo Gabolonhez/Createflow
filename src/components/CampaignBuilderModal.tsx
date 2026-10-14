@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Sparkles,
@@ -18,9 +18,14 @@ import {
   ChevronRight,
   RefreshCw,
   Image as ImageIcon,
+  Copy,
+  BookOpen,
+  ArrowRight,
+  Filter,
 } from 'lucide-react';
 import { InstagramLogo, TikTokLogo } from './BrandIcons';
 import { PostPicker } from './PostPicker';
+import { CAMPAIGN_PRESET_TEMPLATES, type DmPresetTemplate } from '@/lib/campaign-templates';
 import type { DmCampaign, DmAutomationPlatform, DmScope, DmMatchMode } from '@/types';
 
 interface CampaignBuilderModalProps {
@@ -28,6 +33,7 @@ interface CampaignBuilderModalProps {
   onClose: () => void;
   campaignToEdit?: DmCampaign | null;
   onSave: (campaign: Partial<DmCampaign>) => Promise<void>;
+  existingCampaigns?: DmCampaign[];
 }
 
 export function CampaignBuilderModal({
@@ -35,6 +41,7 @@ export function CampaignBuilderModal({
   onClose,
   campaignToEdit,
   onSave,
+  existingCampaigns = [],
 }: CampaignBuilderModalProps) {
   const isEditing = Boolean(campaignToEdit);
 
@@ -134,6 +141,131 @@ export function CampaignBuilderModal({
     ]
   );
   const [newReplyInput, setNewReplyInput] = useState('');
+
+  // Modals for Templates and Clone
+  const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
+  const [isCloneOpen, setIsCloneOpen] = useState(false);
+  const [templateFilterCategory, setTemplateFilterCategory] = useState<string>('all');
+
+  // Synchronize state when editing campaign or opening
+  useEffect(() => {
+    if (campaignToEdit) {
+      setPlatform(campaignToEdit.platform || 'instagram');
+      setName(campaignToEdit.name || '');
+      setScope(campaignToEdit.scope || 'any');
+      setPostId(campaignToEdit.postId || '');
+      setPostUrl(campaignToEdit.postUrl || '');
+      setPostThumbnail(campaignToEdit.postThumbnail || '');
+      setKeywords(campaignToEdit.keywords || ['GUIA', 'FLUXO']);
+      setMatchType(campaignToEdit.matchType || 'exact');
+      setDmTriggerEnabled(campaignToEdit.dmTriggerEnabled ?? true);
+      setOpeningDmEnabled(campaignToEdit.openingDmEnabled ?? false);
+      setOpeningDmMessage(
+        campaignToEdit.openingDmMessage ||
+          'Oi {username}! Quer que eu te envie o link direto no direct?'
+      );
+      setOpeningDmButtonLabel(
+        campaignToEdit.openingDmButtonLabel || 'Sim, me manda! 🚀'
+      );
+      setDmMessage(
+        campaignToEdit.dmMessage ||
+          'Fala {username}! Aqui está o seu acesso exclusivo conforme prometido. Toque no botão abaixo:'
+      );
+      setCardImageUrl(
+        campaignToEdit.cardImageUrl ||
+          'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80'
+      );
+      setCardTitle(campaignToEdit.cardTitle || 'Acesso Exclusivo CreateFlow');
+      setCardSubtitle(
+        campaignToEdit.cardSubtitle ||
+          'Material gratuito liberado em alta qualidade.'
+      );
+      setLinkButtonLabel(campaignToEdit.linkButtonLabel || 'Acessar Conteúdo');
+      setTargetUrl(campaignToEdit.targetUrl || 'https://createflow.ai');
+      setSecondaryButtonLabel(campaignToEdit.secondaryButtonLabel || '');
+      setSecondaryTargetUrl(campaignToEdit.secondaryTargetUrl || '');
+      setRequireFollow(campaignToEdit.requireFollow ?? false);
+      setFollowPromptMessage(
+        campaignToEdit.followPromptMessage ||
+          'Ei {username}! Para liberar o link, basta seguir o nosso perfil e tocar em "Já segui" abaixo:'
+      );
+      setFollowPromptButtonLabel(
+        campaignToEdit.followPromptButtonLabel || 'Já segui ✅'
+      );
+      setFollowUpEnabled(campaignToEdit.followUpEnabled ?? false);
+      setFollowUpMessage(
+        campaignToEdit.followUpMessage ||
+          'E aí {username}, conseguiu abrir o material? Qualquer dúvida me dá um toque aqui!'
+      );
+      setFollowUpDelayMinutes(campaignToEdit.followUpDelayMinutes || 15);
+      setPublicReplyEnabled(campaignToEdit.publicReplyEnabled ?? true);
+      setPublicReplyMessages(
+        campaignToEdit.publicReplyMessages || [
+          'Te mandei no direct! 🚀',
+          'Acabei de enviar, confere suas mensagens! ✨',
+          'Enviado com sucesso! Dá uma olhada na DM 📩',
+        ]
+      );
+    }
+  }, [campaignToEdit, isOpen]);
+
+  const applyPreset = (tpl: DmPresetTemplate) => {
+    setName(`${tpl.title} (${platform === 'instagram' ? 'Reels' : 'TikTok'})`);
+    setKeywords(tpl.keywords);
+    setMatchType(tpl.matchType);
+    setOpeningDmEnabled(tpl.openingDmEnabled);
+    setOpeningDmMessage(tpl.openingDmMessage);
+    setOpeningDmButtonLabel(tpl.openingDmButtonLabel);
+    setDmMessage(tpl.dmMessage);
+    setCardImageUrl(tpl.cardImageUrl);
+    setCardTitle(tpl.cardTitle);
+    setCardSubtitle(tpl.cardSubtitle);
+    setLinkButtonLabel(tpl.linkButtonLabel);
+    setTargetUrl(tpl.targetUrl);
+    setSecondaryButtonLabel(tpl.secondaryButtonLabel || '');
+    setSecondaryTargetUrl(tpl.secondaryTargetUrl || '');
+    setRequireFollow(tpl.requireFollow);
+    setFollowPromptMessage(tpl.followPromptMessage);
+    setFollowPromptButtonLabel(tpl.followPromptButtonLabel);
+    setFollowUpEnabled(tpl.followUpEnabled);
+    setFollowUpMessage(tpl.followUpMessage);
+    setFollowUpDelayMinutes(tpl.followUpDelayMinutes);
+    setPublicReplyEnabled(tpl.publicReplyEnabled);
+    setPublicReplyMessages(tpl.publicReplyMessages);
+    setIsTemplatesOpen(false);
+  };
+
+  const applyClone = (camp: DmCampaign) => {
+    setName(`${camp.name} (Cópia)`);
+    setPlatform(camp.platform);
+    setScope(camp.scope);
+    setPostId('');
+    setPostUrl('');
+    setPostThumbnail('');
+    setKeywords([...camp.keywords]);
+    setMatchType(camp.matchType);
+    setDmTriggerEnabled(camp.dmTriggerEnabled ?? true);
+    setOpeningDmEnabled(camp.openingDmEnabled ?? false);
+    setOpeningDmMessage(camp.openingDmMessage || '');
+    setOpeningDmButtonLabel(camp.openingDmButtonLabel || '');
+    setDmMessage(camp.dmMessage);
+    setCardImageUrl(camp.cardImageUrl || '');
+    setCardTitle(camp.cardTitle || '');
+    setCardSubtitle(camp.cardSubtitle || '');
+    setLinkButtonLabel(camp.linkButtonLabel || 'Acessar Conteúdo');
+    setTargetUrl(camp.targetUrl || '');
+    setSecondaryButtonLabel(camp.secondaryButtonLabel || '');
+    setSecondaryTargetUrl(camp.secondaryTargetUrl || '');
+    setRequireFollow(camp.requireFollow ?? false);
+    setFollowPromptMessage(camp.followPromptMessage || '');
+    setFollowPromptButtonLabel(camp.followPromptButtonLabel || '');
+    setFollowUpEnabled(camp.followUpEnabled ?? false);
+    setFollowUpMessage(camp.followUpMessage || '');
+    setFollowUpDelayMinutes(camp.followUpDelayMinutes || 15);
+    setPublicReplyEnabled(camp.publicReplyEnabled ?? true);
+    setPublicReplyMessages([...(camp.publicReplyMessages || [])]);
+    setIsCloneOpen(false);
+  };
 
   // UI state
   const [previewTab, setPreviewTab] = useState<'comment' | 'dm_card' | 'follow_gate'>(
@@ -236,13 +368,37 @@ export function CampaignBuilderModal({
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
-          >
-            <X size={18} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsTemplatesOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-violet-600/20 to-indigo-600/20 hover:from-violet-600/30 hover:to-indigo-600/30 border border-violet-500/30 text-violet-300 text-xs font-medium transition-all shadow-sm"
+              title="Explorar e aplicar modelos validados de campanha"
+            >
+              <Sparkles size={13} className="text-violet-400" />
+              <span>Modelos Prontos</span>
+            </button>
+
+            {existingCampaigns.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setIsCloneOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.1] text-white/70 hover:text-white text-xs font-medium transition-all"
+                title="Clonar copywriting e configurações de uma campanha anterior"
+              >
+                <Copy size={13} />
+                <span>Clonar Campanha</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors ml-1"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Two-Pane Body */}
@@ -921,6 +1077,195 @@ export function CampaignBuilderModal({
             </button>
           </div>
         </div>
+        {/* Modelos Prontos Overlay Modal */}
+        {isTemplatesOpen && (
+          <div className="absolute inset-0 z-50 bg-[#09090d]/95 backdrop-blur-md p-6 flex flex-col overflow-hidden animate-in fade-in duration-150">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-white/[0.08] shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="size-8 rounded-lg bg-violet-600/20 border border-violet-500/30 flex items-center justify-center text-violet-400">
+                  <Sparkles size={16} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white tracking-tight">
+                    Modelos Prontos de Automação
+                  </h3>
+                  <p className="text-xs text-white/50">
+                    Selecione um playbook validado para preencher mensagens, cartões e gatilhos instantaneamente.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsTemplatesOpen(false)}
+                className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Category Filter Pills */}
+            <div className="py-3 flex items-center gap-1.5 overflow-x-auto shrink-0 custom-scrollbar">
+              {[
+                { id: 'all', label: 'Todos os Modelos' },
+                { id: 'Geração de Leads', label: 'Leads & E-books' },
+                { id: 'E-commerce & Vendas', label: 'Produtos & Vendas' },
+                { id: 'Lançamentos & Eventos', label: 'Lançamentos' },
+                { id: 'Campanhas Promocionais', label: 'Cupons' },
+                { id: 'Serviços & Consultoria', label: 'WhatsApp & Serviços' },
+              ].map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setTemplateFilterCategory(cat.id)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                    templateFilterCategory === cat.id
+                      ? 'bg-violet-600 text-white shadow-sm shadow-violet-600/30'
+                      : 'bg-white/[0.04] text-white/60 hover:text-white hover:bg-white/[0.08]'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Templates Grid */}
+            <div className="flex-1 overflow-y-auto pr-1 grid grid-cols-1 md:grid-cols-2 gap-3.5 custom-scrollbar pb-2">
+              {CAMPAIGN_PRESET_TEMPLATES.filter(
+                (tpl) => templateFilterCategory === 'all' || tpl.category === templateFilterCategory
+              ).map((tpl) => (
+                <div
+                  key={tpl.id}
+                  className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.08] hover:border-violet-500/40 transition-all flex flex-col justify-between group"
+                >
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium uppercase bg-white/[0.05] text-white/70 border border-white/[0.08]">
+                        {tpl.category}
+                      </span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                        {tpl.badge}
+                      </span>
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-bold text-white group-hover:text-violet-300 transition-colors">
+                        {tpl.title}
+                      </h4>
+                      <p className="text-xs text-white/60 mt-1 leading-relaxed">
+                        {tpl.summary}
+                      </p>
+                    </div>
+
+                    {/* Keywords preview */}
+                    <div className="flex flex-wrap items-center gap-1 pt-1">
+                      {tpl.keywords.map((kw) => (
+                        <span
+                          key={kw}
+                          className="px-2 py-0.5 rounded bg-white/[0.04] text-[10px] font-mono text-indigo-300 border border-white/[0.06]"
+                        >
+                          #{kw}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pt-4 mt-3 border-t border-white/[0.06] flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-[10px] text-white/40 font-mono">
+                      {tpl.requireFollow && <span>• Follow-Gate</span>}
+                      {tpl.openingDmEnabled && <span>• DM Boas-Vindas</span>}
+                      {tpl.followUpEnabled && <span>• Follow-Up</span>}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => applyPreset(tpl)}
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-xs font-semibold text-white shadow-sm transition-all"
+                    >
+                      <span>Usar Modelo</span>
+                      <ArrowRight size={12} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Clonar Campanha Existente Overlay Modal */}
+        {isCloneOpen && (
+          <div className="absolute inset-0 z-50 bg-[#09090d]/95 backdrop-blur-md p-6 flex flex-col overflow-hidden animate-in fade-in duration-150">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-white/[0.08] shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="size-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                  <Copy size={16} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white tracking-tight">
+                    Clonar de Campanha Anterior
+                  </h3>
+                  <p className="text-xs text-white/50">
+                    Selecione uma campanha existente para copiar todas as mensagens e botões. O post específico será limpo para você selecionar o novo Reels.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCloneOpen(false)}
+                className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Campaign List */}
+            <div className="flex-1 overflow-y-auto pr-1 divide-y divide-white/[0.06] custom-scrollbar py-2">
+              {existingCampaigns.length === 0 ? (
+                <div className="text-center py-12 text-white/40 text-xs">
+                  Você ainda não possui campanhas anteriores para clonar.
+                </div>
+              ) : (
+                existingCampaigns.map((camp) => (
+                  <div
+                    key={camp.id}
+                    className="py-3 px-2 flex items-center justify-between hover:bg-white/[0.02] rounded-lg transition-colors group"
+                  >
+                    <div className="space-y-1 min-w-0 pr-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-white group-hover:text-indigo-300 transition-colors truncate">
+                          {camp.name}
+                        </span>
+                        <span className="px-1.5 py-0.2 rounded text-[9px] font-mono uppercase bg-white/[0.05] text-white/60">
+                          {camp.platform}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {camp.keywords.map((kw) => (
+                          <span
+                            key={kw}
+                            className="text-[10px] font-mono text-indigo-300/80"
+                          >
+                            #{kw}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => applyClone(camp)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600 border border-indigo-500/30 hover:border-transparent text-indigo-300 hover:text-white text-xs font-medium transition-all shrink-0"
+                    >
+                      <Copy size={12} />
+                      <span>Clonar Campos</span>
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
