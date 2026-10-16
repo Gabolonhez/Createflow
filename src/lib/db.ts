@@ -11,6 +11,7 @@ import type {
   PostStatus,
   Platform,
   DmCampaign,
+  DmScope,
   DmLog,
   TrackedLinkItem,
   SocialConversation,
@@ -801,6 +802,18 @@ export async function saveConnectionsConfig(cfg: Partial<ConnectionsConfig>): Pr
 // AUTO-DM & GROWTH FUNNEL DB ACCESSORS
 // ==========================================
 
+function normalizeScopeToDb(scope?: string | null): string {
+  if (scope === 'specific' || scope === 'specific_post') return 'specific_post';
+  if (scope === 'next' || scope === 'next_post') return 'next_post';
+  return 'any';
+}
+
+function normalizeScopeFromDb(scope?: string | null): DmScope {
+  if (scope === 'specific_post' || scope === 'specific') return 'specific';
+  if (scope === 'next_post' || scope === 'next') return 'next';
+  return 'any';
+}
+
 function toDbCampaign(c: Partial<DmCampaign>): any {
   return {
     id: c.id,
@@ -811,7 +824,7 @@ function toDbCampaign(c: Partial<DmCampaign>): any {
     post_id: c.postId ?? null,
     post_url: c.postUrl ?? null,
     post_thumbnail: c.postThumbnail ?? null,
-    scope: c.scope || 'any',
+    scope: normalizeScopeToDb(c.scope),
     keywords: c.keywords || [],
     match_type: c.matchType || 'exact',
     dm_trigger_enabled: c.dmTriggerEnabled ?? true,
@@ -854,7 +867,7 @@ function fromDbCampaign(row: any): DmCampaign {
     postId: row.post_id ?? row.postId ?? null,
     postUrl: row.post_url ?? row.postUrl ?? null,
     postThumbnail: row.post_thumbnail ?? row.postThumbnail ?? null,
-    scope: row.scope || 'any',
+    scope: normalizeScopeFromDb(row.scope),
     keywords: row.keywords || [],
     matchType: row.match_type || row.matchType || 'exact',
     dmTriggerEnabled: row.dm_trigger_enabled ?? row.dmTriggerEnabled ?? true,
@@ -942,11 +955,13 @@ export async function getDmCampaigns(): Promise<DmCampaign[]> {
 }
 
 export async function saveDmCampaign(campaign: Partial<DmCampaign>): Promise<DmCampaign> {
-  const id = campaign.id || `camp_${Date.now()}`;
+  const candidateId = campaign.id && campaign.id.trim() !== '' ? campaign.id.trim() : null;
+  const id = candidateId || `camp_${Date.now()}`;
   const now = new Date().toISOString();
-  const existing = await getDocById<DmCampaign>('dm_campaigns', id);
+  const existing = candidateId ? await getDocById<DmCampaign>('dm_campaigns', candidateId) : null;
 
   const fullCampaign: DmCampaign = {
+    ...campaign,
     id,
     name: campaign.name || 'Nova Campanha',
     platform: campaign.platform || 'instagram',
@@ -985,7 +1000,6 @@ export async function saveDmCampaign(campaign: Partial<DmCampaign>): Promise<DmC
     ctr: existing ? existing.ctr : 0,
     createdAt: existing?.createdAt || now,
     updatedAt: now,
-    ...campaign,
   };
 
   // Guardar em memória
@@ -993,14 +1007,11 @@ export async function saveDmCampaign(campaign: Partial<DmCampaign>): Promise<DmC
   store[id] = fullCampaign;
 
   // Persistir no Supabase com mapeamento snake_case correto
-  try {
-    const dbRow = toDbCampaign(fullCampaign);
-    const { error } = await supabase.from('dm_campaigns').upsert(dbRow);
-    if (error) {
-      console.error('[DB] Erro ao persistir dm_campaigns no Supabase:', error);
-    }
-  } catch (err) {
-    console.error('[DB] Exceção ao persistir dm_campaigns:', err);
+  const dbRow = toDbCampaign(fullCampaign);
+  const { error } = await supabase.from('dm_campaigns').upsert(dbRow);
+  if (error) {
+    console.error('[DB] Erro ao persistir dm_campaigns no Supabase:', error);
+    throw new Error(`Falha ao persistir no Supabase: ${error.message}`);
   }
 
   return fullCampaign;
@@ -1009,9 +1020,11 @@ export async function saveDmCampaign(campaign: Partial<DmCampaign>): Promise<DmC
 export async function deleteDmCampaign(id: string): Promise<void> {
   const store = getLocalStore('dm_campaigns');
   delete store[id];
-  try {
-    await supabase.from('dm_campaigns').delete().eq('id', id);
-  } catch (e) {}
+  const { error } = await supabase.from('dm_campaigns').delete().eq('id', id);
+  if (error) {
+    console.error('[DB] Erro ao excluir dm_campaigns:', error);
+    throw new Error(`Falha ao excluir no banco: ${error.message}`);
+  }
 }
 
 export async function toggleDmCampaign(id: string, isActive: boolean): Promise<DmCampaign> {

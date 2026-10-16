@@ -151,10 +151,12 @@ export function CampaignBuilderModal({
   // Modals for Templates and Clone
   const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
   const [isCloneOpen, setIsCloneOpen] = useState(false);
+  const [isClonedMode, setIsClonedMode] = useState(false);
   const [templateFilterCategory, setTemplateFilterCategory] = useState<string>('all');
 
   // Synchronize state when editing campaign or opening
   useEffect(() => {
+    setIsClonedMode(!campaignToEdit?.id || campaignToEdit.id.trim() === '');
     if (campaignToEdit) {
       setName(campaignToEdit.name || '');
       setScope(campaignToEdit.scope || 'any');
@@ -286,6 +288,7 @@ export function CampaignBuilderModal({
     setFollowUpDelayMinutes(camp.followUpDelayMinutes || 15);
     setPublicReplyEnabled(camp.publicReplyEnabled ?? true);
     setPublicReplyMessages([...(camp.publicReplyMessages || [])]);
+    setIsClonedMode(true);
     setIsCloneOpen(false);
   };
 
@@ -326,8 +329,13 @@ export function CampaignBuilderModal({
     if (!name.trim()) return;
     setIsSubmitting(true);
     try {
+      const targetCampaignId =
+        !isClonedMode && campaignToEdit?.id && campaignToEdit.id.trim() !== ''
+          ? campaignToEdit.id.trim()
+          : undefined;
+
       await onSave({
-        id: campaignToEdit?.id,
+        id: targetCampaignId,
         name,
         platform: 'instagram',
         accountId: '17841406769803181',
