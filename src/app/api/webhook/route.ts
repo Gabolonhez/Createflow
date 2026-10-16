@@ -643,53 +643,97 @@ export async function POST(req: NextRequest) {
               }
 
               let followerUsername = '';
+              let userFollows = true;
 
               if (isFollowGateCheck && accessToken) {
                 // Consultar se o seguidor realmente segue o perfil na Meta Graph API
                 const followCheck = await checkUserFollowsBusiness(senderId, accessToken);
                 followerUsername = followCheck.username || '';
+                userFollows = followCheck.follows;
+              }
 
-                if (!followCheck.follows) {
-                  console.log(`[Webhook-FollowGate] Usuário ${senderId} (@${followerUsername}) ainda NÃO segue @${camp.accountUsername}. Enviando aviso.`);
+              // Localizar ou registrar o contato no Supabase (obrigatório para contact_id na fila e para abrir a janela de 24h)
+              let contactId: string | null = null;
+              try {
+                const { data: existingContact } = await supabase
+                  .from('contacts')
+                  .select('id')
+                  .eq('instagram_scoped_id', senderId)
+                  .maybeSingle();
 
-                  const notFollowingMsg = `Opa ${followerUsername ? `@${followerUsername}` : ''}! Verifiquei aqui e você ainda não está seguindo o nosso perfil @${camp.accountUsername || 'gabolonhez'}. 😅\n\nBasta tocar em "Seguir" no topo desta conversa e depois tocar no botão abaixo para liberar seu link:`;
-                  const retryBtnLabel = (camp.followPromptButtonLabel || 'Já segui ✅').slice(0, 20);
+                if (existingContact) {
+                  contactId = existingContact.id;
+                  await supabase
+                    .from('contacts')
+                    .update({
+                      username: followerUsername || undefined,
+                      last_response_at: new Date().toISOString(),
+                      updated_at: new Date().toISOString(),
+                    })
+                    .eq('id', contactId);
+                } else {
+                  const { data: newContact } = await supabase
+                    .from('contacts')
+                    .insert({
+                      instagram_scoped_id: senderId,
+                      username: followerUsername || 'instagram_user',
+                      last_response_at: new Date().toISOString(),
+                    })
+                    .select('id')
+                    .single();
+                  contactId = newContact?.id || null;
+                }
+              } catch (contactErr) {
+                console.error('[Webhook] Erro ao resolver contato para postback:', contactErr);
+              }
 
-                  const retryPayload = {
-                    recipient: { id: senderId },
-                    message: {
-                      attachment: {
-                        type: 'template',
-                        payload: {
-                          template_type: 'button',
-                          text: notFollowingMsg.slice(0, 640),
-                          buttons: [
-                            {
-                              type: 'postback',
-                              title: retryBtnLabel,
-                              payload: `QR_CHECK_FOLLOW_${camp.id}`,
-                            },
-                          ],
-                        },
+              if (!contactId) {
+                console.error(`[Webhook] Impossível processar postback para ${senderId}: contact_id não pôde ser resolvido.`);
+                continue;
+              }
+
+              if (isFollowGateCheck && accessToken && !userFollows) {
+                console.log(`[Webhook-FollowGate] Usuário ${senderId} (@${followerUsername}) ainda NÃO segue @${camp.accountUsername}. Enviando aviso.`);
+
+                const notFollowingMsg = `Opa ${followerUsername ? `@${followerUsername}` : ''}! Verifiquei aqui e você ainda não está seguindo o nosso perfil @${camp.accountUsername || 'gabolonhez'}. 😅\n\nBasta tocar em "Seguir" no topo desta conversa e depois tocar no botão abaixo para liberar seu link:`;
+                const retryBtnLabel = (camp.followPromptButtonLabel || 'Já segui ✅').slice(0, 20);
+
+                const retryPayload = {
+                  recipient: { id: senderId },
+                  message: {
+                    attachment: {
+                      type: 'template',
+                      payload: {
+                        template_type: 'button',
+                        text: notFollowingMsg.slice(0, 640),
+                        buttons: [
+                          {
+                            type: 'postback',
+                            title: retryBtnLabel,
+                            payload: `QR_CHECK_FOLLOW_${camp.id}`,
+                          },
+                        ],
                       },
                     },
-                  };
+                  },
+                };
 
-                  try {
-                    await supabase.from('queue').insert({
-                      contact_id: null,
-                      automation_id: null,
-                      message_type: 'private_reply',
-                      recipient_instagram_id: senderId,
-                      message_payload: retryPayload,
-                      status: 'pending',
-                    });
-                  } catch (e) {
-                    console.error('[Webhook] Erro ao enfileirar aviso de seguidor:', e);
-                  }
-                  continue;
+                try {
+                  await supabase.from('queue').insert({
+                    contact_id: contactId,
+                    automation_id: null,
+                    message_type: 'private_reply',
+                    recipient_instagram_id: senderId,
+                    message_payload: retryPayload,
+                    status: 'pending',
+                  });
+                } catch (e) {
+                  console.error('[Webhook] Erro ao enfileirar aviso de seguidor:', e);
                 }
+                continue;
+              }
 
+              if (isFollowGateCheck) {
                 console.log(`[Webhook-FollowGate] Usuário ${senderId} confirmado como seguidor ativo! Entregando material.`);
               }
 
@@ -720,8 +764,16 @@ export async function POST(req: NextRequest) {
                         template_type: 'generic',
                         elements: [
                           {
-                            title: (camp.cardTitle || camp.dmMessage || camp.name).slice(0, 80),
-                            subtitle: camp.cardSubtitle ? camp.cardSubtitle.slice(0, 80) : undefined,
+                            title: (camp.cardTitle || camp.dmMessage || camp.name)
+                              .replace('{username}', followerUsername ? `@${followerUsername}` : '')
+                              .replace('{link}', camp.targetUrl || '')
+                              .slice(0, 80),
+                            subtitle: camp.cardSubtitle
+                              ? camp.cardSubtitle
+                                  .replace('{username}', followerUsername ? `@${followerUsername}` : '')
+                                  .replace('{link}', camp.targetUrl || '')
+                                  .slice(0, 80)
+                              : undefined,
                             image_url: camp.cardImageUrl || undefined,
                             buttons,
                           },
@@ -733,7 +785,7 @@ export async function POST(req: NextRequest) {
 
                 try {
                   await supabase.from('queue').insert({
-                    contact_id: null,
+                    contact_id: contactId,
                     automation_id: null,
                     message_type: 'link',
                     recipient_instagram_id: senderId,
@@ -744,14 +796,18 @@ export async function POST(req: NextRequest) {
                   console.error('[Webhook] Erro ao enfileirar entrega de link:', e);
                 }
               } else {
+                const textMsg = (camp.dmMessage || 'Aqui está o seu link!')
+                  .replace('{username}', followerUsername ? `@${followerUsername}` : '')
+                  .replace('{link}', camp.targetUrl || '');
+
                 const textPayload = {
                   recipient: { id: senderId },
-                  message: { text: camp.dmMessage },
+                  message: { text: textMsg },
                 };
 
                 try {
                   await supabase.from('queue').insert({
-                    contact_id: null,
+                    contact_id: contactId,
                     automation_id: null,
                     message_type: 'private_reply',
                     recipient_instagram_id: senderId,
