@@ -101,7 +101,7 @@ export function MyIdeasView({
               className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition-all shadow-md active:scale-[0.98] cursor-pointer"
             >
               <Zap size={14} className="text-amber-400" />
-              <span>⚡ Atomizar Pauta (Spray)</span>
+              <span>Atomizar Ideia</span>
             </button>
           )}
 
@@ -251,7 +251,7 @@ export function MyIdeasView({
                         title="Atomizar em 3 formatos (Contrarian, Thread e LinkedIn Deep Dive)"
                       >
                         <Zap size={11} />
-                        <span>Spray</span>
+                        <span>Atomizar</span>
                       </button>
                     )}
                   </div>

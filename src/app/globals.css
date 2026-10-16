@@ -104,11 +104,11 @@
   background: rgba(255, 255, 255, 0.22);
 }
 
-/* PayPosts Sub-pixel Background Grain */
+/* Clean High-Density Background */
 .bg-grain {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 3px 3px;
+  background-image: none;
 }
+
 
 /* Glass Panels */
 .glass-panel {

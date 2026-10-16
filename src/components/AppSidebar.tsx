@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import {
   Calendar,
   Layers,
@@ -35,6 +36,7 @@ interface AppSidebarProps {
   pendingApprovalsCount: number;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  unreadConversationsCount?: number;
   xConnected?: boolean;
   linkedinConnected?: boolean;
   instagramConnected?: boolean;
@@ -51,6 +53,7 @@ export function AppSidebar({
   pendingApprovalsCount,
   isCollapsed,
   onToggleCollapse,
+  unreadConversationsCount = 0,
   xConnected = true,
   linkedinConnected = true,
   instagramConnected = true,
@@ -98,7 +101,7 @@ export function AppSidebar({
           subView: 'dm-inbox' as ActiveSubView,
           label: 'Inbox Social',
           icon: <MessageSquare size={17} />,
-          badge: '3',
+          badge: unreadConversationsCount > 0 ? String(unreadConversationsCount) : undefined,
           badgeColor: 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30',
         },
         {
@@ -228,18 +231,25 @@ export function AppSidebar({
 
       {/* Brand Header */}
       <div className="flex items-center gap-3 px-4 pt-5 pb-4 min-h-[64px] border-b border-white/[0.05]">
-        <div className="size-8 rounded-lg bg-gradient-to-tr from-violet-600 via-indigo-600 to-sky-500 flex items-center justify-center shrink-0 shadow-lg shadow-violet-600/20">
-          <Sparkles size={16} className="text-white" />
+        <div className="size-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+          <Image
+            src="/createflow-logo.png"
+            alt="CreateFlow"
+            width={32}
+            height={32}
+            className="rounded-lg object-cover"
+            priority
+          />
         </div>
         {!isCollapsed && (
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-sm text-white tracking-tight">CreateFlow</span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-violet-500/20 text-violet-300 border border-violet-500/30">
-                PRO
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/80">
+                AI OS
               </span>
             </div>
-            <span className="text-[11px] text-white/40 truncate">X & LinkedIn Studio</span>
+            <span className="text-[11px] text-zinc-400 truncate">Growth Studio &amp; AI OS</span>
           </div>
         )}
       </div>
@@ -249,9 +259,9 @@ export function AppSidebar({
         <button
           type="button"
           onClick={onOpenComposer}
-          className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-medium text-xs shadow-md shadow-violet-600/25 transition-all group active:scale-[0.98]"
+          className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700/80 hover:border-zinc-600 font-medium text-xs shadow-sm transition-all group active:scale-[0.98]"
         >
-          <Plus size={16} className="shrink-0 transition-transform group-hover:rotate-90 duration-200" />
+          <Plus size={15} className="shrink-0 transition-transform group-hover:rotate-90 duration-200 text-zinc-400 group-hover:text-white" />
           {!isCollapsed && <span className="truncate">Criar novo post</span>}
         </button>
       </div>
@@ -308,9 +318,9 @@ export function AppSidebar({
         {!isCollapsed ? (
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono text-white/40">CANAIS ATIVOS</span>
+              <span className="text-[11px] font-mono text-zinc-400">CANAIS ATIVOS</span>
               <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
-                <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="size-1.5 rounded-full bg-emerald-400" />
                 Live
               </span>
             </div>

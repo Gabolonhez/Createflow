@@ -96,65 +96,62 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#0a0a0c] overflow-y-auto custom-scrollbar">
       {/* Header & Metrics Strip */}
-      <div className="p-6 pb-4 border-b border-white/[0.07] space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-white tracking-tight">
-                Links Rastreados & Métricas de CTR
-              </h1>
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                Encurtador com Analytics
-              </span>
-            </div>
-            <p className="text-xs text-white/50 mt-1">
-              Monitore exatamente quantos seguidores abrem seus links entregues via Direct no Instagram e TikTok.
-            </p>
+      <div className="p-6 pb-4 border-b border-zinc-800/80 space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-indigo-500/15 text-indigo-300 border border-indigo-500/25">
+              Encurtador &amp; CTR
+            </span>
+            <span className="text-xs text-zinc-400 font-mono">
+              Monitoramento oficial de cliques para Direct no Instagram e TikTok
+            </span>
           </div>
 
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-xs font-semibold text-white shadow-md shadow-violet-600/25 transition-all shrink-0"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white hover:bg-zinc-200 text-xs font-semibold text-zinc-950 transition-all active:scale-[0.98] shadow-sm shrink-0"
           >
-            <Plus size={15} />
+            <Plus size={14} />
             Novo Link Rastreado
           </button>
         </div>
 
-        {/* 4 Stat Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="p-3.5 rounded-xl bg-[#111115] border border-white/[0.07] space-y-0.5">
-            <span className="text-[10px] font-mono text-white/40 uppercase tracking-wider">
-              Links Ativos
-            </span>
-            <div className="text-xl font-bold text-white font-mono">{stats.totalLinks}</div>
-          </div>
-          <div className="p-3.5 rounded-xl bg-[#111115] border border-white/[0.07] space-y-0.5">
-            <span className="text-[10px] font-mono text-white/40 uppercase tracking-wider">
-              Cliques Totais
-            </span>
-            <div className="text-xl font-bold text-indigo-400 font-mono">
-              {stats.totalClicks}
+        {/* 4 Stat Cards (Only when links exist) */}
+        {links.length > 0 && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+            <div className="p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
+              <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+                Links Ativos
+              </span>
+              <div className="text-xl font-bold text-white font-mono">{stats.totalLinks}</div>
+            </div>
+            <div className="p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
+              <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+                Cliques Totais
+              </span>
+              <div className="text-xl font-bold text-indigo-400 font-mono">
+                {stats.totalClicks}
+              </div>
+            </div>
+            <div className="p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
+              <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+                Visitantes Únicos
+              </span>
+              <div className="text-xl font-bold text-emerald-400 font-mono">
+                {stats.totalUnique}
+              </div>
+            </div>
+            <div className="p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
+              <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+                Taxa de Conversão Média
+              </span>
+              <div className="text-xl font-bold text-amber-400 font-mono">
+                {stats.avgCtr}%
+              </div>
             </div>
           </div>
-          <div className="p-3.5 rounded-xl bg-[#111115] border border-white/[0.07] space-y-0.5">
-            <span className="text-[10px] font-mono text-white/40 uppercase tracking-wider">
-              Visitantes Únicos
-            </span>
-            <div className="text-xl font-bold text-emerald-400 font-mono">
-              {stats.totalUnique}
-            </div>
-          </div>
-          <div className="p-3.5 rounded-xl bg-[#111115] border border-white/[0.07] space-y-0.5">
-            <span className="text-[10px] font-mono text-white/40 uppercase tracking-wider">
-              Taxa de Conversão Média
-            </span>
-            <div className="text-xl font-bold text-amber-400 font-mono">
-              {stats.avgCtr}%
-            </div>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Filter Bar */}
@@ -192,8 +189,24 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
               <tbody className="divide-y divide-white/[0.05] text-xs">
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-white/40 font-mono text-xs">
-                      Nenhum link rastreado cadastrado.
+                    <td colSpan={6} className="py-12 text-center">
+                      <div className="flex flex-col items-center justify-center gap-2 max-w-sm mx-auto">
+                        <div className="size-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400">
+                          <LinkIcon size={18} />
+                        </div>
+                        <span className="text-xs font-semibold text-white">Nenhum link rastreado cadastrado</span>
+                        <p className="text-[11px] text-zinc-400">
+                          Crie links curtos para incluir em suas mensagens automáticas de DM e monitorar cliques em tempo real.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setIsModalOpen(true)}
+                          className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-xs font-medium text-zinc-200 border border-zinc-700/80 transition-all"
+                        >
+                          <Plus size={13} />
+                          Criar Primeiro Link
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ) : (

@@ -184,7 +184,7 @@ export function SprayModal({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold text-white tracking-tight">
-                  Atomizador de Conteúdo (Spray Composer)
+                  Atomizador de Ideias
                 </h2>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20 uppercase tracking-wider font-semibold">
                   1 Ideia → 3 Formatos
@@ -258,7 +258,7 @@ export function SprayModal({
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black shadow-lg shadow-amber-500/20 active:scale-[0.98] disabled:opacity-50 transition-all cursor-pointer"
               >
                 <Sparkles size={14} className={isGenerating ? 'animate-spin' : ''} />
-                <span>{isGenerating ? 'Atomizando conteúdo com IA…' : '⚡ Disparar Atomizador (Spray)'}</span>
+                <span>{isGenerating ? 'Atomizando conteúdo com IA…' : 'Atomizar em 3 Formatos'}</span>
               </button>
             </div>
           </div>

@@ -80,14 +80,11 @@ export default function LoginView({ onSuccess }: LoginViewProps) {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#07070a] bg-grain text-white p-4 relative overflow-hidden select-none">
-      {/* Background Ambient Glow */}
-      <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-gradient-to-b from-violet-600/15 via-indigo-600/05 to-transparent rounded-full blur-3xl pointer-events-none" />
-
-      <div className="relative w-full max-w-[420px] rounded-2xl bg-[#0f0f15]/95 border border-white/[0.08] shadow-2xl p-7 md:p-8 flex flex-col gap-6 backdrop-blur-xl">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#07070a] text-white p-4 relative overflow-hidden select-none">
+      <div className="relative w-full max-w-[420px] rounded-2xl bg-[#0f0f15] border border-zinc-800/80 shadow-2xl p-7 md:p-8 flex flex-col gap-6">
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center gap-3">
-          <div className="relative size-14 rounded-2xl p-1 bg-gradient-to-b from-white/[0.12] to-white/[0.04] border border-white/[0.12] shadow-xl flex items-center justify-center overflow-hidden">
+          <div className="relative size-14 rounded-2xl p-1 bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shadow-lg">
             <Image
               src="/createflow-logo.png"
               alt="CreateFlow Logo"
@@ -101,11 +98,11 @@ export default function LoginView({ onSuccess }: LoginViewProps) {
           <div className="flex flex-col gap-1">
             <div className="flex items-center justify-center gap-2">
               <h1 className="text-xl font-bold tracking-tight text-white">CreateFlow</h1>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-violet-500/20 text-violet-300 border border-violet-500/30">
-                OS
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/80">
+                AI OS
               </span>
             </div>
-            <p className="text-xs text-white/50">
+            <p className="text-xs text-zinc-400">
               Segundo Cérebro &amp; Automação de Conteúdo
             </p>
           </div>

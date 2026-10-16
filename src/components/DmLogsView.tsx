@@ -97,77 +97,60 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#0a0a0c] overflow-y-auto custom-scrollbar">
-      {/* Header & Stats */}
-      <div className="p-6 pb-4 border-b border-white/[0.07] space-y-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-white tracking-tight">
-              Logs de Disparos em Tempo Real
-            </h1>
-            <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-white/[0.08] text-white/70 border border-white/[0.1]">
-              Auditoria Meta & TikTok
-            </span>
-          </div>
-          <p className="text-xs text-white/50 mt-1">
-            Histórico completo de comentários escutados via webhook, mensagens privadas enviadas e eventuais erros.
-          </p>
+      {/* Top Compact Audit Telemetry Strip */}
+      <div className="px-6 py-3 border-b border-zinc-800/80 bg-[#0c0c10]/50 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-zinc-800 text-zinc-300 border border-zinc-700/80">
+            Auditoria Meta &amp; TikTok
+          </span>
+          <span className="text-xs text-zinc-400 font-mono hidden sm:inline">
+            Eventos de webhooks e histórico de entregas
+          </span>
         </div>
 
-        {/* 4 KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="p-3.5 rounded-xl bg-[#111115] border border-white/[0.07] space-y-0.5">
-            <span className="text-[10px] font-mono text-white/40 uppercase tracking-wider">
-              Total de Disparos
-            </span>
-            <div className="text-xl font-bold text-white font-mono">{stats.total}</div>
-          </div>
-          <div className="p-3.5 rounded-xl bg-[#111115] border border-white/[0.07] space-y-0.5">
-            <span className="text-[10px] font-mono text-white/40 uppercase tracking-wider">
-              Enviados com Sucesso
-            </span>
-            <div className="text-xl font-bold text-emerald-400 font-mono">{stats.sent}</div>
-          </div>
-          <div className="p-3.5 rounded-xl bg-[#111115] border border-white/[0.07] space-y-0.5">
-            <span className="text-[10px] font-mono text-white/40 uppercase tracking-wider">
-              Janela 24h / Skips
-            </span>
-            <div className="text-xl font-bold text-amber-400 font-mono">{stats.skipped}</div>
-          </div>
-          <div className="p-3.5 rounded-xl bg-[#111115] border border-white/[0.07] space-y-0.5">
-            <span className="text-[10px] font-mono text-white/40 uppercase tracking-wider">
-              Falhas
-            </span>
-            <div className="text-xl font-bold text-rose-400 font-mono">{stats.failed}</div>
-          </div>
+        {/* Inline Metrics Telemetry */}
+        <div className="flex items-center gap-2 font-mono text-xs">
+          <span className="px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-300">
+            Total: <strong className="text-white">{stats.total}</strong>
+          </span>
+          <span className="px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+            Enviados: <strong>{stats.sent}</strong>
+          </span>
+          <span className="px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-300">
+            Skips: <strong>{stats.skipped}</strong>
+          </span>
+          <span className="px-2.5 py-1 rounded-md bg-rose-500/10 border border-rose-500/20 text-rose-400">
+            Falhas: <strong>{stats.failed}</strong>
+          </span>
         </div>
       </div>
 
       {/* Filters Bar */}
-      <div className="p-6 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.05] bg-[#0c0c10]/40">
+      <div className="p-6 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800/60 bg-[#0c0c10]/40">
         <div className="flex items-center gap-2 flex-1 max-w-sm">
           <div className="relative w-full">
             <Search
               size={13}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
             />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Filtrar por @usuário, comentário ou campanha..."
-              className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.08] text-xs text-white placeholder-white/30 focus:outline-none focus:border-indigo-500"
+              className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-indigo-500"
             />
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           {/* Platform switch */}
-          <div className="flex items-center p-0.5 rounded-lg bg-white/[0.03] border border-white/[0.07]">
+          <div className="flex items-center p-0.5 rounded-lg bg-zinc-900 border border-zinc-800">
             <button
               type="button"
               onClick={() => setPlatformFilter('all')}
               className={`px-2 py-1 rounded text-[11px] font-medium transition-all ${
-                platformFilter === 'all' ? 'bg-white/15 text-white' : 'text-white/40 hover:text-white'
+                platformFilter === 'all' ? 'bg-zinc-800 text-white font-semibold' : 'text-zinc-400 hover:text-white'
               }`}
             >
               Todos
@@ -177,8 +160,8 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
               onClick={() => setPlatformFilter('instagram')}
               className={`flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition-all ${
                 platformFilter === 'instagram'
-                  ? 'bg-pink-600/25 text-pink-300'
-                  : 'text-white/40 hover:text-white'
+                  ? 'bg-pink-600/25 text-pink-300 font-semibold'
+                  : 'text-zinc-400 hover:text-white'
               }`}
             >
               <InstagramLogo className="size-3" />
@@ -189,8 +172,8 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
               onClick={() => setPlatformFilter('tiktok')}
               className={`flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition-all ${
                 platformFilter === 'tiktok'
-                  ? 'bg-cyan-600/25 text-cyan-300'
-                  : 'text-white/40 hover:text-white'
+                  ? 'bg-cyan-600/25 text-cyan-300 font-semibold'
+                  : 'text-zinc-400 hover:text-white'
               }`}
             >
               <TikTokLogo className="size-3" />
@@ -202,7 +185,7 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="px-2.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.07] text-xs text-white/70 focus:outline-none"
+            className="px-2.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 focus:outline-none"
           >
             <option value="ALL">Todos os Status</option>
             <option value="SENT">Enviados</option>
@@ -214,12 +197,12 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
 
       {/* Logs Table */}
       <div className="p-6">
-        <div className="rounded-xl border border-white/[0.08] bg-[#111116] overflow-hidden">
+        <div className="rounded-xl border border-zinc-800/80 bg-[#111116] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-white/[0.08] bg-[#0c0c10] text-[11px] font-mono text-white/50">
-                  <th className="py-3 px-4">CANAL & USUÁRIO</th>
+                <tr className="border-b border-zinc-800 bg-zinc-950/80 text-[11px] font-mono text-zinc-400">
+                  <th className="py-3 px-4">CANAL &amp; USUÁRIO</th>
                   <th className="py-3 px-4">COMENTÁRIO RECEBIDO</th>
                   <th className="py-3 px-4">CAMPANHA DISPARADA</th>
                   <th className="py-3 px-4">STATUS</th>
@@ -227,10 +210,10 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
                   <th className="py-3 px-4 text-right">AÇÕES</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.05] text-xs">
+              <tbody className="divide-y divide-zinc-800/60 text-xs">
                 {filteredLogs.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-white/40 font-mono text-xs">
+                    <td colSpan={6} className="py-10 text-center text-zinc-500 font-mono text-xs">
                       Nenhum registro de log encontrado.
                     </td>
                   </tr>
@@ -262,16 +245,16 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
                         </div>
                       </td>
 
-                      {/* Comment */}
+                      {/* Comment - Clean direct text without nested box */}
                       <td className="py-3 px-4 max-w-xs">
-                        <div className="p-1.5 rounded bg-white/[0.03] border border-white/[0.06] text-[11px] text-white/80 line-clamp-2">
-                          &quot;{log.commentText}&quot;
-                        </div>
+                        <span className="text-xs text-zinc-300 line-clamp-2">
+                          &ldquo;{log.commentText}&rdquo;
+                        </span>
                       </td>
 
                       {/* Campaign */}
                       <td className="py-3 px-4">
-                        <span className="text-white/80 font-medium">
+                        <span className="text-zinc-200 font-medium">
                           {log.campaignName}
                         </span>
                       </td>
@@ -281,7 +264,7 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
                         <div className="space-y-0.5">
                           {getStatusBadge(log.status)}
                           {log.errorMessage && (
-                            <p className="text-[10px] text-white/40 max-w-[200px] truncate" title={log.errorMessage}>
+                            <p className="text-[11px] text-zinc-400 max-w-[200px] truncate" title={log.errorMessage}>
                               {log.errorMessage}
                             </p>
                           )}
@@ -289,7 +272,7 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
                       </td>
 
                       {/* Timestamp */}
-                      <td className="py-3 px-4 text-white/40 font-mono text-[11px]">
+                      <td className="py-3 px-4 text-zinc-400 font-mono text-xs">
                         {new Date(log.createdAt).toLocaleTimeString('pt-BR', {
                           hour: '2-digit',
                           minute: '2-digit',

@@ -6,7 +6,6 @@ import { supabaseClient } from '@/lib/supabase-client';
 import LoginView from '@/components/LoginView';
 import { AppSidebar } from '@/components/AppSidebar';
 import { DashboardHeader } from '@/components/DashboardHeader';
-import { XSectionBar } from '@/components/XSectionBar';
 import { PostsQueueView } from '@/components/PostsQueueView';
 import { CalendarView } from '@/components/CalendarView';
 import { MyIdeasView } from '@/components/MyIdeasView';
@@ -275,6 +274,11 @@ export default function Dashboard({
   const pendingApprovalsCount = posts.filter(
     (p) => p.status === 'AWAITING_APPROVAL'
   ).length;
+
+  const unreadConversationsCount = conversations.reduce(
+    (acc, c) => acc + (c.unreadCount || 0),
+    0
+  );
 
   // Handlers for Navigation
   const handleNavigate = (section: MainSection, subView: ActiveSubView) => {
@@ -757,6 +761,7 @@ export default function Dashboard({
         onNavigate={handleNavigate}
         onOpenComposer={() => handleOpenComposer()}
         pendingApprovalsCount={pendingApprovalsCount}
+        unreadConversationsCount={unreadConversationsCount}
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
         xConnected={connections.x_connected}
@@ -768,29 +773,25 @@ export default function Dashboard({
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-[#07070a] bg-grain">
+      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-[#07070a]">
         {/* Sticky Header */}
         <DashboardHeader
           title={headerMeta.title}
           subtitle={headerMeta.subtitle}
+          currentSection={currentSection}
+          currentSubView={currentSubView}
           selectedPlatform={selectedPlatform}
           onSelectPlatform={setSelectedPlatform}
           onOpenComposer={() => handleOpenComposer()}
           onOpenGenerate={handleOpenGenerateModal}
           onOpenSpray={() => handleOpenSprayModal()}
+          onOpenCreateCampaign={() => handleNavigate('automations', 'dm-campaigns')}
+          onOpenCreateTrackedLink={() => handleNavigate('automations', 'tracked-links')}
           authorHandle={voiceProfile.handle_x}
         />
 
         {/* Inner Container */}
-        <div className="p-4 md:p-6 lg:p-8 flex flex-col gap-6 max-w-7xl w-full mx-auto">
-          {/* Section Bar (PayPosts Inspired) */}
-          <XSectionBar
-            currentSection={currentSection}
-            currentSubView={currentSubView}
-            onSelectSection={setCurrentSection}
-            onSelectSubView={setCurrentSubView}
-          />
-
+        <div className="p-4 md:p-6 flex flex-col gap-5 max-w-7xl w-full mx-auto">
           {/* Active View Content */}
           {currentSubView === 'posts' && (
             <PostsQueueView

@@ -204,12 +204,12 @@ export function DmInboxView({ conversations, onSendMessage }: DmInboxViewProps) 
                     </p>
 
                     <div className="flex items-center gap-2 mt-1.5">
-                      <span className="text-[10px] font-mono text-white/40">
+                      <span className="text-[10px] font-mono text-zinc-400">
                         @{c.participantUsername}
                       </span>
                       {c.isWindowOpen ? (
                         <span className="inline-flex items-center gap-1 text-[9px] font-mono text-emerald-400">
-                          <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          <span className="size-1.5 rounded-full bg-emerald-400" />
                           {c.windowExpiresInHours}h restante
                         </span>
                       ) : (
@@ -338,8 +338,18 @@ export function DmInboxView({ conversations, onSendMessage }: DmInboxViewProps) 
           </form>
         </div>
       ) : (
-        <div className="flex-1 flex items-center justify-center text-xs text-white/40 font-mono">
-          Selecione uma conversa para visualizar
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#07070a]">
+          <div className="size-12 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 mb-3 shadow-sm">
+            <MessageSquare size={20} />
+          </div>
+          <h3 className="text-sm font-semibold text-white mb-1">
+            {conversations.length === 0 ? 'Nenhuma conversa na Inbox Social' : 'Selecione uma conversa'}
+          </h3>
+          <p className="text-xs text-zinc-400 max-w-sm">
+            {conversations.length === 0
+              ? 'As mensagens diretas de seguidores no Instagram e TikTok acionadas por campanhas de Auto-DM aparecerão aqui para atendimento oficial dentro da janela de 24h.'
+              : 'Escolha uma conversa na lista ao lado para responder e gerenciar o histórico.'}
+          </p>
         </div>
       )}
     </div>

@@ -128,42 +128,13 @@ export function PostsQueueView({
               type="button"
               onClick={handleAutoDrafts}
               disabled={isAutoGenerating}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-violet-600/20 hover:bg-violet-600/30 text-violet-200 border border-violet-500/30 transition-all active:scale-[0.98] disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700/80 transition-all active:scale-[0.98] disabled:opacity-50"
               title="Transforma ideias e referências anotadas em 3 posts prontos aguardando sua revisão"
             >
-              <Bot size={14} className={isAutoGenerating ? 'animate-spin text-violet-400' : 'text-violet-400'} />
-              <span>{isAutoGenerating ? 'Auto-criando posts…' : '🤖 Auto-Criar (+3)'}</span>
+              <Bot size={14} className={isAutoGenerating ? 'animate-spin text-zinc-400' : 'text-zinc-400'} />
+              <span>{isAutoGenerating ? 'Gerando rascunhos…' : 'Auto-gerar rascunhos (+3)'}</span>
             </button>
           )}
-
-          {onOpenSpray && (
-            <button
-              type="button"
-              onClick={onOpenSpray}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-all active:scale-[0.98]"
-            >
-              <Zap size={14} className="text-amber-400" />
-              <span>Atomizar (Spray)</span>
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={onOpenGenerate}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 border border-violet-500/30 transition-all active:scale-[0.98]"
-          >
-            <Sparkles size={14} className="text-violet-400" />
-            <span>Gerar post com IA</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={onOpenComposer}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-black hover:bg-white/90 transition-all shadow-sm active:scale-[0.98]"
-          >
-            <Plus size={14} />
-            <span>Novo post</span>
-          </button>
         </div>
       </div>
 

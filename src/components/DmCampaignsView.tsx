@@ -139,21 +139,16 @@ export function DmCampaignsView({
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#0a0a0c] overflow-y-auto custom-scrollbar">
-      {/* Top Header & Metrics Strip */}
-      <div className="p-6 pb-4 border-b border-white/[0.07] space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-white tracking-tight">
-                Campanhas de Auto-DM
-              </h1>
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-pink-500/20 text-pink-300 border border-pink-500/30">
-                Instagram Direct
-              </span>
-            </div>
-            <p className="text-xs text-white/50 mt-1">
-              Transforme comentários em vendas e leads instantâneos com funis oficiais da Meta no Instagram.
-            </p>
+      {/* Top Action & Metrics Strip */}
+      <div className="p-6 pb-4 border-b border-zinc-800/80 space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-pink-500/15 text-pink-300 border border-pink-500/25">
+              Instagram Direct
+            </span>
+            <span className="text-xs text-zinc-400 font-mono">
+              Respostas automáticas por palavra-chave oficial da Meta
+            </span>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
@@ -161,78 +156,84 @@ export function DmCampaignsView({
               <button
                 type="button"
                 onClick={onNavigateToAnalytics}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-xs font-semibold text-zinc-300 border border-zinc-700/80 transition-all active:scale-[0.98] font-mono"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-xs font-medium text-zinc-300 border border-zinc-800 hover:border-zinc-700 transition-all active:scale-[0.98] font-mono"
               >
                 <InstagramLogo className="size-3.5 text-pink-400" />
                 <span>Analytics Instagram</span>
-                <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="size-1.5 rounded-full bg-emerald-400" />
               </button>
             )}
 
             <button
               type="button"
               onClick={handleOpenCreate}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-xs font-semibold text-white shadow-lg shadow-violet-600/25 transition-all active:scale-[0.98] shrink-0"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white hover:bg-zinc-200 text-xs font-semibold text-zinc-950 transition-all active:scale-[0.98] shadow-sm shrink-0"
             >
-              <Plus size={15} />
+              <Plus size={14} />
               Nova Campanha
             </button>
           </div>
         </div>
 
-        {/* 4 Stat Cards Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="p-4 rounded-xl bg-[#111115] border border-white/[0.07] space-y-1">
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider">
-              Campanhas Ativas
-            </span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-white font-mono">
-                {stats.totalActive}
+        {/* 4 Stat Cards Grid (Only displayed when there are campaigns) */}
+        {campaigns.length > 0 && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+            <div className="p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
+              <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+                Campanhas Ativas
               </span>
-              <span className="text-[11px] text-white/40">/ {campaigns.length} total</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold text-white font-mono">
+                  {stats.totalActive}
+                </span>
+                <span className="text-[11px] text-zinc-500 font-mono">/ {campaigns.length} total</span>
+              </div>
             </div>
-          </div>
 
-          <div className="p-4 rounded-xl bg-[#111115] border border-white/[0.07] space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider">
-                DMs Enviadas
-              </span>
-              <span className="text-[10px] font-mono text-emerald-400">Meta Cap 750/h</span>
+            <div className="p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+                  DMs Enviadas
+                </span>
+                <span className="text-[10px] font-mono text-zinc-500">Cap 750/h</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold text-white font-mono">
+                  {stats.totalDms}
+                </span>
+                <span className="text-[11px] text-emerald-400 font-mono">
+                  {stats.totalDms > 0 ? 'Entregas registradas' : 'Sem envios'}
+                </span>
+              </div>
             </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-white font-mono">
-                {stats.totalDms}
-              </span>
-              <span className="text-[11px] text-emerald-400 font-mono">100% oficial</span>
-            </div>
-          </div>
 
-          <div className="p-4 rounded-xl bg-[#111115] border border-white/[0.07] space-y-1">
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider">
-              Cliques nos Links
-            </span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-white font-mono">
-                {stats.totalClicks}
+            <div className="p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
+              <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+                Cliques nos Links
               </span>
-              <span className="text-[11px] text-indigo-400 font-mono">rastreados</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold text-white font-mono">
+                  {stats.totalClicks}
+                </span>
+                <span className="text-[11px] text-indigo-400 font-mono">rastreados</span>
+              </div>
             </div>
-          </div>
 
-          <div className="p-4 rounded-xl bg-[#111115] border border-white/[0.07] space-y-1">
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider">
-              CTR Médio
-            </span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-white font-mono">
-                {stats.avgCtr}%
+            <div className="p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
+              <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+                CTR Médio
               </span>
-              <span className="text-[11px] text-amber-400 font-mono">alta conversão</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold text-white font-mono">
+                  {stats.avgCtr}%
+                </span>
+                {Number(stats.avgCtr) >= 15 && (
+                  <span className="text-[11px] text-amber-400 font-mono">alta conversão</span>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Filter and Search Bar */}
@@ -318,7 +319,7 @@ export function DmCampaignsView({
                     >
                       <span
                         className={`size-1.5 rounded-full ${
-                          camp.isActive ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'
+                          camp.isActive ? 'bg-emerald-400' : 'bg-zinc-500'
                         }`}
                       />
                       {camp.isActive ? 'Ativa' : 'Pausada'}
