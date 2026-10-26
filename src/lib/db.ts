@@ -1083,7 +1083,7 @@ export async function addDmLog(log: Partial<DmLog>): Promise<DmLog> {
 }
 
 export async function getTrackedLinks(): Promise<TrackedLinkItem[]> {
-  return getCollectionData<TrackedLinkItem>('tracked_links', 'createdAt');
+  return getCollectionData<TrackedLinkItem>('tracked_links', 'created_at');
 }
 
 export async function saveTrackedLink(link: Partial<TrackedLinkItem>): Promise<TrackedLinkItem> {
@@ -1108,7 +1108,7 @@ export async function saveTrackedLink(link: Partial<TrackedLinkItem>): Promise<T
 }
 
 export async function getSocialConversations(): Promise<SocialConversation[]> {
-  return getCollectionData<SocialConversation>('social_conversations', 'lastMessageTimestamp');
+  return getCollectionData<SocialConversation>('social_conversations', 'last_message_timestamp');
 }
 
 export async function sendSocialMessage(conversationId: string, text: string): Promise<SocialMessage> {
