@@ -42,3 +42,7 @@ next-env.d.ts
 
 # editor/ide
 .kombai/
+
+# cloudflare / open-next
+.open-next/
+.wrangler/
