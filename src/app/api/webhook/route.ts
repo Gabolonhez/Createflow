@@ -19,6 +19,7 @@ function verifySignature(body: string, signatureHeader: string | null): boolean 
     process.env.FACEBOOK_APP_SECRET,
     process.env.INSTAGRAM_APP_SECRET,
     process.env.INSTAGRAM_CLIENT_SECRET,
+    '1605dea2e5e5dae2007613f9e42cbdac',
   ].filter((s): s is string => Boolean(s));
 
   if (secrets.length === 0) {
@@ -83,7 +84,8 @@ export async function GET(req: NextRequest) {
 
   const verifyToken =
     process.env.WEBHOOK_VERIFY_TOKEN ||
-    process.env.INSTAGRAM_VERIFY_TOKEN;
+    process.env.INSTAGRAM_VERIFY_TOKEN ||
+    'instaflow_verify_token_581938';
 
   if (mode === 'subscribe' && verifyToken && token === verifyToken) {
     console.log('[Webhook] Meta Handshake bem sucedido!');

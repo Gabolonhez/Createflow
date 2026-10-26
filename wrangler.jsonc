@@ -7,5 +7,12 @@
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
+  },
+  "vars": {
+    "WEBHOOK_VERIFY_TOKEN": "instaflow_verify_token_581938",
+    "INSTAGRAM_VERIFY_TOKEN": "instaflow_verify_token_581938",
+    "INSTAGRAM_CLIENT_ID": "1679209616511892",
+    "INSTAGRAM_APP_ID": "1679209616511892",
+    "CRON_SECRET": "instaflow_cron_secret_729482"
   }
 }
