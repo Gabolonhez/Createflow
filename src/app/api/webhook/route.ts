@@ -229,31 +229,11 @@ export async function POST(req: NextRequest) {
 
               if (!contactId) continue;
 
-              // Enfileirar DM Privada de Boas-Vindas usando template de botão Meta oficial (AutoDM)
-              const privatePayload = matchedAutomation.quick_reply_button
-                ? {
-                    recipient: { comment_id: commentId },
-                    message: {
-                      attachment: {
-                        type: 'template',
-                        payload: {
-                          template_type: 'button',
-                          text: matchedAutomation.welcome_dm.slice(0, 640),
-                          buttons: [
-                            {
-                              type: 'postback',
-                              title: matchedAutomation.quick_reply_button.slice(0, 20),
-                              payload: `QR_AUTO_${matchedAutomation.id}`,
-                            },
-                          ],
-                        },
-                      },
-                    },
-                  }
-                : {
-                    recipient: { comment_id: commentId },
-                    message: { text: matchedAutomation.welcome_dm },
-                  };
+              // Respostas a comentários na Meta Graph API suportam texto (templates de botão em comment_id retornam erro 500)
+              const privatePayload = {
+                recipient: { comment_id: commentId },
+                message: { text: matchedAutomation.welcome_dm },
+              };
 
               await supabase.from('queue').insert({
                 contact_id: contactId,
@@ -353,91 +333,32 @@ export async function POST(req: NextRequest) {
                     ? matchedDmCamp.openingDmMessage
                     : matchedDmCamp.dmMessage;
 
-                let privatePayload: any;
+                // Resposta privada direta para comentário (recipient: { comment_id })
+                // Na Graph API da Meta, respostas a comentários só suportam texto com links (templates de botão causam erro 500).
+                let textToSend = dmBody || 'Aqui está o seu link!';
+                textToSend = textToSend
+                  .replace('{username}', commenterUsername ? `@${commenterUsername}` : '')
+                  .replace('{link}', matchedDmCamp.targetUrl || '');
+
+                if (matchedDmCamp.targetUrl && !textToSend.includes(matchedDmCamp.targetUrl)) {
+                  textToSend = `${textToSend}\n\n👉 ${matchedDmCamp.targetUrl}`;
+                }
 
                 if (matchedDmCamp.requireFollow) {
-                  // Follow-Gate ATIVO (Estilo AutoDM / ManyChat):
-                  // Envia primeiro a mensagem exigindo que siga o perfil com botão interativo para confirmar
                   const followPrompt = (
                     matchedDmCamp.followPromptMessage ||
-                    'Ei {username}! Para liberar o link exclusivo, siga nosso perfil @{account} e toque no botão abaixo:'
+                    'Ei {username}! Para receber novidades exclusivas, siga nosso perfil @{account}!'
                   )
-                    .replace('{username}', commenterUsername || 'amigo(a)')
+                    .replace('{username}', commenterUsername ? `@${commenterUsername}` : '')
                     .replace('{account}', matchedDmCamp.accountUsername || 'gabolonhez');
 
-                  const btnLabel = (matchedDmCamp.followPromptButtonLabel || 'Já segui ✅').slice(0, 20);
-
-                  privatePayload = {
-                    recipient: { comment_id: commentId },
-                    message: {
-                      attachment: {
-                        type: 'template',
-                        payload: {
-                          template_type: 'button',
-                          text: followPrompt.slice(0, 640),
-                          buttons: [
-                            {
-                              type: 'postback',
-                              title: btnLabel,
-                              payload: `QR_CHECK_FOLLOW_${matchedDmCamp.id}`,
-                            },
-                          ],
-                        },
-                      },
-                    },
-                  };
-                } else if (matchedDmCamp.openingDmEnabled && matchedDmCamp.openingDmButtonLabel) {
-                  privatePayload = {
-                    recipient: { comment_id: commentId },
-                    message: {
-                      attachment: {
-                        type: 'template',
-                        payload: {
-                          template_type: 'button',
-                          text: (matchedDmCamp.openingDmMessage || dmBody).slice(0, 640),
-                          buttons: [
-                            {
-                              type: 'postback',
-                              title: matchedDmCamp.openingDmButtonLabel.slice(0, 20),
-                              payload: `QR_CAMP_${matchedDmCamp.id}`,
-                            },
-                          ],
-                        },
-                      },
-                    },
-                  };
-                } else if (matchedDmCamp.targetUrl) {
-                  privatePayload = {
-                    recipient: { comment_id: commentId },
-                    message: {
-                      attachment: {
-                        type: 'template',
-                        payload: {
-                          template_type: 'generic',
-                          elements: [
-                            {
-                              title: matchedDmCamp.cardTitle || dmBody,
-                              subtitle: matchedDmCamp.cardSubtitle || undefined,
-                              image_url: matchedDmCamp.cardImageUrl || undefined,
-                              buttons: [
-                                {
-                                  type: 'web_url',
-                                  url: matchedDmCamp.targetUrl,
-                                  title: matchedDmCamp.linkButtonLabel || 'Acessar Link',
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                      },
-                    },
-                  };
-                } else {
-                  privatePayload = {
-                    recipient: { comment_id: commentId },
-                    message: { text: dmBody },
-                  };
+                  textToSend = `${followPrompt}\n\n${textToSend}`;
                 }
+
+                const privatePayload = {
+                  recipient: { comment_id: commentId },
+                  message: { text: textToSend },
+                };
 
                 try {
                   await supabase.from('queue').insert({

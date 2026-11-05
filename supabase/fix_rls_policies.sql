@@ -3,37 +3,32 @@
 -- Execute este script no SQL Editor do painel do Supabase (https://supabase.com/dashboard)
 -- ==============================================================================
 
--- 1. Tabela 'config' (armazenamento de tokens OAuth do Instagram, TikTok, LinkedIn)
-ALTER TABLE config ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "config_all_access" ON config;
-CREATE POLICY "config_all_access" ON config FOR ALL USING (true) WITH CHECK (true);
-
--- 2. Tabela 'connections_config' (status de conexão e flags das redes sociais)
+-- Função auxiliar para aplicar política permissiva se a tabela existir
 DO $$
+DECLARE
+  tbl text;
+  tables text[] := ARRAY[
+    'ideas',
+    'creator_posts',
+    'topics',
+    'facts',
+    'content_references',
+    'voice_profile',
+    'ai_learnings',
+    'connections_config',
+    'dm_campaigns',
+    'dm_logs',
+    'tracked_links',
+    'social_conversations',
+    'config',
+    'automations'
+  ];
 BEGIN
-  IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'connections_config') THEN
-    ALTER TABLE connections_config ENABLE ROW LEVEL SECURITY;
-    DROP POLICY IF EXISTS "connections_config_all_access" ON connections_config;
-    CREATE POLICY "connections_config_all_access" ON connections_config FOR ALL USING (true) WITH CHECK (true);
-  END IF;
-END $$;
-
--- 3. Tabela 'automations'
-DO $$
-BEGIN
-  IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'automations') THEN
-    ALTER TABLE automations ENABLE ROW LEVEL SECURITY;
-    DROP POLICY IF EXISTS "automations_all_access" ON automations;
-    CREATE POLICY "automations_all_access" ON automations FOR ALL USING (true) WITH CHECK (true);
-  END IF;
-END $$;
-
--- 4. Tabela 'ideas'
-DO $$
-BEGIN
-  IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'ideas') THEN
-    ALTER TABLE ideas ENABLE ROW LEVEL SECURITY;
-    DROP POLICY IF EXISTS "ideas_all_access" ON ideas;
-    CREATE POLICY "ideas_all_access" ON ideas FOR ALL USING (true) WITH CHECK (true);
-  END IF;
+  FOREACH tbl IN ARRAY tables LOOP
+    IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = tbl) THEN
+      EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY;', tbl);
+      EXECUTE format('DROP POLICY IF EXISTS %I ON %I;', tbl || '_all_access', tbl);
+      EXECUTE format('CREATE POLICY %I ON %I FOR ALL USING (true) WITH CHECK (true);', tbl || '_all_access', tbl);
+    END IF;
+  END LOOP;
 END $$;

@@ -207,40 +207,29 @@ export async function POST(req: NextRequest) {
         await sleep(jitterMs);
 
         // Disparo da Private Reply via Graph API
-        const messageText = campaign.dmMessage
-          .replace('{username}', item.commenterUsername)
+        // Observação importante da Meta: Resposta privada direta para comentário (recipient: { comment_id })
+        // suporta EXCLUSIVAMENTE mensagens de texto com links. Templates de botões (postback) causam erro 500 na Meta.
+        let textToSend = campaign.dmMessage || 'Aqui está o seu link!';
+        textToSend = textToSend
+          .replace('{username}', item.commenterUsername ? `@${item.commenterUsername}` : '')
           .replace('{link}', campaign.targetUrl || '');
 
-        let messagePayload: any;
+        if (campaign.targetUrl && !textToSend.includes(campaign.targetUrl)) {
+          textToSend = `${textToSend}\n\n👉 ${campaign.targetUrl}`;
+        }
+
         if (campaign.requireFollow) {
-          const promptText = (
+          const followPrompt = (
             campaign.followPromptMessage ||
-            'Ei {username}! Para liberar o link exclusivo, siga nosso perfil @{account} e toque no botão abaixo:'
+            'Ei {username}! Para receber mais novidades, siga nosso perfil @{account}!'
           )
-            .replace('{username}', item.commenterUsername || 'amigo(a)')
+            .replace('{username}', item.commenterUsername ? `@${item.commenterUsername}` : '')
             .replace('{account}', campaign.accountUsername || 'gabolonhez');
 
-          const btnTitle = (campaign.followPromptButtonLabel || 'Já segui ✅').slice(0, 20);
-
-          messagePayload = {
-            attachment: {
-              type: 'template',
-              payload: {
-                template_type: 'button',
-                text: promptText.slice(0, 640),
-                buttons: [
-                  {
-                    type: 'postback',
-                    title: btnTitle,
-                    payload: `QR_CHECK_FOLLOW_${campaign.id}`,
-                  },
-                ],
-              },
-            },
-          };
-        } else {
-          messagePayload = { text: messageText };
+          textToSend = `${followPrompt}\n\n${textToSend}`;
         }
+
+        const messagePayload = { text: textToSend };
 
         const sendRes = await fetch(
           `https://graph.instagram.com/v21.0/me/messages?access_token=${accessToken}`,
@@ -256,6 +245,29 @@ export async function POST(req: NextRequest) {
 
         const isSuccess = sendRes.ok;
 
+        // Resposta Pública ao Comentário no Instagram
+        let publicReplySent = false;
+        if (campaign.publicReplyEnabled && campaign.publicReplyMessages && campaign.publicReplyMessages.length > 0) {
+          try {
+            const randomReply =
+              campaign.publicReplyMessages[
+                Math.floor(Math.random() * campaign.publicReplyMessages.length)
+              ];
+
+            const pubRes = await fetch(
+              `https://graph.instagram.com/v25.0/${item.id}/replies?access_token=${accessToken}`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: randomReply }),
+              }
+            );
+            publicReplySent = pubRes.ok;
+          } catch (pubErr) {
+            console.error('[Backlog Processor] Erro ao responder publicamente comentário:', item.id, pubErr);
+          }
+        }
+
         // Registrar no log de auditoria
         await addDmLog({
           campaignId: campaign.id,
@@ -265,7 +277,7 @@ export async function POST(req: NextRequest) {
           commenterUsername: item.commenterUsername,
           commentText: item.commentText,
           status: isSuccess ? 'SENT' : 'FAILED',
-          publicReplySent: false,
+          publicReplySent,
           errorMessage: isSuccess ? null : 'Falha na Graph API ao enviar resposta retroativa',
         });
 

@@ -115,10 +115,19 @@ export async function drainQueue() {
         if (item.message_type === 'public_reply') {
           // Responder publicamente comentário
           if (!item.comment_id) throw new Error('comment_id ausente para public_reply');
-          await sendCommentReply(item.comment_id, item.message_payload.message, access_token);
+          const replyText = typeof item.message_payload === 'string' ? item.message_payload : (item.message_payload?.message || item.message_payload?.text);
+          await sendCommentReply(item.comment_id, replyText, access_token);
         } else {
           // Enviar DM (private_reply, welcome, link, reminder)
-          await sendMetaMessage(instagram_user_id, item.message_payload, access_token);
+          const payload = typeof item.message_payload === 'object' && item.message_payload !== null ? { ...item.message_payload } : { message: { text: item.message_payload } };
+          if (!payload.recipient) {
+            if (item.comment_id && item.message_type === 'private_reply') {
+              payload.recipient = { comment_id: item.comment_id };
+            } else if (item.recipient_instagram_id) {
+              payload.recipient = { id: item.recipient_instagram_id };
+            }
+          }
+          await sendMetaMessage(instagram_user_id, payload, access_token);
         }
 
         // Atualizar status na fila
