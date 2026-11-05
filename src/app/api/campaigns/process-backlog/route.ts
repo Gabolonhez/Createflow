@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { getDmCampaigns, getDmLogs, addDmLog, getConnectionsConfig } from '@/lib/db';
+import { checkUserFollowsBusiness } from '@/lib/instagram';
 
 export const dynamic = 'force-dynamic';
 
@@ -209,24 +210,38 @@ export async function POST(req: NextRequest) {
         // Disparo da Private Reply via Graph API
         // Observação importante da Meta: Resposta privada direta para comentário (recipient: { comment_id })
         // suporta EXCLUSIVAMENTE mensagens de texto com links. Templates de botões (postback) causam erro 500 na Meta.
-        let textToSend = campaign.dmMessage || 'Aqui está o seu link!';
-        textToSend = textToSend
-          .replace('{username}', item.commenterUsername ? `@${item.commenterUsername}` : '')
-          .replace('{link}', campaign.targetUrl || '');
+        let userFollows = true;
+        let followRequested = false;
 
-        if (campaign.targetUrl && !textToSend.includes(campaign.targetUrl)) {
-          textToSend = `${textToSend}\n\n👉 ${campaign.targetUrl}`;
+        if (campaign.requireFollow && accessToken) {
+          const followCheck = await checkUserFollowsBusiness(item.commenterId, accessToken);
+          userFollows = followCheck.follows;
+          followRequested = !userFollows;
         }
 
-        if (campaign.requireFollow) {
+        let textToSend = '';
+
+        if (campaign.requireFollow && !userFollows) {
+          // Follow-Gate Ativo e Usuário NÃO segue: Envia APENAS solicitação para seguir (NUNCA O LINK!)
           const followPrompt = (
             campaign.followPromptMessage ||
-            'Ei {username}! Para receber mais novidades, siga nosso perfil @{account}!'
+            'Me segue pra eu te mandar!'
           )
             .replace('{username}', item.commenterUsername ? `@${item.commenterUsername}` : '')
             .replace('{account}', campaign.accountUsername || 'gabolonhez');
 
-          textToSend = `${followPrompt}\n\n${textToSend}`;
+          const btnText = campaign.followPromptButtonLabel || 'Já segui ✅';
+          textToSend = `${followPrompt}\n\n👉 Assim que me seguir, me responde aqui com "${btnText}" para eu te enviar o link!`;
+        } else {
+          // Usuário já segue (ou Follow-Gate desligado): Entrega o link diretamente!
+          textToSend = campaign.dmMessage || 'Aqui está o seu link!';
+          textToSend = textToSend
+            .replace('{username}', item.commenterUsername ? `@${item.commenterUsername}` : '')
+            .replace('{link}', campaign.targetUrl || '');
+
+          if (campaign.targetUrl && !textToSend.includes(campaign.targetUrl)) {
+            textToSend = `${textToSend}\n\n👉 ${campaign.targetUrl}`;
+          }
         }
 
         const messagePayload = { text: textToSend };
@@ -274,11 +289,13 @@ export async function POST(req: NextRequest) {
           campaignName: campaign.name,
           platform: 'instagram',
           commenterId: item.commenterId,
-          commenterUsername: item.commenterUsername,
-          commentText: item.commentText,
+          commenterUsername: item.commenterUsername || 'instagram_user',
+          commentText: followRequested
+            ? `${item.commentText} [Follow-Gate: Pedido de Follow]`
+            : `${item.commentText} [Link Entregue]`,
           status: isSuccess ? 'SENT' : 'FAILED',
           publicReplySent,
-          errorMessage: isSuccess ? null : 'Falha na Graph API ao enviar resposta retroativa',
+          errorMessage: isSuccess ? null : 'Falha na Graph API ao disparar mensagem',
         });
 
         if (isSuccess) {

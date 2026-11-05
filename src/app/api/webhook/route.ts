@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { supabase } from '@/lib/supabase';
 import { drainQueue } from '@/lib/queue-processor';
 import { after } from 'next/server';
-import { getDmCampaigns, addDmLog, getConnectionsConfig } from '@/lib/db';
+import { getDmCampaigns, getDmLogs, addDmLog, getConnectionsConfig } from '@/lib/db';
 import { checkUserFollowsBusiness } from '@/lib/instagram';
 import type { DmCampaign } from '@/types';
 
@@ -318,38 +318,6 @@ export async function POST(req: NextRequest) {
                   // Fallback se tabela contacts estiver sem permissão
                 }
 
-                const dmBody =
-                  matchedDmCamp.openingDmEnabled && matchedDmCamp.openingDmMessage
-                    ? matchedDmCamp.openingDmMessage
-                    : matchedDmCamp.dmMessage;
-
-                // Resposta privada direta para comentário (recipient: { comment_id })
-                // Na Graph API da Meta, respostas a comentários só suportam texto com links (templates de botão causam erro 500).
-                let textToSend = dmBody || 'Aqui está o seu link!';
-                textToSend = textToSend
-                  .replace('{username}', commenterUsername ? `@${commenterUsername}` : '')
-                  .replace('{link}', matchedDmCamp.targetUrl || '');
-
-                if (matchedDmCamp.targetUrl && !textToSend.includes(matchedDmCamp.targetUrl)) {
-                  textToSend = `${textToSend}\n\n👉 ${matchedDmCamp.targetUrl}`;
-                }
-
-                if (matchedDmCamp.requireFollow) {
-                  const followPrompt = (
-                    matchedDmCamp.followPromptMessage ||
-                    'Ei {username}! Para receber novidades exclusivas, siga nosso perfil @{account}!'
-                  )
-                    .replace('{username}', commenterUsername ? `@${commenterUsername}` : '')
-                    .replace('{account}', matchedDmCamp.accountUsername || 'gabolonhez');
-
-                  textToSend = `${followPrompt}\n\n${textToSend}`;
-                }
-
-                const privatePayload = {
-                  recipient: { comment_id: commentId },
-                  message: { text: textToSend },
-                };
-
                 // Obter access token para envio imediato e garantido
                 let accessToken: string | null = null;
                 try {
@@ -360,6 +328,60 @@ export async function POST(req: NextRequest) {
                     .single();
                   accessToken = cfg?.access_token || null;
                 } catch {}
+
+                if (!accessToken) {
+                  try {
+                    const conn = await getConnectionsConfig();
+                    accessToken = conn.instagram_access_token || null;
+                  } catch {}
+                }
+
+                const dmBody =
+                  matchedDmCamp.openingDmEnabled && matchedDmCamp.openingDmMessage
+                    ? matchedDmCamp.openingDmMessage
+                    : matchedDmCamp.dmMessage;
+
+                let userFollows = true;
+                let followRequested = false;
+                const isFollowGateActive = Boolean(matchedDmCamp.requireFollow);
+
+                if (isFollowGateActive && accessToken) {
+                  const followCheck = await checkUserFollowsBusiness(commenterId, accessToken);
+                  userFollows = followCheck.follows;
+                  followRequested = !userFollows;
+                }
+
+                // Resposta privada direta para comentário (recipient: { comment_id })
+                // Na Graph API da Meta, respostas a comentários só suportam texto com links (templates de botão causam erro 500).
+                let textToSend = '';
+
+                if (isFollowGateActive && !userFollows) {
+                  // Follow-Gate Ativo e Usuário NÃO segue: Enviar APENAS o pedido de follow (NUNCA O LINK!)
+                  const followPrompt = (
+                    matchedDmCamp.followPromptMessage ||
+                    'Me segue pra eu te mandar!'
+                  )
+                    .replace('{username}', commenterUsername ? `@${commenterUsername}` : '')
+                    .replace('{account}', matchedDmCamp.accountUsername || 'gabolonhez');
+
+                  const btnLabel = matchedDmCamp.followPromptButtonLabel || 'Já segui ✅';
+                  textToSend = `${followPrompt}\n\n👉 Assim que me seguir, me responde aqui com "${btnLabel}" para eu te enviar o link!`;
+                } else {
+                  // Usuário já segue (ou Follow-Gate desligado): Entregar o link diretamente!
+                  textToSend = dmBody || 'Aqui está o seu link!';
+                  textToSend = textToSend
+                    .replace('{username}', commenterUsername ? `@${commenterUsername}` : '')
+                    .replace('{link}', matchedDmCamp.targetUrl || '');
+
+                  if (matchedDmCamp.targetUrl && !textToSend.includes(matchedDmCamp.targetUrl)) {
+                    textToSend = `${textToSend}\n\n👉 ${matchedDmCamp.targetUrl}`;
+                  }
+                }
+
+                const privatePayload = {
+                  recipient: { comment_id: commentId },
+                  message: { text: textToSend },
+                };
 
                 let isDmSent = false;
                 let publicReplySent = false;
@@ -404,7 +426,9 @@ export async function POST(req: NextRequest) {
                   platform: 'instagram',
                   commenterId,
                   commenterUsername: commenterUsername || 'instagram_user',
-                  commentText,
+                  commentText: followRequested
+                    ? `${commentText} [Follow-Gate: Pedido de Follow]`
+                    : `${commentText} [Link Entregue]`,
                   status: isDmSent ? 'SENT' : 'FAILED',
                   publicReplySent,
                   errorMessage: isDmSent ? null : 'Falha na Graph API ao enviar resposta automática',
@@ -777,6 +801,163 @@ export async function POST(req: NextRequest) {
           if (messageText) {
             const isStoryReply = !!message.reply_to?.story;
 
+            // 1. Verificar primeiro se o usuário está em fluxo de Campanha (Follow-Gate ou palavras-chave)
+            const allCamps = await getDmCampaigns();
+            const existingLogs = await getDmLogs();
+            const lastUserLog = existingLogs.find((l) => l.commenterId === senderId);
+
+            // Casar campanha: ou pelo log recente deste usuário, ou por palavra-chave na DM
+            const matchedCamp = allCamps.find((c) => {
+              if (!c.isActive) return false;
+              if (c.id === lastUserLog?.campaignId) return true;
+              return matchKeywords(messageText, c.keywords, c.matchType);
+            });
+
+            if (matchedCamp) {
+              console.log(`[Webhook] Mensagem de Direct casou com campanha: ${matchedCamp.name}`);
+
+              let accessToken: string | null = null;
+              try {
+                const { data: cfg } = await supabase
+                  .from('config')
+                  .select('access_token')
+                  .eq('id', 'instagram_config')
+                  .single();
+                accessToken = cfg?.access_token || null;
+              } catch {}
+
+              if (!accessToken) {
+                try {
+                  const conn = await getConnectionsConfig();
+                  accessToken = conn.instagram_access_token || null;
+                } catch {}
+              }
+
+              if (accessToken) {
+                let userFollows = true;
+                let followerUsername = '';
+
+                if (matchedCamp.requireFollow) {
+                  const followCheck = await checkUserFollowsBusiness(senderId, accessToken);
+                  userFollows = followCheck.follows;
+                  followerUsername = followCheck.username || '';
+                }
+
+                if (matchedCamp.requireFollow && !userFollows) {
+                  // Usuário ainda NÃO segue: enviar template interativo com botão de confirmação
+                  const retryBtnLabel = (matchedCamp.followPromptButtonLabel || 'Já segui ✅').slice(0, 20);
+                  const notFollowingMsg = `Opa ${followerUsername ? `@${followerUsername}` : ''}! Verifiquei aqui e você ainda não está seguindo o nosso perfil @${matchedCamp.accountUsername || 'gabolonhez'}. 😅\n\nBasta tocar em "Seguir" no topo desta conversa e depois tocar no botão abaixo para liberar seu link:`;
+
+                  const retryPayload = {
+                    recipient: { id: senderId },
+                    message: {
+                      attachment: {
+                        type: 'template',
+                        payload: {
+                          template_type: 'button',
+                          text: notFollowingMsg.slice(0, 640),
+                          buttons: [
+                            {
+                              type: 'postback',
+                              title: retryBtnLabel,
+                              payload: `QR_CHECK_FOLLOW_${matchedCamp.id}`,
+                            },
+                          ],
+                        },
+                      },
+                    },
+                  };
+
+                  await fetch(`https://graph.instagram.com/v21.0/me/messages?access_token=${accessToken}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(retryPayload),
+                  });
+                } else {
+                  // Usuário confirmado como seguidor ativo! Entregar material / link
+                  if (matchedCamp.targetUrl) {
+                    const buttons: any[] = [
+                      {
+                        type: 'web_url',
+                        url: matchedCamp.targetUrl,
+                        title: (matchedCamp.linkButtonLabel || 'Abrir Link').slice(0, 20),
+                      },
+                    ];
+
+                    if (matchedCamp.secondaryTargetUrl) {
+                      buttons.push({
+                        type: 'web_url',
+                        url: matchedCamp.secondaryTargetUrl,
+                        title: (matchedCamp.secondaryButtonLabel || 'Segundo Link').slice(0, 20),
+                      });
+                    }
+
+                    const deliverablePayload = {
+                      recipient: { id: senderId },
+                      message: {
+                        attachment: {
+                          type: 'template',
+                          payload: {
+                            template_type: 'generic',
+                            elements: [
+                              {
+                                title: (matchedCamp.cardTitle || matchedCamp.dmMessage || matchedCamp.name)
+                                  .replace('{username}', followerUsername ? `@${followerUsername}` : '')
+                                  .replace('{link}', matchedCamp.targetUrl || '')
+                                  .slice(0, 80),
+                                subtitle: (matchedCamp.cardSubtitle || `Obrigado por seguir @${matchedCamp.accountUsername || 'gabolonhez'}! Aqui está o seu acesso.`)
+                                  .replace('{username}', followerUsername ? `@${followerUsername}` : '')
+                                  .replace('{link}', matchedCamp.targetUrl || '')
+                                  .slice(0, 80),
+                                image_url: matchedCamp.cardImageUrl || undefined,
+                                buttons,
+                              },
+                            ],
+                          },
+                        },
+                      },
+                    };
+
+                    await fetch(`https://graph.instagram.com/v21.0/me/messages?access_token=${accessToken}`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(deliverablePayload),
+                    });
+                  } else {
+                    let deliverText = (matchedCamp.dmMessage || 'Aqui está o seu link!')
+                      .replace('{username}', followerUsername ? `@${followerUsername}` : '')
+                      .replace('{link}', matchedCamp.targetUrl || '');
+
+                    if (matchedCamp.targetUrl && !deliverText.includes(matchedCamp.targetUrl)) {
+                      deliverText = `${deliverText}\n\n👉 ${matchedCamp.targetUrl}`;
+                    }
+
+                    await fetch(`https://graph.instagram.com/v21.0/me/messages?access_token=${accessToken}`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        recipient: { id: senderId },
+                        message: { text: deliverText },
+                      }),
+                    });
+                  }
+
+                  await addDmLog({
+                    campaignId: matchedCamp.id,
+                    campaignName: matchedCamp.name,
+                    platform: 'instagram',
+                    commenterId: senderId,
+                    commenterUsername: followerUsername || 'instagram_user',
+                    commentText: `DM: "${messageText}" [Follow Confirmado ✅ - Link Entregue]`,
+                    status: 'SENT',
+                    publicReplySent: false,
+                  });
+                }
+              }
+              continue;
+            }
+
+            // 2. Fallback para automações legadas
             const { data: automations } = await supabase
               .from('automations')
               .select('*')
