@@ -285,16 +285,6 @@ export async function POST(req: NextRequest) {
 
               if (matchedDmCamp) {
                 console.log(`[Webhook] Comentário correspondente em dm_campaigns: ${matchedDmCamp.name}`);
-                await addDmLog({
-                  campaignId: matchedDmCamp.id,
-                  campaignName: matchedDmCamp.name,
-                  platform: 'instagram',
-                  commenterId,
-                  commenterUsername: commenterUsername || 'instagram_user',
-                  commentText,
-                  status: 'SENT',
-                  publicReplySent: matchedDmCamp.publicReplyEnabled,
-                });
 
                 let contactId: string | null = null;
                 try {
@@ -360,40 +350,65 @@ export async function POST(req: NextRequest) {
                   message: { text: textToSend },
                 };
 
+                // Obter access token para envio imediato e garantido
+                let accessToken: string | null = null;
                 try {
-                  await supabase.from('queue').insert({
-                    contact_id: contactId,
-                    automation_id: null,
-                    message_type: 'private_reply',
-                    recipient_instagram_id: commentId,
-                    comment_id: commentId,
-                    message_payload: privatePayload,
-                    status: 'pending',
-                  });
+                  const { data: cfg } = await supabase
+                    .from('config')
+                    .select('access_token')
+                    .eq('id', 'instagram_config')
+                    .single();
+                  accessToken = cfg?.access_token || null;
+                } catch {}
 
-                  if (
-                    matchedDmCamp.publicReplyEnabled &&
-                    matchedDmCamp.publicReplyMessages?.length > 0
-                  ) {
-                    const randomReply =
-                      matchedDmCamp.publicReplyMessages[
-                        Math.floor(
-                          Math.random() * matchedDmCamp.publicReplyMessages.length
-                        )
-                      ];
-                    await supabase.from('queue').insert({
-                      contact_id: contactId,
-                      automation_id: null,
-                      message_type: 'public_reply',
-                      recipient_instagram_id: commentId,
-                      comment_id: commentId,
-                      message_payload: { message: randomReply },
-                      status: 'pending',
+                let isDmSent = false;
+                let publicReplySent = false;
+
+                if (accessToken) {
+                  // 1. Disparo imediato da DM Privada via Meta Graph API
+                  try {
+                    const dmRes = await fetch(`https://graph.instagram.com/v21.0/me/messages?access_token=${accessToken}`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(privatePayload),
                     });
+                    isDmSent = dmRes.ok;
+                  } catch (dmErr) {
+                    console.error('[Webhook] Erro no envio direto de DM:', dmErr);
                   }
-                } catch (e) {
-                  console.error('[Webhook] Erro ao enfileirar no Supabase:', e);
+
+                  // 2. Disparo imediato da Resposta Pública no Comentário
+                  if (matchedDmCamp.publicReplyEnabled && matchedDmCamp.publicReplyMessages && matchedDmCamp.publicReplyMessages.length > 0) {
+                    try {
+                      const randomReply =
+                        matchedDmCamp.publicReplyMessages[
+                          Math.floor(Math.random() * matchedDmCamp.publicReplyMessages.length)
+                        ];
+
+                      const pubRes = await fetch(`https://graph.instagram.com/v25.0/${commentId}/replies?access_token=${accessToken}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: randomReply }),
+                      });
+                      publicReplySent = pubRes.ok;
+                    } catch (pubErr) {
+                      console.error('[Webhook] Erro no envio direto de resposta pública:', pubErr);
+                    }
+                  }
                 }
+
+                // Registrar auditoria REAL
+                await addDmLog({
+                  campaignId: matchedDmCamp.id,
+                  campaignName: matchedDmCamp.name,
+                  platform: 'instagram',
+                  commenterId,
+                  commenterUsername: commenterUsername || 'instagram_user',
+                  commentText,
+                  status: isDmSent ? 'SENT' : 'FAILED',
+                  publicReplySent,
+                  errorMessage: isDmSent ? null : 'Falha na Graph API ao enviar resposta automática',
+                });
               }
             }
           }
