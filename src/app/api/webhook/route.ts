@@ -801,16 +801,50 @@ export async function POST(req: NextRequest) {
           if (messageText) {
             const isStoryReply = !!message.reply_to?.story;
 
-            // 1. Verificar primeiro se o usuário está em fluxo de Campanha (Follow-Gate ou palavras-chave)
+            // 1. Verificar se o usuário está confirmando Follow-Gate ou digitou palavra-chave
             const allCamps = await getDmCampaigns();
             const existingLogs = await getDmLogs();
-            const lastUserLog = existingLogs.find((l) => l.commenterId === senderId);
+            const userLogs = existingLogs.filter((l) => l.commenterId === senderId);
+            const lastUserLog = userLogs[0];
 
-            // Casar campanha: ou pelo log recente deste usuário, ou por palavra-chave na DM
+            // Palavras de confirmação de follow
+            const cleanText = messageText.trim().toLowerCase();
+            const isFollowConfirmation = [
+              'ja segui',
+              'já segui',
+              'segui',
+              'pronto',
+              'feito',
+              'seguir',
+              'seguindo',
+            ].some((kw) => cleanText === kw || cleanText.startsWith(kw));
+
+            // Casar campanha APENAS se:
+            // a) O texto bater EXATAMENTE com as palavras-chave da campanha na DM
+            // b) OU o usuário estiver aguardando confirmação de Follow-Gate (último log foi Pedido de Follow e AINDA NÃO recebeu o link) E enviou mensagem de confirmação
             const matchedCamp = allCamps.find((c) => {
               if (!c.isActive) return false;
-              if (c.id === lastUserLog?.campaignId) return true;
-              return matchKeywords(messageText, c.keywords, c.matchType);
+
+              // Se o usuário já recebeu o link desta campanha, NÃO reenviar na conversa normal
+              const alreadyDelivered = userLogs.some(
+                (l) => l.campaignId === c.id && l.status === 'SENT' && l.commentText?.includes('Link Entregue')
+              );
+
+              // Caso A: O usuário digitou a palavra-chave da campanha na DM
+              const matchesKeyword = matchKeywords(messageText, c.keywords, c.matchType);
+              if (matchesKeyword) return true;
+
+              // Caso B: O usuário estava aguardando o Follow-Gate E enviou "já segui" / confirmação E ainda não recebeu o link
+              if (
+                isFollowConfirmation &&
+                !alreadyDelivered &&
+                lastUserLog?.campaignId === c.id &&
+                lastUserLog?.commentText?.includes('Pedido de Follow')
+              ) {
+                return true;
+              }
+
+              return false;
             });
 
             if (matchedCamp) {
