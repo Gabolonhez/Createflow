@@ -439,6 +439,11 @@ function mapPostFromDb(row: any): CreatorPost {
     linkedinPostId: row.linkedin_post_id || row.linkedinPostId || null,
     linkedinPostUrl: row.linkedin_post_url || row.linkedinPostUrl || null,
     linkedinText: row.linkedin_text || row.linkedinText || (row.voice_check?.linkedin_text) || null,
+    instagramPostId: row.instagram_post_id || row.instagramPostId || null,
+    instagramPostUrl: row.instagram_post_url || row.instagramPostUrl || null,
+    tiktokPostId: row.tiktok_post_id || row.tiktokPostId || null,
+    tiktokPostUrl: row.tiktok_post_url || row.tiktokPostUrl || null,
+    videoAnalysis: row.video_analysis || row.videoAnalysis || (row.voice_check?.video_analysis) || null,
     voiceCheck: row.voice_check || row.voiceCheck || undefined,
     factId: row.fact_id || row.factId || null,
     ideaId: row.idea_id || row.ideaId || null,
@@ -459,11 +464,14 @@ function mapPostToDb(post: Partial<CreatorPost>): Record<string, any> {
   if (post.linkedinPostId !== undefined) payload.linkedin_post_id = post.linkedinPostId;
   if (post.rejectReason !== undefined) payload.rejection_reason = post.rejectReason;
 
-  // Persist linkedinText safely inside voice_check to avoid crashing if linkedin_text column is not yet migrated in Postgres
-  if (post.linkedinText !== undefined || post.voiceCheck !== undefined) {
+  // Persist linkedinText and videoAnalysis safely inside voice_check to avoid crashing if columns are not yet migrated in Postgres
+  if (post.linkedinText !== undefined || post.videoAnalysis !== undefined || post.voiceCheck !== undefined) {
     const vc: Record<string, any> = { ...(post.voiceCheck || {}) };
     if (post.linkedinText !== undefined) {
       vc.linkedin_text = post.linkedinText;
+    }
+    if (post.videoAnalysis !== undefined) {
+      vc.video_analysis = post.videoAnalysis;
     }
     payload.voice_check = vc;
   }
@@ -475,6 +483,11 @@ function mapPostToDb(post: Partial<CreatorPost>): Record<string, any> {
   delete payload.xPostId;
   delete payload.linkedinPostId;
   delete payload.linkedinText;
+  delete payload.instagramPostId;
+  delete payload.instagramPostUrl;
+  delete payload.tiktokPostId;
+  delete payload.tiktokPostUrl;
+  delete payload.videoAnalysis;
   delete payload.voiceCheck;
   delete payload.rejectReason;
   return payload;

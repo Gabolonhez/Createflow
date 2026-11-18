@@ -24,6 +24,7 @@ import {
   MessageSquare,
   Link as LinkIcon,
   ScrollText,
+  Film,
 } from 'lucide-react';
 import { XLogo, LinkedInLogo, InstagramLogo, TikTokLogo } from './BrandIcons';
 import type { MainSection, ActiveSubView } from '@/types';
@@ -150,6 +151,15 @@ export function AppSidebar({
           subView: 'references' as ActiveSubView,
           label: 'Referências Virais',
           icon: <BookOpen size={17} />,
+        },
+        {
+          id: 'video-studio',
+          section: 'ideas' as MainSection,
+          subView: 'video-studio' as ActiveSubView,
+          label: 'Estúdio de Vídeo',
+          icon: <Film size={17} />,
+          badge: 'IA',
+          badgeColor: 'bg-violet-500/15 text-violet-400 border border-violet-500/30',
         },
         {
           id: 'media-library',

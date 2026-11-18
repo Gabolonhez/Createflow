@@ -52,6 +52,8 @@ import {
 } from '@/lib/ai-assistant';
 import { publishToX, publishXThread } from '@/lib/twitter';
 import { publishToLinkedIn } from '@/lib/linkedin';
+import { publishInstagramMedia } from '@/lib/instagram';
+import { processRecordedVideo } from '@/lib/video-processor';
 import { nextFreeSlot, formatScheduleDatePtBr } from '@/lib/schedule';
 import { humanizeText } from '@/lib/humanizer';
 import type {
@@ -75,6 +77,7 @@ import type {
   TrackedLinkItem,
   SocialConversation,
   SocialMessage,
+  VideoAnalysisResult,
 } from '@/types';
 
 // ==========================================
@@ -265,10 +268,56 @@ export async function publishPostNowAction(postId: string) {
       }
     }
 
+    // Publicação no Instagram (Reels ou Imagem de Feed)
+    if (post.platforms.includes('instagram')) {
+      const igToken = connections.instagram_access_token || process.env.INSTAGRAM_ACCESS_TOKEN;
+      const igUserId = connections.instagram_user_id || process.env.INSTAGRAM_USER_ID;
+
+      if (igToken && igUserId && post.mediaUrls?.[0]) {
+        try {
+          const mediaUrl = post.mediaUrls[0];
+          const isVideo =
+            Boolean(post.videoAnalysis) ||
+            /\.(mp4|mov|webm|avi)$/i.test(mediaUrl) ||
+            mediaUrl.includes('video');
+          const igCaption = post.text;
+
+          const igPostId = await publishInstagramMedia(
+            igUserId,
+            igToken,
+            mediaUrl,
+            igCaption,
+            isVideo ? 'REELS' : 'IMAGE'
+          );
+
+          results.push({
+            platform: 'instagram',
+            success: true,
+            url: `https://www.instagram.com/p/${igPostId}/`,
+          });
+        } catch (err: any) {
+          results.push({
+            platform: 'instagram',
+            success: false,
+            error: err.message,
+          });
+        }
+      } else {
+        results.push({
+          platform: 'instagram',
+          success: false,
+          error: !post.mediaUrls?.[0]
+            ? 'O Instagram exige que o post tenha uma imagem ou vídeo anexo.'
+            : 'Conta do Instagram não conectada com token de acesso.',
+        });
+      }
+    }
+
     const anySuccess = results.some((r) => r.success);
     if (anySuccess) {
       const xResult = results.find((r) => r.platform === 'x' && r.success);
       const liResult = results.find((r) => r.platform === 'linkedin' && r.success);
+      const igResult = results.find((r) => r.platform === 'instagram' && r.success);
 
       await saveCreatorPost({
         ...post,
@@ -276,6 +325,7 @@ export async function publishPostNowAction(postId: string) {
         publishedAt: new Date().toISOString(),
         xPostUrl: xResult?.url || post.xPostUrl,
         linkedinPostUrl: liResult?.url || post.linkedinPostUrl,
+        instagramPostUrl: igResult?.url || post.instagramPostUrl,
         updated_at: new Date().toISOString(),
       });
     }
@@ -1021,6 +1071,167 @@ export async function sendSocialMessageAction(conversationId: string, text: stri
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Falha ao enviar mensagem';
     return { success: false, error: message };
+  }
+}
+
+// ==========================================
+// AI VIDEO PROCESSING & REELS ACTIONS
+// ==========================================
+
+export async function processRecordedVideoAction(formData: FormData): Promise<{
+  success?: boolean;
+  result?: VideoAnalysisResult;
+  mediaUrl?: string;
+  error?: string;
+}> {
+  try {
+    const file = formData.get('file') as File | null;
+    const mediaUrl = formData.get('mediaUrl') as string | null;
+    const scriptContext = (formData.get('scriptContext') as string) || '';
+
+    let videoBase64: string | undefined;
+    let mimeType: string = 'video/mp4';
+    let uploadedMediaUrl: string | undefined = mediaUrl || undefined;
+
+    if (file) {
+      mimeType = file.type || 'video/mp4';
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      // Converte para base64 para envio multimodal ao Gemini caso caiba no limite de requisição
+      if (buffer.byteLength < 25 * 1024 * 1024) {
+        videoBase64 = buffer.toString('base64');
+      }
+
+      // Persiste no storage do Supabase para ter link público permanente para Reels e TikTok
+      const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const fileName = `video_${Date.now()}_${cleanName}`;
+      const { error: uploadError } = await supabase.storage
+        .from('post_media')
+        .upload(fileName, buffer, {
+          contentType: mimeType,
+          upsert: true,
+        });
+
+      if (!uploadError) {
+        const { data: publicData } = supabase.storage
+          .from('post_media')
+          .getPublicUrl(fileName);
+        uploadedMediaUrl = publicData.publicUrl;
+      }
+    }
+
+    const voiceProfile = await getVoiceProfile();
+    const result = await processRecordedVideo({
+      videoBase64,
+      mimeType,
+      videoUrl: uploadedMediaUrl,
+      scriptContext,
+      voiceProfile,
+    });
+
+    return {
+      success: true,
+      result,
+      mediaUrl: uploadedMediaUrl,
+    };
+  } catch (err: any) {
+    console.error('Erro ao processar vídeo com IA:', err);
+    return { error: err.message || 'Falha ao processar vídeo com IA.' };
+  }
+}
+
+export async function createPostFromVideoAction(params: {
+  videoUrl: string;
+  analysis: VideoAnalysisResult;
+  targetPlatforms?: Platform[];
+  autoSchedule?: boolean;
+  scheduledFor?: string;
+}): Promise<{
+  success: boolean;
+  post?: CreatorPost;
+  error?: string;
+}> {
+  try {
+    const { videoUrl, analysis, targetPlatforms = ['instagram', 'tiktok', 'linkedin', 'x'], autoSchedule = false, scheduledFor } = params;
+
+    let finalSchedule: string | null = scheduledFor || null;
+    let status: 'DRAFT' | 'SCHEDULED' = 'DRAFT';
+
+    if (autoSchedule && !finalSchedule) {
+      const slots = await getPostSlots();
+      const allPosts = await getCreatorPosts();
+      const takenDates = allPosts
+        .filter((p) => p.status === 'SCHEDULED' && p.scheduledFor)
+        .map((p) => p.scheduledFor as string);
+      const nextSlot = nextFreeSlot(slots, takenDates);
+      finalSchedule = nextSlot.toISOString();
+      status = 'SCHEDULED';
+    } else if (finalSchedule) {
+      status = 'SCHEDULED';
+    }
+
+    // Monta texto e legenda
+    const instagramCaption = analysis.captions?.instagram?.caption || analysis.transcript;
+    const xText = analysis.captions?.x?.tweetText || analysis.hooks.hook1;
+    const linkedinText = analysis.captions?.linkedin?.articleText || analysis.transcript;
+    const thread = analysis.captions?.x?.threadFollowUp ? [analysis.captions.x.threadFollowUp] : [];
+
+    const postPayload: Partial<CreatorPost> = {
+      text: targetPlatforms.includes('instagram') ? instagramCaption : xText,
+      thread,
+      linkedinText,
+      threadStyle: thread.length > 0 ? 'thread' : 'single',
+      platforms: targetPlatforms,
+      status,
+      pillar: 'tech-insights',
+      mediaUrls: [videoUrl],
+      scheduledFor: finalSchedule,
+      videoAnalysis: analysis,
+      voiceCheck: { level: 'ok', items: [], samplesAnalyzed: 0 },
+    };
+
+    const saved = await saveCreatorPost(postPayload);
+
+    // Se houver trigger de DM configurado na análise do Instagram, já cria a campanha de Auto-DM
+    if (analysis.captions?.instagram?.dmTriggerKeyword && targetPlatforms.includes('instagram')) {
+      try {
+        const voiceProfile = await getVoiceProfile();
+        const kw = analysis.captions.instagram.dmTriggerKeyword.toUpperCase();
+        await saveDmCampaign({
+          name: `Funil [${kw}] - ${analysis.title.slice(0, 30)}`,
+          platform: 'instagram',
+          accountId: voiceProfile.handle_x,
+          accountUsername: voiceProfile.handle_x.replace('@', ''),
+          postId: saved.id,
+          keywords: [kw],
+          matchType: 'contains',
+          scope: 'specific',
+          dmTriggerEnabled: true,
+          dmMessage: `Opa! Aqui está o material e o código que você pediu no Reels: https://createflow.ai`,
+          dmMessages: [`Opa! Aqui está o material e o código que você pediu no Reels: https://createflow.ai`],
+          targetUrl: 'https://createflow.ai',
+          linkButtonLabel: 'Acessar Código e Repo',
+          requireFollow: true,
+          followPromptMessage: 'Notei que você ainda não me segue! Siga o perfil para liberar o link exclusivo imediatamente.',
+          followPromptButtonLabel: 'Já estou seguindo',
+          publicReplyEnabled: true,
+          publicReplyMessages: [
+            'Enviei o link no seu direct! Confere lá 🚀',
+            'Acabei de te mandar na DM! Dá uma olhada 📥',
+          ],
+          isActive: true,
+        });
+      } catch (dmErr) {
+        console.warn('Campanha Auto-DM automática não pôde ser salva:', dmErr);
+      }
+    }
+
+    revalidatePath('/');
+    return { success: true, post: saved };
+  } catch (err: any) {
+    console.error('Erro ao criar post a partir do vídeo:', err);
+    return { success: false, error: err.message || 'Falha ao salvar post de vídeo.' };
   }
 }
 

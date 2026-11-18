@@ -17,6 +17,7 @@ import { AiLearningsView } from '@/components/AiLearningsView';
 import { PerformanceView } from '@/components/PerformanceView';
 import { ConnectionsView } from '@/components/ConnectionsView';
 import { MediaLibraryView } from '@/components/MediaLibraryView';
+import { VideoStudioView } from '@/components/VideoStudioView';
 import { PostComposerModal } from '@/components/PostComposerModal';
 import { GeneratePostModal } from '@/components/GeneratePostModal';
 import { RejectPostModal } from '@/components/RejectPostModal';
@@ -690,6 +691,10 @@ export default function Dashboard({
       title: 'Acervo de Mídia & Biblioteca',
       subtitle: 'Imagens e vídeos salvos para enriquecer suas publicações no X e LinkedIn.',
     },
+    'video-studio': {
+      title: 'Estúdio de Vídeo & Legendas IA',
+      subtitle: 'Processamento multimodal para Reels e TikTok: transcrição, cortes de pausas e legendas dinâmicas.',
+    },
     manual: {
       title: 'Meu Estilo & Regras de Voz',
       subtitle: 'Defina seu jeito de escrever, palavras proibidas e amostras reais.',
@@ -884,9 +889,17 @@ export default function Dashboard({
             />
           )}
 
+          {currentSubView === 'video-studio' && (
+            <VideoStudioView
+              onOpenComposerWithMedia={handleOpenComposerWithMedia}
+              onNavigateToPosts={() => handleNavigate('plan', 'posts')}
+            />
+          )}
+
           {currentSubView === 'media-library' && (
             <MediaLibraryView
               onOpenComposerWithMedia={handleOpenComposerWithMedia}
+              onOpenVideoStudio={() => handleNavigate('ideas', 'video-studio')}
             />
           )}
 

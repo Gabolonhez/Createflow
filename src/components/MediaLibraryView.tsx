@@ -22,12 +22,14 @@ import type { MediaAsset } from '@/types';
 
 interface MediaLibraryViewProps {
   onOpenComposerWithMedia?: (mediaUrl: string) => void;
+  onOpenVideoStudio?: (mediaUrl: string) => void;
   onSelectMedia?: (mediaUrl: string) => void;
   isModalPicker?: boolean;
 }
 
 export function MediaLibraryView({
   onOpenComposerWithMedia,
+  onOpenVideoStudio,
   onSelectMedia,
   isModalPicker = false,
 }: MediaLibraryViewProps) {
@@ -363,6 +365,20 @@ export function MediaLibraryView({
                         </button>
 
                         <div className="flex items-center gap-1">
+                          {isVideo && onOpenVideoStudio && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onOpenVideoStudio(asset.url);
+                              }}
+                              title="Editar e gerar legendas com IA no Estúdio"
+                              className="p-1 rounded bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white transition-colors cursor-pointer shadow-sm"
+                            >
+                              <Sparkles size={13} />
+                            </button>
+                          )}
+
                           {onOpenComposerWithMedia && (
                             <button
                               type="button"

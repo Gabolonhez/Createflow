@@ -41,6 +41,11 @@ export interface CreatorPost {
   linkedinPostId?: string | null;
   linkedinPostUrl?: string | null;
   linkedinText?: string | null;
+  instagramPostId?: string | null;
+  instagramPostUrl?: string | null;
+  tiktokPostId?: string | null;
+  tiktokPostUrl?: string | null;
+  videoAnalysis?: VideoAnalysisResult | null;
   voiceCheck?: VoiceCheck;
   factId?: string | null;
   ideaId?: string | null;
@@ -319,7 +324,7 @@ export interface SocialConversation {
 export type MainSection = 'plan' | 'ideas' | 'automations' | 'voice' | 'results' | 'settings';
 
 export type PlanSubView = 'posts' | 'calendar';
-export type IdeasSubView = 'my-ideas' | 'topics' | 'facts' | 'references' | 'media-library';
+export type IdeasSubView = 'my-ideas' | 'topics' | 'facts' | 'references' | 'media-library' | 'video-studio';
 export type AutomationsSubView = 'dm-campaigns' | 'dm-inbox' | 'tracked-links' | 'dm-logs';
 export type VoiceSubView = 'manual' | 'learnings';
 export type ResultsSubView = 'performance' | 'instagram-analytics';
@@ -332,6 +337,66 @@ export type ActiveSubView =
   | VoiceSubView 
   | ResultsSubView 
   | SettingsSubView;
+
+// ==========================================
+// AI VIDEO STUDIO & REPURPOSING TYPES
+// ==========================================
+
+export interface VideoSubtitleCue {
+  id: number;
+  start: string; // "00:00.500"
+  end: string;   // "00:02.800"
+  startSeconds: number;
+  endSeconds: number;
+  text: string;
+  highlightWords?: string[];
+}
+
+export interface VideoCutSegment {
+  start: string;
+  end: string;
+  startSeconds: number;
+  endSeconds: number;
+  reason: 'dead_air' | 'filler_pause' | 'retake' | 'stumble';
+  recommendation: string;
+}
+
+export interface VideoAnalysisResult {
+  title: string;
+  transcript: string;
+  cues: VideoSubtitleCue[];
+  cuts: VideoCutSegment[];
+  durationEstimateSeconds: number;
+  srtContent: string;
+  vttContent: string;
+  ffmpegCutCommand?: string;
+  hooks: {
+    hook1: string; // Gancho contraintuitivo
+    hook2: string; // Gancho de métrica/resultado
+    hook3: string; // Gancho de quebra de padrão
+  };
+  captions: {
+    instagram: {
+      hookLine: string;
+      caption: string;
+      dmTriggerKeyword: string;
+      hashtags: string[];
+    };
+    tiktok: {
+      hookLine: string;
+      caption: string;
+      hashtags: string[];
+    };
+    linkedin: {
+      headline: string;
+      articleText: string;
+    };
+    x: {
+      tweetText: string;
+      threadFollowUp?: string;
+    };
+  };
+}
 
 // ==========================================
 // INSTAGRAM ACCOUNT & CAMPAIGN ANALYTICS TYPES
