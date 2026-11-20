@@ -324,7 +324,7 @@ export interface SocialConversation {
 export type MainSection = 'plan' | 'ideas' | 'automations' | 'voice' | 'results' | 'settings';
 
 export type PlanSubView = 'posts' | 'calendar';
-export type IdeasSubView = 'my-ideas' | 'topics' | 'facts' | 'references' | 'media-library' | 'video-studio';
+export type IdeasSubView = 'my-ideas' | 'topics' | 'facts' | 'references' | 'media-library' | 'video-studio' | 'video-crew';
 export type AutomationsSubView = 'dm-campaigns' | 'dm-inbox' | 'tracked-links' | 'dm-logs';
 export type VoiceSubView = 'manual' | 'learnings';
 export type ResultsSubView = 'performance' | 'instagram-analytics';
@@ -468,4 +468,14 @@ export interface InstagramInsightsPayload {
   media: InstagramMediaItemWithInsights[];
   lastUpdated: string;
 }
+
+// Re-export AI Video Crew types (Pluy benchmark)
+export type {
+  MascotPose,
+  MascotProfile,
+  ViralTemplate,
+  VideoCrewScene,
+  VideoCrewJob,
+} from '@/lib/video-crew';
+
 

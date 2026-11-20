@@ -1289,6 +1289,141 @@ export async function loadDashboardDataAction() {
   }
 }
 
+// ==========================================
+// AI VIDEO CREW ACTIONS (PLUY BENCHMARK)
+// ==========================================
+
+import {
+  generateMascotWithPlume,
+  generatePoseWithPlume,
+  planViralVideoWithPlot,
+  reviewCutWithPlay,
+  MascotProfile,
+  MascotPose,
+  VideoCrewScene,
+  VideoCrewJob,
+} from '@/lib/video-crew';
+
+export async function generateMascotAction(params: {
+  name: string;
+  style: MascotProfile['style'];
+  description: string;
+  referenceUrl?: string;
+}): Promise<{ success?: boolean; mascot?: MascotProfile; error?: string }> {
+  try {
+    const mascot = await generateMascotWithPlume(params);
+    return { success: true, mascot };
+  } catch (err: any) {
+    console.error('Plume Bot Error (generateMascotAction):', err);
+    return { error: err.message || 'Falha ao desenhar mascote com Plume.' };
+  }
+}
+
+export async function generateMascotPoseAction(params: {
+  mascot: MascotProfile;
+  poseName: string;
+  action: MascotPose['action'];
+}): Promise<{ success?: boolean; pose?: MascotPose; error?: string }> {
+  try {
+    const pose = await generatePoseWithPlume(params);
+    return { success: true, pose };
+  } catch (err: any) {
+    console.error('Plume Bot Error (generateMascotPoseAction):', err);
+    return { error: err.message || 'Falha ao gerar nova pose do mascote.' };
+  }
+}
+
+export async function planViralVideoAction(params: {
+  topic: string;
+  templateId: string;
+  mascot?: MascotProfile;
+  creatorContext?: string;
+}): Promise<{
+  success?: boolean;
+  plan?: {
+    title: string;
+    hook: string;
+    scriptText: string;
+    scenes: VideoCrewScene[];
+  };
+  error?: string;
+}> {
+  try {
+    const voiceProfile = await getVoiceProfile();
+    const plan = await planViralVideoWithPlot({
+      topic: params.topic,
+      templateId: params.templateId,
+      mascot: params.mascot,
+      creatorContext: params.creatorContext || `${voiceProfile.creator_name}: ${voiceProfile.headline}`,
+    });
+    return { success: true, plan };
+  } catch (err: any) {
+    console.error('Plot Bot Error (planViralVideoAction):', err);
+    return { error: err.message || 'Falha ao roteirizar vídeo com Plot Bot.' };
+  }
+}
+
+export async function reviewVideoCutAction(params: {
+  hook: string;
+  scenes: VideoCrewScene[];
+}): Promise<{
+  success?: boolean;
+  review?: {
+    hookStrength: number;
+    pacingScore: number;
+    verdict: string;
+    critique: string;
+  };
+  error?: string;
+}> {
+  try {
+    const review = await reviewCutWithPlay(params);
+    return { success: true, review };
+  } catch (err: any) {
+    console.error('Play Bot Error (reviewVideoCutAction):', err);
+    return { error: err.message || 'Falha ao analisar corte com Play Bot.' };
+  }
+}
+
+export async function createPostFromCrewJobAction(params: {
+  job: VideoCrewJob;
+  autoSchedule?: boolean;
+}): Promise<{ success?: boolean; post?: CreatorPost; error?: string }> {
+  try {
+    const { job, autoSchedule = true } = params;
+    let finalSchedule: string | null = null;
+    let status: 'DRAFT' | 'SCHEDULED' = 'DRAFT';
+
+    if (autoSchedule) {
+      const slots = await getPostSlots();
+      const allPosts = await getCreatorPosts();
+      const takenDates = allPosts
+        .filter((p) => p.status === 'SCHEDULED' && p.scheduledFor)
+        .map((p) => p.scheduledFor as string);
+      const nextSlot = nextFreeSlot(slots, takenDates);
+      finalSchedule = nextSlot.toISOString();
+      status = 'SCHEDULED';
+    }
+
+    const postPayload: Partial<CreatorPost> = {
+      text: `${job.hook}\n\n${job.scriptText.slice(0, 200)}...`,
+      platforms: job.targetPlatforms.map((p) => (p === 'youtube' ? 'instagram' : p)) as Platform[],
+      status,
+      mediaUrls: job.mascotImageUrl ? [job.mascotImageUrl] : [],
+      scheduledFor: finalSchedule,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const saved = await saveCreatorPost(postPayload);
+    return { success: true, post: saved };
+  } catch (err: any) {
+    console.error('Plug Bot Error (createPostFromCrewJobAction):', err);
+    return { error: err.message || 'Falha ao despachar produção com Plug Bot.' };
+  }
+}
+
+
 
 
 

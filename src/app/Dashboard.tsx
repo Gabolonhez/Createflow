@@ -18,6 +18,7 @@ import { PerformanceView } from '@/components/PerformanceView';
 import { ConnectionsView } from '@/components/ConnectionsView';
 import { MediaLibraryView } from '@/components/MediaLibraryView';
 import { VideoStudioView } from '@/components/VideoStudioView';
+import { AiVideoCrewView } from '@/components/AiVideoCrewView';
 import { PostComposerModal } from '@/components/PostComposerModal';
 import { GeneratePostModal } from '@/components/GeneratePostModal';
 import { RejectPostModal } from '@/components/RejectPostModal';
@@ -697,6 +698,10 @@ export default function Dashboard({
       title: 'Estúdio de Vídeo & Legendas IA',
       subtitle: 'Processamento multimodal para Reels e TikTok: transcrição, cortes de pausas e legendas dinâmicas.',
     },
+    'video-crew': {
+      title: 'Video Crew OS (Pluy Benchmark)',
+      subtitle: '5 bots autônomos para desenhar mascotes, roteirizar e produzir vídeos virais para Reels e TikTok.',
+    },
     manual: {
       title: 'Meu Estilo & Regras de Voz',
       subtitle: 'Defina seu jeito de escrever, palavras proibidas e amostras reais.',
@@ -891,6 +896,12 @@ export default function Dashboard({
               onAnalyzeAndSave={handleAnalyzeAndSaveReference}
               onDeleteReference={handleDeleteReference}
               onUseTemplate={handleGenerateFromReference}
+            />
+          )}
+
+          {currentSubView === 'video-crew' && (
+            <AiVideoCrewView
+              onNavigateToPosts={() => handleNavigate('plan', 'posts')}
             />
           )}
 

@@ -25,6 +25,7 @@ import {
   Link as LinkIcon,
   ScrollText,
   Film,
+  Bot,
   X,
   Menu,
 } from 'lucide-react';
@@ -157,6 +158,15 @@ export function AppSidebar({
           subView: 'references' as ActiveSubView,
           label: 'Referências Virais',
           icon: <BookOpen size={17} />,
+        },
+        {
+          id: 'video-crew',
+          section: 'ideas' as MainSection,
+          subView: 'video-crew' as ActiveSubView,
+          label: 'Video Crew (Pluy)',
+          icon: <Bot size={17} />,
+          badge: '5 BOTS',
+          badgeColor: 'bg-[#0c8ce9]/20 text-[#0c8ce9] border border-[#0c8ce9]/40',
         },
         {
           id: 'video-studio',
