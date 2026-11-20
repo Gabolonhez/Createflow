@@ -23,6 +23,8 @@ import {
   RotateCcw,
   ShieldCheck,
   ShieldAlert,
+  Eye,
+  Edit3,
 } from 'lucide-react';
 import { XLogo, LinkedInLogo, InstagramLogo, TikTokLogo } from './BrandIcons';
 import { PostPreviewCard } from './PostPreviewCard';
@@ -93,6 +95,7 @@ export function PostComposerModal({
   const [autoDmEnabled, setAutoDmEnabled] = useState(false);
   const [autoDmKeyword, setAutoDmKeyword] = useState('GUIA');
   const [autoDmLink, setAutoDmLink] = useState('https://createflow.ai');
+  const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor');
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -391,10 +394,10 @@ export function PostComposerModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
-      <div className="relative w-full max-w-5xl rounded-2xl bg-[#0a0a0e] border border-white/[0.1] shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+      <div className="relative w-full max-w-5xl h-full sm:h-auto sm:max-h-[92vh] rounded-none sm:rounded-2xl bg-[#0a0a0e] border-0 sm:border border-white/[0.1] shadow-2xl flex flex-col overflow-hidden">
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.08] bg-[#0c0c12]">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-white/[0.08] bg-[#0c0c12] shrink-0">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-sm text-white">
               {initialPost?.id ? 'Editar Post' : 'Criar Novo Post'}
@@ -413,10 +416,40 @@ export function PostComposerModal({
           </button>
         </div>
 
+        {/* Mobile Tab Switcher */}
+        <div className="lg:hidden flex items-center justify-center p-2 bg-[#09090d] border-b border-white/[0.08] shrink-0">
+          <div className="grid grid-cols-2 w-full max-w-xs p-0.5 rounded-lg bg-white/[0.04] border border-white/[0.08]">
+            <button
+              type="button"
+              onClick={() => setMobileTab('editor')}
+              className={`py-1.5 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-1.5 ${
+                mobileTab === 'editor'
+                  ? 'bg-violet-600 text-white shadow-sm font-semibold'
+                  : 'text-white/60 hover:text-white'
+              }`}
+            >
+              <Edit3 size={12} />
+              <span>Editor</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileTab('preview')}
+              className={`py-1.5 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-1.5 ${
+                mobileTab === 'preview'
+                  ? 'bg-violet-600 text-white shadow-sm font-semibold'
+                  : 'text-white/60 hover:text-white'
+              }`}
+            >
+              <Eye size={13} />
+              <span>Preview</span>
+            </button>
+          </div>
+        </div>
+
         {/* Modal Body: 2 Columns (Editor on left, Live Preview on right) */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 overflow-y-auto">
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 p-4 sm:p-6 overflow-y-auto">
           {/* LEFT: Composer Controls */}
-          <div className="flex flex-col gap-4 min-w-0">
+          <div className={`flex-col gap-4 min-w-0 ${mobileTab === 'editor' ? 'flex' : 'hidden lg:flex'}`}>
             {/* Platform Selection & Pillar */}
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -1009,7 +1042,7 @@ export function PostComposerModal({
           </div>
 
           {/* RIGHT: Live Preview */}
-          <div className="flex flex-col gap-3 min-w-0">
+          <div className={`${mobileTab === 'preview' ? 'flex' : 'hidden lg:flex'} flex-col gap-3 min-w-0`}>
             <span className="text-[11px] font-mono text-white/40 uppercase">
               VISUALIZAÇÃO EM TEMPO REAL
             </span>
@@ -1026,9 +1059,9 @@ export function PostComposerModal({
             />
 
             {/* Direct Intent Shortcut Helpers */}
-            <div className="flex items-center justify-between gap-2 p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] mt-auto">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] mt-auto">
               <span className="text-[11px] text-white/40">Postagem direta sem API paga:</span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   type="button"
                   onClick={handleOpenXIntent}
@@ -1049,23 +1082,23 @@ export function PostComposerModal({
         </div>
 
         {/* Modal Footer Bar */}
-        <div className="flex items-center justify-between px-6 py-3.5 border-t border-white/[0.08] bg-[#0c0c12] flex-wrap gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between px-4 sm:px-6 py-3 sm:py-3.5 border-t border-white/[0.08] bg-[#0c0c12] gap-2.5 sm:gap-2">
           <button
             type="button"
             onClick={onClose}
-            className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-white/60 hover:text-white transition-colors"
+            className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-white/60 hover:text-white transition-colors text-center"
           >
             Cancelar
           </button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-end gap-2 flex-wrap">
             <button
               type="button"
               disabled={isSaving || !text.trim()}
               onClick={handleSaveDraft}
-              className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/[0.07] hover:bg-white/[0.12] text-white transition-all disabled:opacity-40 cursor-pointer"
+              className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/[0.07] hover:bg-white/[0.12] text-white transition-all disabled:opacity-40 cursor-pointer text-center"
             >
-              Salvar como rascunho
+              Salvar rascunho
             </button>
 
             {initialPost?.status === 'AWAITING_APPROVAL' && onApprove && (
@@ -1073,7 +1106,7 @@ export function PostComposerModal({
                 type="button"
                 disabled={isSaving || !text.trim()}
                 onClick={handleApproveAndSchedule}
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-md transition-all disabled:opacity-40 cursor-pointer"
+                className="flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-md transition-all disabled:opacity-40 cursor-pointer"
               >
                 <CheckCircle2 size={14} />
                 <span>Aprovar & Agendar</span>
@@ -1084,7 +1117,7 @@ export function PostComposerModal({
               type="button"
               disabled={isPublishing || !text.trim()}
               onClick={handlePublishDirect}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-white text-black hover:bg-white/90 transition-all disabled:opacity-40 cursor-pointer shadow-sm"
+              className="flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-white text-black hover:bg-white/90 transition-all disabled:opacity-40 cursor-pointer shadow-sm"
             >
               <Send size={13} />
               <span>{isPublishing ? 'Publicando…' : 'Publicar agora'}</span>

@@ -93,7 +93,7 @@ export function MyIdeasView({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {onOpenSprayNew && (
             <button
               type="button"
@@ -147,7 +147,7 @@ export function MyIdeasView({
 
         <div className="flex items-center justify-between gap-3 pt-1 flex-wrap">
           {/* Platforms toggle */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[11px] font-mono text-white/40">Destino:</span>
             <button
               type="button"
@@ -232,7 +232,7 @@ export function MyIdeasView({
                 </div>
 
                 <div className="flex items-center justify-between pt-3 mt-3 border-t border-white/[0.05]">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <button
                       type="button"
                       onClick={() => onGenerateFromIdea(idea)}

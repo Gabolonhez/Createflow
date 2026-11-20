@@ -71,7 +71,7 @@ export function PostPicker({ selectedPostId, onSelect }: PostPickerProps) {
     return (
       <div className="space-y-3">
         <div className="h-8 rounded-lg bg-white/[0.04] animate-pulse" />
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 gap-2">
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
@@ -153,7 +153,7 @@ export function PostPicker({ selectedPostId, onSelect }: PostPickerProps) {
       </div>
 
       {/* Post Thumbnails Grid */}
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-60 overflow-y-auto p-1 custom-scrollbar">
+      <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 gap-2 max-h-60 overflow-y-auto p-1 custom-scrollbar">
         {filteredPosts.map((post) => {
           const isSelected = selectedPostId === post.id;
           const thumb = post.thumbnail_url || post.media_url;

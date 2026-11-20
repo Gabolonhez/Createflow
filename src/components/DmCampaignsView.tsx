@@ -140,9 +140,9 @@ export function DmCampaignsView({
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#0a0a0c] overflow-y-auto custom-scrollbar">
       {/* Top Action & Metrics Strip */}
-      <div className="p-6 pb-4 border-b border-zinc-800/80 space-y-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+      <div className="p-3.5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-800/80 space-y-3 sm:space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-pink-500/15 text-pink-300 border border-pink-500/25">
               Instagram Direct
             </span>
@@ -151,12 +151,12 @@ export function DmCampaignsView({
             </span>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap w-full sm:w-auto">
             {onNavigateToAnalytics && (
               <button
                 type="button"
                 onClick={onNavigateToAnalytics}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-xs font-medium text-zinc-300 border border-zinc-800 hover:border-zinc-700 transition-all active:scale-[0.98] font-mono"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-xs font-medium text-zinc-300 border border-zinc-800 hover:border-zinc-700 transition-all active:scale-[0.98] font-mono"
               >
                 <InstagramLogo className="size-3.5 text-pink-400" />
                 <span>Analytics Instagram</span>
@@ -167,68 +167,68 @@ export function DmCampaignsView({
             <button
               type="button"
               onClick={handleOpenCreate}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white hover:bg-zinc-200 text-xs font-semibold text-zinc-950 transition-all active:scale-[0.98] shadow-sm shrink-0"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white hover:bg-zinc-200 text-xs font-semibold text-zinc-950 transition-all active:scale-[0.98] shadow-sm shrink-0"
             >
               <Plus size={14} />
-              Nova Campanha
+              <span>Nova Campanha</span>
             </button>
           </div>
         </div>
 
         {/* 4 Stat Cards Grid (Only displayed when there are campaigns) */}
         {campaigns.length > 0 && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
-            <div className="p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
-              <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 pt-1">
+            <div className="p-3 sm:p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
+              <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
                 Campanhas Ativas
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-white font-mono">
+                <span className="text-xl sm:text-2xl font-bold text-white font-mono">
                   {stats.totalActive}
                 </span>
-                <span className="text-[11px] text-zinc-500 font-mono">/ {campaigns.length} total</span>
+                <span className="text-[10px] sm:text-[11px] text-zinc-500 font-mono">/ {campaigns.length} total</span>
               </div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
+            <div className="p-3 sm:p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+                <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
                   DMs Enviadas
                 </span>
-                <span className="text-[10px] font-mono text-zinc-500">Cap 750/h</span>
+                <span className="text-[9px] sm:text-[10px] font-mono text-zinc-500">Cap 750/h</span>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-white font-mono">
+                <span className="text-xl sm:text-2xl font-bold text-white font-mono">
                   {stats.totalDms}
                 </span>
-                <span className="text-[11px] text-emerald-400 font-mono">
+                <span className="text-[10px] sm:text-[11px] text-emerald-400 font-mono truncate">
                   {stats.totalDms > 0 ? 'Entregas registradas' : 'Sem envios'}
                 </span>
               </div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
-              <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+            <div className="p-3 sm:p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
+              <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
                 Cliques nos Links
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-white font-mono">
+                <span className="text-xl sm:text-2xl font-bold text-white font-mono">
                   {stats.totalClicks}
                 </span>
-                <span className="text-[11px] text-indigo-400 font-mono">rastreados</span>
+                <span className="text-[10px] sm:text-[11px] text-indigo-400 font-mono">rastreados</span>
               </div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
-              <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+            <div className="p-3 sm:p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
+              <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
                 CTR Médio
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-white font-mono">
+                <span className="text-xl sm:text-2xl font-bold text-white font-mono">
                   {stats.avgCtr}%
                 </span>
                 {Number(stats.avgCtr) >= 15 && (
-                  <span className="text-[11px] text-amber-400 font-mono">alta conversão</span>
+                  <span className="text-[10px] sm:text-[11px] text-amber-400 font-mono">alta conv.</span>
                 )}
               </div>
             </div>
@@ -237,8 +237,8 @@ export function DmCampaignsView({
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="p-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.05] bg-[#0c0c10]/40">
-        <div className="flex items-center gap-2 flex-1 max-w-md">
+      <div className="p-3.5 sm:p-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 border-b border-white/[0.05] bg-[#0c0c10]/40">
+        <div className="flex items-center gap-2 flex-1 max-w-md w-full">
           <div className="relative w-full">
             <Search
               size={14}
@@ -254,12 +254,12 @@ export function DmCampaignsView({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           {/* Status Filter */}
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="px-2.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.07] text-xs text-white/70 focus:outline-none"
+            className="w-full sm:w-auto px-2.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.07] text-xs text-white/70 focus:outline-none"
           >
             <option value="all">Todos os Status</option>
             <option value="active">Somente Ativas</option>
@@ -269,7 +269,7 @@ export function DmCampaignsView({
       </div>
 
       {/* Campaigns Grid (3 Columns Desktop per DESIGN.md) */}
-      <div className="p-6">
+      <div className="p-3.5 sm:p-6">
         {filtered.length === 0 ? (
           <div className="p-12 text-center rounded-2xl border border-white/[0.07] bg-[#101014] max-w-lg mx-auto space-y-3">
             <div className="size-12 rounded-full bg-violet-600/20 text-violet-300 flex items-center justify-center mx-auto">
@@ -439,8 +439,8 @@ export function DmCampaignsView({
 
       {/* Backlog Safe Processor Modal */}
       {backlogCampaign && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-          <div className="w-full max-w-md rounded-2xl bg-[#101015] border border-white/[0.1] shadow-2xl p-5 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+          <div className="w-full max-w-md rounded-2xl bg-[#101015] border border-white/[0.1] shadow-2xl p-4 sm:p-5 space-y-3.5 sm:space-y-4 max-h-[92dvh] overflow-y-auto">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="size-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">

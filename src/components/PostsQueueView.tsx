@@ -74,7 +74,7 @@ export function PostsQueueView({
     <div className="flex flex-col gap-5">
       {/* Due Posts Banner (PayPosts Inspired) */}
       {awaitingCount > 0 && (
-        <div className="flex items-center justify-between gap-3 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-200">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-200">
           <div className="flex items-center gap-2.5">
             <Clock size={16} className="text-amber-400 shrink-0" />
             <span className="text-xs font-medium">
@@ -84,7 +84,7 @@ export function PostsQueueView({
           <button
             type="button"
             onClick={() => setActiveStatus('AWAITING_APPROVAL')}
-            className="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 transition-all shrink-0"
+            className="w-full sm:w-auto text-center px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 transition-all shrink-0"
           >
             Revisar agora
           </button>
@@ -92,8 +92,8 @@ export function PostsQueueView({
       )}
 
       {/* Action Controls & Status Tabs Bar */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-1 overflow-x-auto p-1 rounded-lg bg-white/[0.03] border border-white/[0.07] max-w-full">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-1 overflow-x-auto p-1 rounded-lg bg-white/[0.03] border border-white/[0.07] max-w-full no-scrollbar">
           {tabs.map((tab) => {
             const isSelected = activeStatus === tab.id;
             return (

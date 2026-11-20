@@ -12,6 +12,7 @@ import {
   ShieldAlert,
   Sparkles,
   Zap,
+  ArrowLeft,
 } from 'lucide-react';
 import { InstagramLogo, TikTokLogo } from './BrandIcons';
 import type { SocialConversation, DmAutomationPlatform } from '@/types';
@@ -27,6 +28,7 @@ export function DmInboxView({ conversations, onSendMessage }: DmInboxViewProps) 
   const [activeConvId, setActiveConvId] = useState<string>(
     conversations[0]?.id || ''
   );
+  const [mobileShowingChat, setMobileShowingChat] = useState<boolean>(false);
   const [draft, setDraft] = useState('');
   const [isSending, setIsSending] = useState(false);
 
@@ -73,7 +75,7 @@ export function DmInboxView({ conversations, onSendMessage }: DmInboxViewProps) 
   return (
     <div className="flex-1 flex min-h-0 bg-[#0a0a0c] overflow-hidden">
       {/* Left Column: Conversations List */}
-      <div className="w-80 sm:w-96 border-r border-white/[0.07] flex flex-col min-h-0 bg-[#0a0a0d] shrink-0">
+      <div className={`${mobileShowingChat ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 border-r border-white/[0.07] flex-col min-h-0 bg-[#0a0a0d] shrink-0`}>
         {/* Inbox Header */}
         <div className="p-4 border-b border-white/[0.07] space-y-3">
           <div className="flex items-center justify-between">
@@ -156,7 +158,10 @@ export function DmInboxView({ conversations, onSendMessage }: DmInboxViewProps) 
                 <button
                   key={c.id}
                   type="button"
-                  onClick={() => setActiveConvId(c.id)}
+                  onClick={() => {
+                    setActiveConvId(c.id);
+                    setMobileShowingChat(true);
+                  }}
                   className={`w-full p-3.5 text-left flex items-start gap-3 transition-colors ${
                     isSelected
                       ? 'bg-indigo-600/10 border-l-2 border-indigo-500'
@@ -228,12 +233,20 @@ export function DmInboxView({ conversations, onSendMessage }: DmInboxViewProps) 
 
       {/* Right Column: Chat Viewport */}
       {activeConversation ? (
-        <div className="flex-1 flex flex-col min-h-0 bg-[#09090c]">
+        <div className={`${!mobileShowingChat ? 'hidden md:flex' : 'flex'} flex-1 flex-col min-h-0 bg-[#09090c]`}>
           {/* Chat Top Bar */}
-          <div className="p-4 border-b border-white/[0.07] bg-[#0c0c10]/70 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-3">
+          <div className="p-3.5 sm:p-4 border-b border-white/[0.07] bg-[#0c0c10]/70 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <button
+                type="button"
+                onClick={() => setMobileShowingChat(false)}
+                className="md:hidden size-8 rounded-lg flex items-center justify-center text-white/70 hover:text-white bg-white/[0.05] hover:bg-white/[0.1] shrink-0 mr-0.5"
+                title="Voltar para a lista"
+              >
+                <ArrowLeft size={16} />
+              </button>
               <div
-                className="size-8 rounded-full bg-cover bg-center border border-white/[0.1] bg-zinc-800"
+                className="size-8 rounded-full bg-cover bg-center border border-white/[0.1] bg-zinc-800 shrink-0"
                 style={
                   activeConversation.participantAvatar
                     ? { backgroundImage: `url(${activeConversation.participantAvatar})` }
@@ -269,7 +282,7 @@ export function DmInboxView({ conversations, onSendMessage }: DmInboxViewProps) 
           </div>
 
           {/* Messages Bubble Thread */}
-          <div className="flex-1 p-6 overflow-y-auto space-y-4 custom-scrollbar">
+          <div className="flex-1 p-3.5 sm:p-6 overflow-y-auto space-y-4 custom-scrollbar">
             {activeConversation.messages.map((m) => {
               const isMe = m.sender === 'me';
               return (
@@ -278,7 +291,7 @@ export function DmInboxView({ conversations, onSendMessage }: DmInboxViewProps) 
                   className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
                 >
                   <div
-                    className={`max-w-[70%] p-3.5 rounded-2xl text-xs leading-relaxed ${
+                    className={`max-w-[85%] sm:max-w-[70%] p-3 sm:p-3.5 rounded-2xl text-xs leading-relaxed ${
                       isMe
                         ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-br-sm shadow-md'
                         : 'bg-[#15151b] border border-white/[0.08] text-white/90 rounded-bl-sm'

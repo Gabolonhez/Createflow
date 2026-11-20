@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Sparkles, Plus, Globe, Zap } from 'lucide-react';
+import { Sparkles, Plus, Globe, Zap, Menu } from 'lucide-react';
 import { XLogo, LinkedInLogo } from './BrandIcons';
 import type { Platform, MainSection, ActiveSubView } from '@/types';
 
@@ -18,6 +18,7 @@ interface DashboardHeaderProps {
   onOpenCreateCampaign?: () => void;
   onOpenCreateTrackedLink?: () => void;
   authorHandle?: string;
+  onToggleMobileMenu?: () => void;
 }
 
 export function DashboardHeader({
@@ -32,19 +33,32 @@ export function DashboardHeader({
   onOpenSpray,
   onOpenCreateCampaign,
   onOpenCreateTrackedLink,
+  onToggleMobileMenu,
 }: DashboardHeaderProps) {
   const isContentSection = currentSection === 'plan' || currentSection === 'ideas';
 
   return (
-    <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-3 bg-[#09090d]/90 backdrop-blur-md border-b border-zinc-800/80 sticky top-0 z-20 min-h-[54px]">
-      <div className="flex flex-col min-w-0">
-        <h1 className="text-base font-semibold text-white tracking-tight truncate">
-          {title}
-        </h1>
-        <p className="text-xs text-zinc-400 truncate">{subtitle}</p>
+    <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-3.5 sm:px-6 py-2.5 sm:py-3 bg-[#09090d]/90 backdrop-blur-md border-b border-zinc-800/80 sticky top-0 z-20 min-h-[54px]">
+      <div className="flex items-center gap-2.5 min-w-0">
+        {onToggleMobileMenu && (
+          <button
+            type="button"
+            onClick={onToggleMobileMenu}
+            aria-label="Abrir menu"
+            className="md:hidden p-1.5 -ml-1 rounded-lg text-white/70 hover:text-white hover:bg-white/[0.08] transition-colors shrink-0"
+          >
+            <Menu size={20} />
+          </button>
+        )}
+        <div className="flex flex-col min-w-0">
+          <h1 className="text-sm sm:text-base font-semibold text-white tracking-tight truncate">
+            {title}
+          </h1>
+          <p className="text-[11px] sm:text-xs text-zinc-400 truncate">{subtitle}</p>
+        </div>
       </div>
 
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
         {/* Context: Content Creation (Plan & Ideas) */}
         {isContentSection && (
           <>
@@ -53,7 +67,7 @@ export function DashboardHeader({
               <button
                 type="button"
                 onClick={() => onSelectPlatform('all')}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+                className={`flex items-center gap-1 px-2 py-1 sm:px-2.5 rounded-md text-xs font-medium transition-all ${
                   selectedPlatform === 'all'
                     ? 'bg-zinc-800 text-white shadow-sm font-semibold'
                     : 'text-zinc-400 hover:text-white'
@@ -66,7 +80,7 @@ export function DashboardHeader({
               <button
                 type="button"
                 onClick={() => onSelectPlatform('x')}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+                className={`flex items-center gap-1 px-2 py-1 sm:px-2.5 rounded-md text-xs font-medium transition-all ${
                   selectedPlatform === 'x'
                     ? 'bg-zinc-800 text-white shadow-sm font-semibold'
                     : 'text-zinc-400 hover:text-white'
@@ -79,14 +93,15 @@ export function DashboardHeader({
               <button
                 type="button"
                 onClick={() => onSelectPlatform('linkedin')}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+                className={`flex items-center gap-1 px-2 py-1 sm:px-2.5 rounded-md text-xs font-medium transition-all ${
                   selectedPlatform === 'linkedin'
                     ? 'bg-[#0A66C2]/20 text-[#70b5f9] border border-[#0A66C2]/40 shadow-sm font-semibold'
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 <LinkedInLogo className="size-3 text-[#0A66C2]" />
-                <span>LinkedIn</span>
+                <span className="hidden xs:inline">LinkedIn</span>
+                <span className="xs:hidden">IN</span>
               </button>
             </div>
 
@@ -95,11 +110,12 @@ export function DashboardHeader({
               <button
                 type="button"
                 onClick={onOpenSpray}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-all shadow-sm active:scale-[0.98]"
+                className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 rounded-lg text-xs font-medium bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-all shadow-sm active:scale-[0.98]"
                 title="Atomizar 1 ideia em 3 formatos para X e LinkedIn"
               >
-                <Zap size={13} className="text-amber-400" />
-                <span>Atomizar Ideia</span>
+                <Zap size={13} className="text-amber-400 shrink-0" />
+                <span className="hidden sm:inline">Atomizar Ideia</span>
+                <span className="sm:hidden">Atomizar</span>
               </button>
             )}
 
@@ -107,19 +123,20 @@ export function DashboardHeader({
             <button
               type="button"
               onClick={onOpenGenerate}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700/80 transition-all shadow-sm active:scale-[0.98]"
+              className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 rounded-lg text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700/80 transition-all shadow-sm active:scale-[0.98]"
             >
-              <Sparkles size={13} className="text-violet-400" />
-              <span>Gerar com IA</span>
+              <Sparkles size={13} className="text-violet-400 shrink-0" />
+              <span className="hidden sm:inline">Gerar com IA</span>
+              <span className="sm:hidden">IA</span>
             </button>
 
             {/* Primary New Post Button */}
             <button
               type="button"
               onClick={onOpenComposer}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-zinc-950 hover:bg-zinc-200 transition-all shadow-sm active:scale-[0.98]"
+              className="flex items-center gap-1 px-3 py-1.5 sm:px-3.5 rounded-lg text-xs font-semibold bg-white text-zinc-950 hover:bg-zinc-200 transition-all shadow-sm active:scale-[0.98]"
             >
-              <Plus size={14} />
+              <Plus size={14} className="shrink-0" />
               <span>Novo Post</span>
             </button>
           </>
@@ -130,7 +147,7 @@ export function DashboardHeader({
           <button
             type="button"
             onClick={onOpenCreateCampaign}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-zinc-950 hover:bg-zinc-200 transition-all shadow-sm active:scale-[0.98]"
+            className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 rounded-lg text-xs font-semibold bg-white text-zinc-950 hover:bg-zinc-200 transition-all shadow-sm active:scale-[0.98]"
           >
             <Plus size={14} />
             <span>Nova Campanha</span>
@@ -142,7 +159,7 @@ export function DashboardHeader({
           <button
             type="button"
             onClick={onOpenCreateTrackedLink}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-zinc-950 hover:bg-zinc-200 transition-all shadow-sm active:scale-[0.98]"
+            className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 rounded-lg text-xs font-semibold bg-white text-zinc-950 hover:bg-zinc-200 transition-all shadow-sm active:scale-[0.98]"
           >
             <Plus size={14} />
             <span>Novo Link</span>

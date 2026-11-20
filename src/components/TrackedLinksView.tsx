@@ -96,9 +96,9 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#0a0a0c] overflow-y-auto custom-scrollbar">
       {/* Header & Metrics Strip */}
-      <div className="p-6 pb-4 border-b border-zinc-800/80 space-y-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+      <div className="p-3.5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-800/80 space-y-3 sm:space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-indigo-500/15 text-indigo-300 border border-indigo-500/25">
               Encurtador &amp; CTR
             </span>
@@ -110,7 +110,7 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white hover:bg-zinc-200 text-xs font-semibold text-zinc-950 transition-all active:scale-[0.98] shadow-sm shrink-0"
+            className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white hover:bg-zinc-200 text-xs font-semibold text-zinc-950 transition-all active:scale-[0.98] shadow-sm shrink-0"
           >
             <Plus size={14} />
             Novo Link Rastreado
@@ -119,34 +119,34 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
 
         {/* 4 Stat Cards (Only when links exist) */}
         {links.length > 0 && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
-            <div className="p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
-              <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 pt-1">
+            <div className="p-3 sm:p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
+              <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
                 Links Ativos
               </span>
-              <div className="text-xl font-bold text-white font-mono">{stats.totalLinks}</div>
+              <div className="text-lg sm:text-xl font-bold text-white font-mono">{stats.totalLinks}</div>
             </div>
-            <div className="p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
-              <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+            <div className="p-3 sm:p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
+              <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
                 Cliques Totais
               </span>
-              <div className="text-xl font-bold text-indigo-400 font-mono">
+              <div className="text-lg sm:text-xl font-bold text-indigo-400 font-mono">
                 {stats.totalClicks}
               </div>
             </div>
-            <div className="p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
-              <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+            <div className="p-3 sm:p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
+              <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
                 Visitantes Únicos
               </span>
-              <div className="text-xl font-bold text-emerald-400 font-mono">
+              <div className="text-lg sm:text-xl font-bold text-emerald-400 font-mono">
                 {stats.totalUnique}
               </div>
             </div>
-            <div className="p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
-              <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+            <div className="p-3 sm:p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
+              <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
                 Taxa de Conversão Média
               </span>
-              <div className="text-xl font-bold text-amber-400 font-mono">
+              <div className="text-lg sm:text-xl font-bold text-amber-400 font-mono">
                 {stats.avgCtr}%
               </div>
             </div>
@@ -155,7 +155,7 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
       </div>
 
       {/* Filter Bar */}
-      <div className="p-6 py-3.5 flex items-center justify-between border-b border-white/[0.05] bg-[#0c0c10]/40">
+      <div className="p-3.5 sm:p-6 py-2.5 sm:py-3.5 flex items-center justify-between border-b border-white/[0.05] bg-[#0c0c10]/40">
         <div className="relative w-full max-w-sm">
           <Search
             size={13}
@@ -172,7 +172,7 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
       </div>
 
       {/* Tracked Links Table */}
-      <div className="p-6">
+      <div className="p-3.5 sm:p-6">
         <div className="rounded-xl border border-white/[0.08] bg-[#111116] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -302,8 +302,8 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
 
       {/* Create Link Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md rounded-2xl bg-[#0e0e12] border border-white/[0.1] p-6 space-y-4 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-md rounded-2xl bg-[#0e0e12] border border-white/[0.1] p-4 sm:p-6 space-y-4 shadow-2xl">
             <h3 className="text-base font-semibold text-white">Criar Novo Link Rastreado</h3>
             <form onSubmit={handleCreateLink} className="space-y-3">
               <div>

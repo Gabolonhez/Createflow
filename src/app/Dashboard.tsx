@@ -235,6 +235,7 @@ export default function Dashboard({
   const [currentSubView, setCurrentSubView] = useState<ActiveSubView>('posts');
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | 'all'>('all');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Modal States
   const [isComposerOpen, setIsComposerOpen] = useState(false);
@@ -285,6 +286,7 @@ export default function Dashboard({
   const handleNavigate = (section: MainSection, subView: ActiveSubView) => {
     setCurrentSection(section);
     setCurrentSubView(subView);
+    setIsMobileMenuOpen(false);
   };
 
   // Handlers for Composer
@@ -775,6 +777,8 @@ export default function Dashboard({
         tiktokConnected={connections.tiktok_connected}
         userEmail={sessionUser}
         onSignOut={handleSignOut}
+        isMobileOpen={isMobileMenuOpen}
+        onCloseMobile={() => setIsMobileMenuOpen(false)}
       />
 
       {/* Main Content Area */}
@@ -793,10 +797,11 @@ export default function Dashboard({
           onOpenCreateCampaign={() => handleNavigate('automations', 'dm-campaigns')}
           onOpenCreateTrackedLink={() => handleNavigate('automations', 'tracked-links')}
           authorHandle={voiceProfile.handle_x}
+          onToggleMobileMenu={() => setIsMobileMenuOpen((prev) => !prev)}
         />
 
         {/* Inner Container */}
-        <div className="p-4 md:p-6 flex flex-col gap-5 max-w-7xl w-full mx-auto">
+        <div className="p-3 sm:p-4 md:p-6 flex flex-col gap-4 sm:gap-5 max-w-7xl w-full mx-auto min-w-0 overflow-x-hidden">
           {/* Active View Content */}
           {currentSubView === 'posts' && (
             <PostsQueueView

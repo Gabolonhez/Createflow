@@ -25,6 +25,8 @@ import {
   Link as LinkIcon,
   ScrollText,
   Film,
+  X,
+  Menu,
 } from 'lucide-react';
 import { XLogo, LinkedInLogo, InstagramLogo, TikTokLogo } from './BrandIcons';
 import type { MainSection, ActiveSubView } from '@/types';
@@ -44,6 +46,8 @@ interface AppSidebarProps {
   tiktokConnected?: boolean;
   userEmail?: string | null;
   onSignOut?: () => void;
+  isMobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
 export function AppSidebar({
@@ -61,6 +65,8 @@ export function AppSidebar({
   tiktokConnected = true,
   userEmail,
   onSignOut,
+  isMobileOpen = false,
+  onCloseMobile,
 }: AppSidebarProps) {
   const sidebarWidth = isCollapsed ? '70px' : '250px';
 
@@ -224,43 +230,42 @@ export function AppSidebar({
     },
   ];
 
-  return (
-    <aside
-      className="relative flex flex-col h-screen shrink-0 z-30 transition-all duration-300 select-none bg-[#09090d] border-r border-white/[0.07]"
-      style={{ width: sidebarWidth, minWidth: sidebarWidth }}
-    >
-      {/* Collapse Toggle Button */}
-      <button
-        type="button"
-        onClick={onToggleCollapse}
-        aria-label={isCollapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
-        className="absolute -right-3 top-5 size-6 rounded-full bg-[#16161e] border border-white/[0.12] flex items-center justify-center text-white/60 hover:text-white hover:border-white/30 transition-all shadow-md z-40"
-      >
-        {isCollapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
-      </button>
-
+  const renderSidebarContent = (isMobileDrawer: boolean) => (
+    <div className="flex flex-col h-full overflow-hidden select-none">
       {/* Brand Header */}
-      <div className="flex items-center gap-3 px-4 pt-5 pb-4 min-h-[64px] border-b border-white/[0.05]">
-        <div className="size-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
-          <Image
-            src="/createflow-logo.png"
-            alt="CreateFlow"
-            width={32}
-            height={32}
-            className="rounded-lg object-cover"
-            priority
-          />
-        </div>
-        {!isCollapsed && (
-          <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-sm text-white tracking-tight">CreateFlow</span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/80">
-                AI OS
-              </span>
-            </div>
-            <span className="text-[11px] text-zinc-400 truncate">Growth Studio &amp; AI OS</span>
+      <div className="flex items-center justify-between px-4 pt-4 pb-3 min-h-[60px] border-b border-white/[0.05]">
+        <div className="flex items-center gap-3">
+          <div className="size-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+            <Image
+              src="/createflow-logo.png"
+              alt="CreateFlow"
+              width={32}
+              height={32}
+              className="rounded-lg object-cover"
+              priority
+            />
           </div>
+          {(!isCollapsed || isMobileDrawer) && (
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="font-semibold text-sm text-white tracking-tight">CreateFlow</span>
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/80">
+                  AI OS
+                </span>
+              </div>
+              <span className="text-[11px] text-zinc-400 truncate">Growth Studio &amp; AI OS</span>
+            </div>
+          )}
+        </div>
+        {isMobileDrawer && onCloseMobile && (
+          <button
+            type="button"
+            onClick={onCloseMobile}
+            aria-label="Fechar menu lateral"
+            className="p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/[0.08] transition-colors"
+          >
+            <X size={18} />
+          </button>
         )}
       </div>
 
@@ -268,11 +273,14 @@ export function AppSidebar({
       <div className="p-3">
         <button
           type="button"
-          onClick={onOpenComposer}
+          onClick={() => {
+            onOpenComposer();
+            if (isMobileDrawer) onCloseMobile?.();
+          }}
           className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700/80 hover:border-zinc-600 font-medium text-xs shadow-sm transition-all group active:scale-[0.98]"
         >
           <Plus size={15} className="shrink-0 transition-transform group-hover:rotate-90 duration-200 text-zinc-400 group-hover:text-white" />
-          {!isCollapsed && <span className="truncate">Criar novo post</span>}
+          {(!isCollapsed || isMobileDrawer) && <span className="truncate">Criar novo post</span>}
         </button>
       </div>
 
@@ -280,7 +288,7 @@ export function AppSidebar({
       <nav className="flex-1 overflow-y-auto px-2 space-y-4 py-2 scrollbar-none">
         {navGroups.map((group) => (
           <div key={group.title} className="space-y-1">
-            {!isCollapsed ? (
+            {(!isCollapsed || isMobileDrawer) ? (
               <p className="px-3 pt-2 pb-1 text-[10px] font-semibold font-mono tracking-wider text-white/30 uppercase">
                 {group.title}
               </p>
@@ -294,26 +302,29 @@ export function AppSidebar({
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => onNavigate(item.section, item.subView)}
-                  title={isCollapsed ? item.label : undefined}
+                  onClick={() => {
+                    onNavigate(item.section, item.subView);
+                    if (isMobileDrawer) onCloseMobile?.();
+                  }}
+                  title={isCollapsed && !isMobileDrawer ? item.label : undefined}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                     isActive
                       ? 'bg-white/[0.09] text-white shadow-sm'
                       : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
-                  } ${isCollapsed ? 'justify-center px-2' : ''}`}
+                  } ${isCollapsed && !isMobileDrawer ? 'justify-center px-2' : ''}`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className={`shrink-0 ${isActive ? 'text-violet-400' : 'text-white/50'}`}>
                       {item.icon}
                     </span>
-                    {!isCollapsed && <span className="truncate">{item.label}</span>}
+                    {(!isCollapsed || isMobileDrawer) && <span className="truncate">{item.label}</span>}
                   </div>
-                  {!isCollapsed && item.badge && (
+                  {(!isCollapsed || isMobileDrawer) && item.badge && (
                     <span className={`text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded-full ${item.badgeColor}`}>
                       {item.badge}
                     </span>
                   )}
-                  {isCollapsed && item.badge && (
+                  {isCollapsed && !isMobileDrawer && item.badge && (
                     <span className="absolute top-1 right-1 size-2 rounded-full bg-amber-400" />
                   )}
                 </button>
@@ -325,7 +336,7 @@ export function AppSidebar({
 
       {/* Sidebar Footer with Channel Status */}
       <div className="p-3 border-t border-white/[0.06] bg-[#07070a]/60">
-        {!isCollapsed ? (
+        {(!isCollapsed || isMobileDrawer) ? (
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-mono text-zinc-400">CANAIS ATIVOS</span>
@@ -395,7 +406,7 @@ export function AppSidebar({
         {/* User Account / Sign Out Strip */}
         {userEmail && (
           <div className="pt-2.5 mt-2 border-t border-white/[0.05] flex items-center justify-between">
-            {!isCollapsed ? (
+            {(!isCollapsed || isMobileDrawer) ? (
               <>
                 <div className="flex items-center gap-2 min-w-0">
                   <div className="size-6 rounded-full bg-violet-600/30 border border-violet-500/40 flex items-center justify-center text-[10px] font-bold text-violet-200 shrink-0 uppercase">
@@ -431,6 +442,46 @@ export function AppSidebar({
           </div>
         )}
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Mobile Drawer Backdrop */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 md:hidden animate-fade-in"
+          onClick={onCloseMobile}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Mobile Slide-Out Drawer */}
+      <aside
+        className={`fixed inset-y-0 left-0 w-[275px] max-w-[85vw] flex flex-col h-[100dvh] z-50 bg-[#09090d] border-r border-white/[0.1] shadow-2xl transition-transform duration-300 md:hidden select-none ${
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {renderSidebarContent(true)}
+      </aside>
+
+      {/* Desktop Persistent Sidebar */}
+      <aside
+        className="hidden md:flex relative flex-col h-screen shrink-0 z-30 transition-all duration-300 select-none bg-[#09090d] border-r border-white/[0.07]"
+        style={{ width: sidebarWidth, minWidth: sidebarWidth }}
+      >
+        {/* Collapse Toggle Button */}
+        <button
+          type="button"
+          onClick={onToggleCollapse}
+          aria-label={isCollapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+          className="absolute -right-3 top-5 size-6 rounded-full bg-[#16161e] border border-white/[0.12] flex items-center justify-center text-white/60 hover:text-white hover:border-white/30 transition-all shadow-md z-40"
+        >
+          {isCollapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
+        </button>
+
+        {renderSidebarContent(false)}
+      </aside>
+    </>
   );
 }

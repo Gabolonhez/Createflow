@@ -37,10 +37,10 @@ export function RejectPostModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-md rounded-2xl bg-[#0c0c12] border border-white/[0.1] shadow-2xl flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+      <div className="relative w-full max-w-md max-h-[92dvh] rounded-2xl bg-[#0c0c12] border border-white/[0.1] shadow-2xl flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.08]">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 border-b border-white/[0.08]">
           <div className="flex items-center gap-2">
             <AlertTriangle size={16} className="text-rose-400" />
             <span className="font-semibold text-sm text-white">Rejeitar Post</span>
@@ -55,7 +55,7 @@ export function RejectPostModal({
         </div>
 
         {/* Content */}
-        <div className="p-5 flex flex-col gap-4">
+        <div className="p-4 sm:p-5 flex flex-col gap-4 overflow-y-auto">
           <div className="flex items-start gap-2.5 p-3 rounded-lg bg-violet-500/10 border border-violet-500/20 text-xs text-violet-200">
             <Brain size={16} className="text-violet-400 shrink-0 mt-0.5" />
             <span>

@@ -172,25 +172,25 @@ export function SprayModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-6xl my-auto rounded-2xl bg-[#0d0d12] border border-white/[0.08] shadow-2xl flex flex-col max-h-[92vh] overflow-hidden text-white font-sans animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-5 bg-black/85 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-6xl my-auto rounded-2xl bg-[#0d0d12] border border-white/[0.08] shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[92vh] overflow-hidden text-white font-sans animate-in fade-in zoom-in-95 duration-150">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.07] bg-white/[0.02]">
-          <div className="flex items-center gap-3">
-            <div className="size-9 rounded-xl bg-gradient-to-tr from-amber-500/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-inner">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-white/[0.07] bg-white/[0.02]">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="size-8 sm:size-9 rounded-xl bg-gradient-to-tr from-amber-500/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-inner shrink-0">
               <Zap size={18} />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-white tracking-tight">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-sm sm:text-base font-bold text-white tracking-tight">
                   Atomizador de Ideias
                 </h2>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20 uppercase tracking-wider font-semibold">
                   1 Ideia → 3 Formatos
                 </span>
               </div>
-              <p className="text-xs text-zinc-400 mt-0.5">
+              <p className="text-[11px] sm:text-xs text-zinc-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
                 Transforme um insight único em 3 publicações autorais complementares para X e LinkedIn.
               </p>
             </div>
@@ -198,14 +198,14 @@ export function SprayModal({
           <button
             type="button"
             onClick={onClose}
-            className="size-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-colors"
+            className="size-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-colors shrink-0"
           >
             <X size={16} />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
           {error && (
             <div className="flex items-center gap-2 p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs">
               <AlertCircle size={15} className="shrink-0" />
@@ -245,9 +245,9 @@ export function SprayModal({
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-1">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
               <div className="flex items-center gap-2 text-[11px] font-mono text-zinc-500">
-                <Clock size={13} className="text-zinc-400" />
+                <Clock size={13} className="text-zinc-400 shrink-0" />
                 <span>Distribui os posts automaticamente nos próximos horários nobres de Brasília (09:00, 14:30, 18:30)</span>
               </div>
 
@@ -255,7 +255,7 @@ export function SprayModal({
                 type="button"
                 onClick={handleGenerate}
                 disabled={isGenerating || !theme.trim()}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black shadow-lg shadow-amber-500/20 active:scale-[0.98] disabled:opacity-50 transition-all cursor-pointer"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black shadow-lg shadow-amber-500/20 active:scale-[0.98] disabled:opacity-50 transition-all cursor-pointer shrink-0"
               >
                 <Sparkles size={14} className={isGenerating ? 'animate-spin' : ''} />
                 <span>{isGenerating ? 'Atomizando conteúdo com IA…' : 'Atomizar em 3 Formatos'}</span>
@@ -420,7 +420,7 @@ export function SprayModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-white/[0.07] bg-white/[0.02]">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-t border-white/[0.07] bg-white/[0.02] gap-3">
           <div className="flex items-center gap-2 text-xs text-zinc-400">
             <CalendarCheck size={14} className="text-emerald-400 shrink-0" />
             <span className="hidden sm:inline">
@@ -428,12 +428,12 @@ export function SprayModal({
             </span>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-end gap-2 flex-wrap">
             <button
               type="button"
               onClick={onClose}
               disabled={isSaving}
-              className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-colors"
+              className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-colors text-center"
             >
               Cancelar
             </button>
@@ -444,20 +444,20 @@ export function SprayModal({
                   type="button"
                   onClick={() => handleSaveAll(false)}
                   disabled={isSaving}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-all cursor-pointer disabled:opacity-50"
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-all cursor-pointer disabled:opacity-50"
                 >
                   <FileText size={13} />
-                  <span>Salvar 3 como Rascunhos</span>
+                  <span>Salvar Rascunhos</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => handleSaveAll(true)}
                   disabled={isSaving}
-                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 transition-all cursor-pointer disabled:opacity-50"
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 transition-all cursor-pointer disabled:opacity-50"
                 >
                   <CheckCircle2 size={13} />
-                  <span>{isSaving ? 'Agendando...' : '⚡ Aprovar Todos na Fila Inteligente'}</span>
+                  <span>{isSaving ? 'Agendando...' : '⚡ Aprovar Fila'}</span>
                 </button>
               </>
             )}

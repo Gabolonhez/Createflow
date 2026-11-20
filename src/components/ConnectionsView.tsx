@@ -195,7 +195,7 @@ export function ConnectionsView({
   return (
     <form onSubmit={handleSave} className="flex flex-col gap-6">
       {/* Header Banner */}
-      <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.025] border border-white/[0.08]">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl bg-white/[0.025] border border-white/[0.08]">
         <div className="flex items-center gap-2">
           <Link2 size={16} className="text-violet-400" />
           <span className="text-xs font-semibold text-white">

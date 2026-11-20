@@ -296,6 +296,7 @@ export function CampaignBuilderModal({
   const [previewTab, setPreviewTab] = useState<'comment' | 'dm_card' | 'follow_gate'>(
     'dm_card'
   );
+  const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
@@ -376,57 +377,88 @@ export function CampaignBuilderModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-6xl max-h-[92vh] flex flex-col rounded-2xl bg-[#0c0c10] border border-white/[0.1] shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-3 md:p-5 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-6xl h-full sm:h-auto sm:max-h-[92vh] flex flex-col rounded-none sm:rounded-2xl bg-[#0c0c10] border-0 sm:border border-white/[0.1] shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.08] bg-[#09090d]/80 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="size-9 rounded-xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-sky-500 flex items-center justify-center shadow-md shadow-violet-600/30">
-              <Send size={18} className="text-white" />
+        <div className="flex items-center justify-between px-3.5 sm:px-6 py-3 sm:py-4 border-b border-white/[0.08] bg-[#09090d]/80 shrink-0 gap-2">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="size-8 sm:size-9 rounded-xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-sky-500 flex items-center justify-center shadow-md shadow-violet-600/30 shrink-0">
+              <Send size={16} className="text-white" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-semibold text-white tracking-tight">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h2 className="text-sm sm:text-base font-semibold text-white tracking-tight truncate">
                   {isEditing ? 'Editar Campanha Auto-DM' : 'Criar Nova Campanha Auto-DM'}
                 </h2>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium uppercase tracking-wider bg-pink-500/20 text-pink-300 border border-pink-500/30">
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-medium uppercase tracking-wider bg-pink-500/20 text-pink-300 border border-pink-500/30 shrink-0">
                   Instagram
                 </span>
               </div>
-              <p className="text-xs text-white/50">
+              <p className="text-[11px] sm:text-xs text-white/50 truncate hidden sm:block">
                 Responda automaticamente comentários com DMs e entregue links em segundos.
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               type="button"
               onClick={() => setIsTemplatesOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-violet-600/20 to-indigo-600/20 hover:from-violet-600/30 hover:to-indigo-600/30 border border-violet-500/30 text-violet-300 text-xs font-medium transition-all shadow-sm"
+              className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-gradient-to-r from-violet-600/20 to-indigo-600/20 hover:from-violet-600/30 hover:to-indigo-600/30 border border-violet-500/30 text-violet-300 text-xs font-medium transition-all shadow-sm"
               title="Explorar e aplicar modelos validados de campanha"
             >
-              <Sparkles size={13} className="text-violet-400" />
-              <span>Modelos Prontos</span>
+              <Sparkles size={13} className="text-violet-400 shrink-0" />
+              <span className="hidden xs:inline">Modelos</span>
+              <span className="hidden sm:inline">Prontos</span>
             </button>
 
             {existingCampaigns.length > 0 && (
               <button
                 type="button"
                 onClick={() => setIsCloneOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.1] text-white/70 hover:text-white text-xs font-medium transition-all"
+                className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.1] text-white/70 hover:text-white text-xs font-medium transition-all"
                 title="Clonar copywriting e configurações de uma campanha anterior"
               >
-                <Copy size={13} />
-                <span>Clonar Campanha</span>
+                <Copy size={13} className="shrink-0" />
+                <span className="hidden sm:inline">Clonar</span>
               </button>
             )}
 
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors ml-1"
+              className="p-1.5 sm:p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors ml-0.5"
             >
               <X size={18} />
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Tab Switcher (Editor vs Live Preview) */}
+        <div className="lg:hidden flex items-center justify-center p-2 bg-[#09090d] border-b border-white/[0.08] shrink-0">
+          <div className="grid grid-cols-2 w-full max-w-xs p-0.5 rounded-lg bg-white/[0.04] border border-white/[0.08]">
+            <button
+              type="button"
+              onClick={() => setMobileTab('editor')}
+              className={`py-1.5 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-1.5 ${
+                mobileTab === 'editor'
+                  ? 'bg-violet-600 text-white shadow-sm font-semibold'
+                  : 'text-white/60 hover:text-white'
+              }`}
+            >
+              <Send size={12} />
+              <span>Configurações</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileTab('preview')}
+              className={`py-1.5 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-1.5 ${
+                mobileTab === 'preview'
+                  ? 'bg-violet-600 text-white shadow-sm font-semibold'
+                  : 'text-white/60 hover:text-white'
+              }`}
+            >
+              <Smartphone size={13} />
+              <span>Ver Preview</span>
             </button>
           </div>
         </div>
@@ -434,7 +466,9 @@ export function CampaignBuilderModal({
         {/* Two-Pane Body */}
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 min-h-0 overflow-hidden">
           {/* Left: Configuration Form */}
-          <div className="lg:col-span-7 p-6 overflow-y-auto space-y-6 border-b lg:border-b-0 lg:border-r border-white/[0.08] custom-scrollbar">
+          <div className={`lg:col-span-7 p-4 sm:p-6 overflow-y-auto space-y-6 border-b lg:border-b-0 lg:border-r border-white/[0.08] custom-scrollbar ${
+            mobileTab === 'editor' ? 'block' : 'hidden lg:block'
+          }`}>
             {/* Step 1: Basic Info & Platform */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -963,7 +997,9 @@ export function CampaignBuilderModal({
           </div>
 
           {/* Right: Interactive Live Phone Preview */}
-          <div className="lg:col-span-5 bg-[#08080b] p-6 flex flex-col items-center justify-center border-t lg:border-t-0 select-none overflow-hidden">
+          <div className={`lg:col-span-5 bg-[#08080b] p-3.5 sm:p-6 flex-col items-center justify-center border-t lg:border-t-0 select-none overflow-y-auto ${
+            mobileTab === 'preview' ? 'flex' : 'hidden lg:flex'
+          }`}>
             <div className="w-full max-w-[340px] flex flex-col items-center">
               {/* Preview Mode Switcher */}
               <div className="w-full flex items-center justify-between mb-3 px-1">
@@ -1171,11 +1207,11 @@ export function CampaignBuilderModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-white/[0.08] bg-[#09090d]/90 shrink-0">
+        <div className="flex items-center justify-between px-3.5 sm:px-6 py-3 sm:py-4 border-t border-white/[0.08] bg-[#09090d]/90 shrink-0 gap-2">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-lg text-xs font-medium text-white/60 hover:text-white hover:bg-white/[0.05] transition-colors"
+            className="px-3 sm:px-4 py-2 rounded-lg text-xs font-medium text-white/60 hover:text-white hover:bg-white/[0.05] transition-colors"
           >
             Cancelar
           </button>
@@ -1184,17 +1220,17 @@ export function CampaignBuilderModal({
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting || !name.trim()}
-              className="flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 disabled:opacity-50 text-xs font-semibold text-white shadow-md shadow-violet-600/30 transition-all"
+              className="flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 disabled:opacity-50 text-xs font-semibold text-white shadow-md shadow-violet-600/30 transition-all"
             >
               {isSubmitting ? (
                 <>
                   <RefreshCw size={13} className="animate-spin" />
-                  Salvando...
+                  <span>Salvando...</span>
                 </>
               ) : (
                 <>
                   <Check size={14} />
-                  {isEditing ? 'Atualizar Campanha' : 'Ativar Campanha'}
+                  <span>{isEditing ? 'Atualizar Campanha' : 'Ativar Campanha'}</span>
                 </>
               )}
             </button>
@@ -1202,7 +1238,7 @@ export function CampaignBuilderModal({
         </div>
         {/* Modelos Prontos Overlay Modal */}
         {isTemplatesOpen && (
-          <div className="absolute inset-0 z-50 bg-[#09090d]/95 backdrop-blur-md p-6 flex flex-col overflow-hidden animate-in fade-in duration-150">
+          <div className="absolute inset-0 z-50 bg-[#09090d]/95 backdrop-blur-md p-3.5 sm:p-6 flex flex-col overflow-hidden animate-in fade-in duration-150">
             {/* Header */}
             <div className="flex items-center justify-between pb-4 border-b border-white/[0.08] shrink-0">
               <div className="flex items-center gap-3">
@@ -1317,7 +1353,7 @@ export function CampaignBuilderModal({
 
         {/* Clonar Campanha Existente Overlay Modal */}
         {isCloneOpen && (
-          <div className="absolute inset-0 z-50 bg-[#09090d]/95 backdrop-blur-md p-6 flex flex-col overflow-hidden animate-in fade-in duration-150">
+          <div className="absolute inset-0 z-50 bg-[#09090d]/95 backdrop-blur-md p-3.5 sm:p-6 flex flex-col overflow-hidden animate-in fade-in duration-150">
             {/* Header */}
             <div className="flex items-center justify-between pb-4 border-b border-white/[0.08] shrink-0">
               <div className="flex items-center gap-3">

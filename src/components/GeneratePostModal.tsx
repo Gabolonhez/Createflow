@@ -151,10 +151,10 @@ export function GeneratePostModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
-      <div className="relative w-full max-w-lg rounded-2xl bg-[#0c0c12] border border-white/[0.1] shadow-2xl flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+      <div className="relative w-full max-w-lg max-h-[92dvh] rounded-2xl bg-[#0c0c12] border border-white/[0.1] shadow-2xl flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.08]">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 border-b border-white/[0.08]">
           <div className="flex items-center gap-2">
             <Sparkles size={16} className="text-violet-400" />
             <span className="font-semibold text-sm text-white">Gerar Post com IA</span>
@@ -169,7 +169,7 @@ export function GeneratePostModal({
         </div>
 
         {/* Content */}
-        <div className="p-5 flex flex-col gap-4">
+        <div className="p-4 sm:p-5 flex flex-col gap-4 overflow-y-auto">
           {error && (
             <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/25 text-xs text-rose-300">
               {error}
@@ -179,7 +179,7 @@ export function GeneratePostModal({
           {/* Source Type Selector */}
           <div className="flex flex-col gap-1.5">
             <label className="text-[11px] font-mono text-white/50">Base de Origem do Post:</label>
-            <div className="grid grid-cols-5 gap-1.5 p-1 rounded-lg bg-black/40 border border-white/[0.06]">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5 p-1 rounded-lg bg-black/40 border border-white/[0.06]">
               <button
                 type="button"
                 onClick={() => setSourceType('scratch')}

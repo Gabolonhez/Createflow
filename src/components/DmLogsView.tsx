@@ -98,7 +98,7 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#0a0a0c] overflow-y-auto custom-scrollbar">
       {/* Top Compact Audit Telemetry Strip */}
-      <div className="px-6 py-3 border-b border-zinc-800/80 bg-[#0c0c10]/50 flex flex-wrap items-center justify-between gap-3">
+      <div className="px-3.5 sm:px-6 py-2.5 sm:py-3 border-b border-zinc-800/80 bg-[#0c0c10]/50 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">
         <div className="flex items-center gap-2">
           <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-zinc-800 text-zinc-300 border border-zinc-700/80">
             Auditoria Meta &amp; TikTok
@@ -109,24 +109,24 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
         </div>
 
         {/* Inline Metrics Telemetry */}
-        <div className="flex items-center gap-2 font-mono text-xs">
-          <span className="px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-300">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-[11px] sm:text-xs">
+          <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-300">
             Total: <strong className="text-white">{stats.total}</strong>
           </span>
-          <span className="px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+          <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
             Enviados: <strong>{stats.sent}</strong>
           </span>
-          <span className="px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-300">
+          <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-300">
             Skips: <strong>{stats.skipped}</strong>
           </span>
-          <span className="px-2.5 py-1 rounded-md bg-rose-500/10 border border-rose-500/20 text-rose-400">
+          <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md bg-rose-500/10 border border-rose-500/20 text-rose-400">
             Falhas: <strong>{stats.failed}</strong>
           </span>
         </div>
       </div>
 
       {/* Filters Bar */}
-      <div className="p-6 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800/60 bg-[#0c0c10]/40">
+      <div className="p-3.5 sm:p-6 py-2.5 sm:py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800/60 bg-[#0c0c10]/40">
         <div className="flex items-center gap-2 flex-1 max-w-sm">
           <div className="relative w-full">
             <Search
@@ -196,7 +196,7 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
       </div>
 
       {/* Logs Table */}
-      <div className="p-6">
+      <div className="p-3.5 sm:p-6">
         <div className="rounded-xl border border-zinc-800/80 bg-[#111116] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
