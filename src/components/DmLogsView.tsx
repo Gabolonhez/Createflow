@@ -65,30 +65,30 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
     switch (status) {
       case 'SENT':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-            <CheckCircle2 size={11} className="text-emerald-400" />
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono bg-[#7ae6a0]/12 text-[#7ae6a0] border border-[#7ae6a0]/25">
+            <CheckCircle2 size={11} className="text-[#7ae6a0]" />
             Enviado
           </span>
         );
       case 'SKIPPED_WINDOW':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono bg-amber-500/15 text-amber-300 border border-amber-500/30">
-            <Clock size={11} className="text-amber-400" />
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono bg-[#ffbd2e]/12 text-[#ffbd2e] border border-[#ffbd2e]/25">
+            <Clock size={11} className="text-[#ffbd2e]" />
             Janela 24h
           </span>
         );
       case 'FAILED':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono bg-rose-500/15 text-rose-300 border border-rose-500/30">
-            <XCircle size={11} className="text-rose-400" />
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono bg-[#ff5f56]/12 text-[#ff8a84] border border-[#ff5f56]/25">
+            <XCircle size={11} className="text-[#ff5f56]" />
             Falha
           </span>
         );
       case 'PENDING':
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
-            <Clock size={11} className="text-indigo-400" />
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono bg-[#212121] text-[#ececec] border border-[#2c2c2c]">
+            <Clock size={11} className="text-[#9a9a9a]" />
             Fila
           </span>
         );
@@ -96,61 +96,61 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#0a0a0c] overflow-y-auto custom-scrollbar">
+    <div className="flex-1 flex flex-col min-h-0 bg-[#0a0a0a] overflow-y-auto custom-scrollbar">
       {/* Top Compact Audit Telemetry Strip */}
-      <div className="px-3.5 sm:px-6 py-2.5 sm:py-3 border-b border-zinc-800/80 bg-[#0c0c10]/50 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">
+      <div className="px-3.5 sm:px-6 py-2.5 sm:py-3 border-b border-[#1f1f1f] bg-[#111111] flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">
         <div className="flex items-center gap-2">
-          <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-zinc-800 text-zinc-300 border border-zinc-700/80">
+          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-[#1a1a1a] text-[#ececec] border border-[#262626]">
             Auditoria Meta &amp; TikTok
           </span>
-          <span className="text-xs text-zinc-400 font-mono hidden sm:inline">
+          <span className="text-xs text-[#9a9a9a] font-mono hidden sm:inline">
             Eventos de webhooks e histórico de entregas
           </span>
         </div>
 
         {/* Inline Metrics Telemetry */}
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-[11px] sm:text-xs">
-          <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-300">
-            Total: <strong className="text-white">{stats.total}</strong>
+          <span className="px-2.5 py-1 rounded-full bg-[#161616] border border-[#262626] text-[#9a9a9a]">
+            Total: <strong className="text-[#ececec]">{stats.total}</strong>
           </span>
-          <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+          <span className="px-2.5 py-1 rounded-full bg-[#7ae6a0]/10 border border-[#7ae6a0]/20 text-[#7ae6a0]">
             Enviados: <strong>{stats.sent}</strong>
           </span>
-          <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-300">
+          <span className="px-2.5 py-1 rounded-full bg-[#ffbd2e]/10 border border-[#ffbd2e]/20 text-[#ffbd2e]">
             Skips: <strong>{stats.skipped}</strong>
           </span>
-          <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md bg-rose-500/10 border border-rose-500/20 text-rose-400">
+          <span className="px-2.5 py-1 rounded-full bg-[#ff5f56]/10 border border-[#ff5f56]/20 text-[#ff8a84]">
             Falhas: <strong>{stats.failed}</strong>
           </span>
         </div>
       </div>
 
       {/* Filters Bar */}
-      <div className="p-3.5 sm:p-6 py-2.5 sm:py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800/60 bg-[#0c0c10]/40">
+      <div className="p-3.5 sm:p-6 py-2.5 sm:py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#1f1f1f] bg-[#0e0e0e]">
         <div className="flex items-center gap-2 flex-1 max-w-sm">
           <div className="relative w-full">
             <Search
               size={13}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6f6f6f]"
             />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Filtrar por @usuário, comentário ou campanha..."
-              className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-indigo-500"
+              className="w-full pl-9 pr-3.5 py-1.5 rounded-full bg-[#161616] border border-[#262626] text-xs text-[#ececec] placeholder-[#6f6f6f] focus:outline-none focus:border-[#4e4e4e]"
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Platform switch */}
-          <div className="flex items-center p-0.5 rounded-lg bg-zinc-900 border border-zinc-800">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Platform switch (Pluy Segmented Pill) */}
+          <div className="inline-flex items-center p-1 rounded-full bg-[#141414] border border-[#242424]">
             <button
               type="button"
               onClick={() => setPlatformFilter('all')}
-              className={`px-2 py-1 rounded text-[11px] font-medium transition-all ${
-                platformFilter === 'all' ? 'bg-zinc-800 text-white font-semibold' : 'text-zinc-400 hover:text-white'
+              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all active:scale-[0.97] ${
+                platformFilter === 'all' ? 'bg-[#282828] text-white' : 'text-[#8a8a8a] hover:text-[#ececec]'
               }`}
             >
               Todos
@@ -158,25 +158,25 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
             <button
               type="button"
               onClick={() => setPlatformFilter('instagram')}
-              className={`flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition-all ${
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all active:scale-[0.97] ${
                 platformFilter === 'instagram'
-                  ? 'bg-pink-600/25 text-pink-300 font-semibold'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-[#282828] text-white'
+                  : 'text-[#8a8a8a] hover:text-[#ececec]'
               }`}
             >
-              <InstagramLogo className="size-3" />
+              <InstagramLogo className="size-3 text-pink-400" />
               IG
             </button>
             <button
               type="button"
               onClick={() => setPlatformFilter('tiktok')}
-              className={`flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition-all ${
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all active:scale-[0.97] ${
                 platformFilter === 'tiktok'
-                  ? 'bg-cyan-600/25 text-cyan-300 font-semibold'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-[#282828] text-white'
+                  : 'text-[#8a8a8a] hover:text-[#ececec]'
               }`}
             >
-              <TikTokLogo className="size-3" />
+              <TikTokLogo className="size-3 text-cyan-400" />
               TT
             </button>
           </div>
@@ -185,7 +185,7 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="px-2.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 focus:outline-none"
+            className="px-3.5 py-1.5 rounded-full bg-[#161616] border border-[#262626] text-xs text-[#ececec] focus:outline-none focus:border-[#4e4e4e]"
           >
             <option value="ALL">Todos os Status</option>
             <option value="SENT">Enviados</option>
@@ -197,11 +197,11 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
 
       {/* Logs Table */}
       <div className="p-3.5 sm:p-6">
-        <div className="rounded-xl border border-zinc-800/80 bg-[#111116] overflow-hidden">
+        <div className="rounded-[20px] border border-[#222222] bg-[#161616] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-zinc-800 bg-zinc-950/80 text-[11px] font-mono text-zinc-400">
+                <tr className="border-b border-[#222222] bg-[#121212] text-[11px] font-mono text-[#6f6f6f]">
                   <th className="py-3 px-4">CANAL &amp; USUÁRIO</th>
                   <th className="py-3 px-4">COMENTÁRIO RECEBIDO</th>
                   <th className="py-3 px-4">CAMPANHA DISPARADA</th>
@@ -210,10 +210,10 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
                   <th className="py-3 px-4 text-right">AÇÕES</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800/60 text-xs">
+              <tbody className="divide-y divide-[#222222] text-xs">
                 {filteredLogs.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-10 text-center text-zinc-500 font-mono text-xs">
+                    <td colSpan={6} className="py-10 text-center text-[#6f6f6f] font-mono text-xs">
                       Nenhum registro de log encontrado.
                     </td>
                   </tr>
@@ -221,40 +221,34 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
                   filteredLogs.map((log) => (
                     <tr
                       key={log.id}
-                      className="hover:bg-white/[0.02] transition-colors"
+                      className="hover:bg-[#1a1a1a] transition-colors"
                     >
                       {/* User & Platform */}
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
-                          <div
-                            className={`size-6 rounded-md flex items-center justify-center shrink-0 ${
-                              log.platform === 'instagram'
-                                ? 'bg-pink-500/15 text-pink-300'
-                                : 'bg-cyan-500/15 text-cyan-300'
-                            }`}
-                          >
+                          <div className="size-6 rounded-md flex items-center justify-center shrink-0 bg-[#212121] border border-[#2c2c2c]">
                             {log.platform === 'instagram' ? (
-                              <InstagramLogo className="size-3" />
+                              <InstagramLogo className="size-3 text-pink-400" />
                             ) : (
-                              <TikTokLogo className="size-3" />
+                              <TikTokLogo className="size-3 text-cyan-400" />
                             )}
                           </div>
-                          <span className="font-semibold text-white">
+                          <span className="font-medium text-[#ececec]">
                             @{log.commenterUsername}
                           </span>
                         </div>
                       </td>
 
-                      {/* Comment - Clean direct text without nested box */}
+                      {/* Comment */}
                       <td className="py-3 px-4 max-w-xs">
-                        <span className="text-xs text-zinc-300 line-clamp-2">
+                        <span className="text-xs text-[#9a9a9a] line-clamp-2">
                           &ldquo;{log.commentText}&rdquo;
                         </span>
                       </td>
 
                       {/* Campaign */}
                       <td className="py-3 px-4">
-                        <span className="text-zinc-200 font-medium">
+                        <span className="text-[#ececec] font-medium">
                           {log.campaignName}
                         </span>
                       </td>
@@ -264,7 +258,7 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
                         <div className="space-y-0.5">
                           {getStatusBadge(log.status)}
                           {log.errorMessage && (
-                            <p className="text-[11px] text-zinc-400 max-w-[200px] truncate" title={log.errorMessage}>
+                            <p className="text-[11px] text-[#8a8a8a] max-w-[200px] truncate" title={log.errorMessage}>
                               {log.errorMessage}
                             </p>
                           )}
@@ -272,7 +266,7 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
                       </td>
 
                       {/* Timestamp */}
-                      <td className="py-3 px-4 text-zinc-400 font-mono text-xs">
+                      <td className="py-3 px-4 text-[#8a8a8a] font-mono text-xs">
                         {new Date(log.createdAt).toLocaleTimeString('pt-BR', {
                           hour: '2-digit',
                           minute: '2-digit',
@@ -287,7 +281,7 @@ export function DmLogsView({ logs, onRetryLog }: DmLogsViewProps) {
                             type="button"
                             onClick={() => handleRetry(log.id)}
                             disabled={retryingId === log.id}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-white/[0.06] hover:bg-white/[0.1] text-[11px] text-white transition-colors"
+                            className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#212121] hover:bg-[#2a2a2a] border border-[#2c2c2c] text-[11px] text-[#ececec] transition-all active:scale-[0.97]"
                           >
                             <RotateCw
                               size={11}

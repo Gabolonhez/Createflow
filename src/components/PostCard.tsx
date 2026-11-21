@@ -28,45 +28,45 @@ const STATUS_CONFIG: Record<
 > = {
   DRAFT: {
     label: 'Rascunho',
-    bg: 'bg-white/[0.05]',
-    text: 'text-white/40',
-    border: 'border-white/[0.1]',
+    bg: 'bg-[#212121]',
+    text: 'text-[#8a8a8a]',
+    border: 'border-[#2c2c2c]',
   },
   AWAITING_APPROVAL: {
     label: 'Aguardando aprovação',
-    bg: 'bg-blue-500/15',
-    text: 'text-blue-400',
-    border: 'border-blue-500/30',
+    bg: 'bg-[#ffbd2e]/12',
+    text: 'text-[#ffbd2e]',
+    border: 'border-[#ffbd2e]/25',
   },
   SCHEDULED: {
     label: 'Agendado',
-    bg: 'bg-violet-500/15',
-    text: 'text-violet-300',
-    border: 'border-violet-500/30',
+    bg: 'bg-[#242424]',
+    text: 'text-[#ececec]',
+    border: 'border-[#333333]',
   },
   PUBLISHING: {
     label: 'Publicando…',
-    bg: 'bg-yellow-500/15',
-    text: 'text-yellow-400',
-    border: 'border-yellow-500/30',
+    bg: 'bg-[#ffbd2e]/12',
+    text: 'text-[#ffbd2e]',
+    border: 'border-[#ffbd2e]/25',
   },
   PUBLISHED: {
     label: 'Publicado',
-    bg: 'bg-emerald-500/15',
-    text: 'text-emerald-400',
-    border: 'border-emerald-500/30',
+    bg: 'bg-[#7ae6a0]/12',
+    text: 'text-[#7ae6a0]',
+    border: 'border-[#7ae6a0]/25',
   },
   REJECTED: {
     label: 'Rejeitado',
-    bg: 'bg-rose-500/15',
-    text: 'text-rose-400',
-    border: 'border-rose-500/30',
+    bg: 'bg-[#ff5f56]/12',
+    text: 'text-[#ff8a84]',
+    border: 'border-[#ff5f56]/25',
   },
   ERROR: {
     label: 'Erro',
-    bg: 'bg-red-500/15',
-    text: 'text-red-400',
-    border: 'border-red-500/30',
+    bg: 'bg-[#ff5f56]/12',
+    text: 'text-[#ff8a84]',
+    border: 'border-[#ff5f56]/25',
   },
 };
 
@@ -102,7 +102,7 @@ export function PostCard({
   return (
     <div
       onClick={() => onOpen(post)}
-      className="group relative flex flex-col justify-between p-4 rounded-xl bg-[#0f0f14] hover:bg-[#13131a] border border-white/[0.08] hover:border-white/[0.18] transition-all cursor-pointer shadow-sm hover:shadow-md"
+      className="group relative flex flex-col justify-between p-4 sm:p-5 rounded-[20px] bg-[#161616] hover:bg-[#1a1a1a] border border-[#222222] hover:border-[#333333] transition-all cursor-pointer active:scale-[0.99]"
     >
       <div className="flex flex-col gap-2.5">
         {/* Top Badges Row */}
@@ -110,51 +110,51 @@ export function PostCard({
           {/* Platforms */}
           <div className="flex items-center gap-1.5">
             {post.platforms.includes('x') && (
-              <span className="p-1 rounded bg-black border border-white/[0.15] text-white flex items-center justify-center">
+              <span className="p-1.5 rounded-lg bg-[#212121] border border-[#2c2c2c] text-white flex items-center justify-center">
                 <XLogo className="size-3" />
               </span>
             )}
             {post.platforms.includes('linkedin') && (
-              <span className="p-1 rounded bg-[#0A66C2]/20 border border-[#0A66C2]/40 text-[#70b5f9] flex items-center justify-center">
+              <span className="p-1.5 rounded-lg bg-[#212121] border border-[#2c2c2c] text-[#0A66C2] flex items-center justify-center">
                 <LinkedInLogo className="size-3 text-[#0A66C2]" />
               </span>
             )}
-            <span className="text-[11px] font-mono text-white/50 px-2 py-0.5 rounded bg-white/[0.04] border border-white/[0.06]">
+            <span className="text-[10px] font-mono text-[#9a9a9a] px-2 py-0.5 rounded-[5px] bg-[#212121] border border-[#2c2c2c]">
               {pillarLabel}
             </span>
           </div>
 
           {/* Status Badge */}
           <span
-            className={`text-[10px] font-mono font-medium px-2 py-0.5 rounded-full border ${statusCfg.bg} ${statusCfg.text} ${statusCfg.border}`}
+            className={`text-[10px] font-mono font-medium px-2.5 py-0.5 rounded-full border ${statusCfg.bg} ${statusCfg.text} ${statusCfg.border}`}
           >
             {statusCfg.label}
           </span>
         </div>
 
         {/* Post Text Snippet */}
-        <p className="text-[13px] text-white/85 line-clamp-3 leading-relaxed font-sans">
+        <p className="text-[13px] text-[#ececec] line-clamp-3 leading-relaxed font-sans">
           {post.text}
         </p>
 
         {/* Thread and Voice Check indicators */}
         <div className="flex items-center gap-2 flex-wrap pt-1">
           {post.thread && post.thread.length > 0 && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-mono text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-md">
-              <ListOrdered size={12} />
+            <span className="inline-flex items-center gap-1 text-[10px] font-mono text-[#ececec] bg-[#242424] border border-[#303030] px-2 py-0.5 rounded-[5px]">
+              <ListOrdered size={11} />
               Fio ({post.thread.length + 1} tweets)
             </span>
           )}
 
           {post.voiceCheck?.level === 'warn' && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md">
+            <span className="inline-flex items-center gap-1 text-[10px] font-mono text-[#ffbd2e] bg-[#ffbd2e]/10 border border-[#ffbd2e]/25 px-2 py-0.5 rounded-[5px]">
               <AlertTriangle size={11} />
               Pode soar como IA
             </span>
           )}
 
           {post.voiceCheck?.level === 'ok' && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-400/90 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded-md">
+            <span className="inline-flex items-center gap-1 text-[10px] font-mono text-[#7ae6a0] bg-[#7ae6a0]/10 border border-[#7ae6a0]/25 px-2 py-0.5 rounded-[5px]">
               <CheckCircle2 size={11} />
               Tom autoral
             </span>
@@ -163,27 +163,27 @@ export function PostCard({
       </div>
 
       {/* Footer Info & Actions */}
-      <div className="flex items-center justify-between pt-3 mt-3 border-t border-white/[0.06] text-xs">
+      <div className="flex items-center justify-between pt-3 mt-3 border-t border-[#222222] text-xs">
         {post.scheduledFor ? (
-          <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-violet-300">
-            <CalendarClock size={12} />
+          <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#ececec]">
+            <CalendarClock size={12} className="text-[#9a9a9a]" />
             {formatSchedule(post.scheduledFor)}
           </span>
         ) : post.publishedAt ? (
-          <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-emerald-400">
+          <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#7ae6a0]">
             <CheckCircle2 size={12} />
             Publicado
           </span>
         ) : (
-          <span className="font-mono text-[11px] text-white/40">Sem agendamento</span>
+          <span className="font-mono text-[11px] text-[#6f6f6f]">Sem agendamento</span>
         )}
 
-        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
           {post.status === 'AWAITING_APPROVAL' && onApprove && (
             <button
               type="button"
               onClick={() => onApprove(post.id)}
-              className="px-2 py-1 rounded bg-violet-600 hover:bg-violet-500 text-white font-medium text-[11px] transition-colors"
+              className="px-3 py-1 rounded-full bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] font-medium text-[11px] transition-all active:scale-[0.97]"
             >
               Aprovar
             </button>
@@ -194,7 +194,7 @@ export function PostCard({
               type="button"
               onClick={() => onPublishNow(post.id)}
               title="Publicar agora"
-              className="p-1 rounded text-white/50 hover:text-white hover:bg-white/[0.08] transition-colors"
+              className="p-1.5 rounded-full text-[#8a8a8a] hover:text-[#ececec] hover:bg-[#212121] transition-colors"
             >
               <Send size={13} />
             </button>
@@ -204,7 +204,7 @@ export function PostCard({
             type="button"
             onClick={() => onDelete(post.id)}
             title="Excluir post"
-            className="p-1 rounded text-white/40 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+            className="p-1.5 rounded-full text-[#6f6f6f] hover:text-[#ff5f56] hover:bg-[#ff5f56]/10 transition-colors"
           >
             <Trash2 size={13} />
           </button>

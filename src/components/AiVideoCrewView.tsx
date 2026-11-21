@@ -1,29 +1,18 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sparkles,
   Play,
   Pause,
   RotateCcw,
-  Bot,
-  Video,
   CheckCircle2,
   Clock,
   Send,
-  Zap,
-  Sliders,
-  Eye,
-  Layers,
-  ArrowRight,
-  Plus,
-  RefreshCw,
-  ExternalLink,
-  Code2,
-  Copy,
-  Check,
   ShieldCheck,
   Award,
+  ArrowRight,
+  Sliders,
 } from 'lucide-react';
 import { InstagramLogo, TikTokLogo, XLogo, LinkedInLogo } from './BrandIcons';
 import {
@@ -47,11 +36,76 @@ interface AiVideoCrewViewProps {
   onNavigateToPosts?: () => void;
 }
 
-export function AiVideoCrewView({ onNavigateToPosts }: AiVideoCrewViewProps) {
-  // Crew Bot Active Focus
-  const [activeBot, setActiveBot] = useState<'pluy' | 'plume' | 'plot' | 'play' | 'plug'>('plot');
+/* Autoral Pluy-style Geometric Bot Icons with || minimal eyes (from trypluy.com screenshots) */
+function PluyBotMark({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M5 12L19 5L15 12L19 19L5 12Z"
+        stroke="#ececec"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+        fill="#242424"
+      />
+      <rect x="11.5" y="10.2" width="1.2" height="3.2" rx="0.6" fill="#ececec" />
+      <rect x="13.8" y="10.2" width="1.2" height="3.2" rx="0.6" fill="#ececec" />
+    </svg>
+  );
+}
 
-  // Autopilot Control (Pluy Signature: "Autopilot, or your yes at each step")
+function PlumeBotMark({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M17.5 4.5C12.5 5 6.5 10.2 6.5 15.5C6.5 18 8.3 19.5 10.8 19.5C15.5 19.5 18.8 13 17.5 4.5Z"
+        fill="#ff6db3"
+      />
+      <rect x="11" y="11" width="1.2" height="3" rx="0.6" fill="#0a0a0a" />
+      <rect x="13.5" y="11" width="1.2" height="3" rx="0.6" fill="#0a0a0a" />
+    </svg>
+  );
+}
+
+function PlotBotMark({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="5" y="5.5" width="14" height="13" rx="5" fill="#ff5b69" />
+      <rect x="10.5" y="9.8" width="1.3" height="3.4" rx="0.65" fill="#ffffff" />
+      <rect x="13.3" y="9.8" width="1.3" height="3.4" rx="0.65" fill="#ffffff" />
+    </svg>
+  );
+}
+
+function PlayBotMark({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M6.5 5.8C6.5 4.6 7.8 3.9 8.8 4.5L18.8 10.7C19.8 11.3 19.8 12.7 18.8 13.3L8.8 19.5C7.8 20.1 6.5 19.4 6.5 18.2V5.8Z"
+        fill="#35d0ba"
+      />
+      <rect x="9.8" y="10" width="1.2" height="3.4" rx="0.6" fill="#0a0a0a" />
+      <rect x="12.2" y="10" width="1.2" height="3.4" rx="0.6" fill="#0a0a0a" />
+    </svg>
+  );
+}
+
+function PlugBotMark({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="8.5" y="4" width="2.2" height="4" rx="1" fill="#ff8438" />
+      <rect x="13.3" y="4" width="2.2" height="4" rx="1" fill="#ff8438" />
+      <path
+        d="M6 9C6 7.9 6.9 7 8 7H16C17.1 7 18 7.9 18 9V14C18 17.3 15.3 20 12 20C8.7 20 6 17.3 6 14V9Z"
+        fill="#ff8438"
+      />
+      <rect x="10.2" y="11" width="1.2" height="3" rx="0.6" fill="#0a0a0a" />
+      <rect x="12.8" y="11" width="1.2" height="3" rx="0.6" fill="#0a0a0a" />
+    </svg>
+  );
+}
+
+export function AiVideoCrewView({ onNavigateToPosts }: AiVideoCrewViewProps) {
+  const [activeBot, setActiveBot] = useState<'pluy' | 'plume' | 'plot' | 'play' | 'plug'>('plot');
   const [autopilot, setAutopilot] = useState(false);
 
   // Mascot Studio State (Plume)
@@ -80,7 +134,6 @@ export function AiVideoCrewView({ onNavigateToPosts }: AiVideoCrewViewProps) {
   // Dispatch / Publishing State (Plug)
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishSuccess, setPublishSuccess] = useState(false);
-  const [copiedCode, setCopiedCode] = useState(false);
 
   // Auto-play scenes timer
   useEffect(() => {
@@ -100,7 +153,6 @@ export function AiVideoCrewView({ onNavigateToPosts }: AiVideoCrewViewProps) {
     return () => clearTimeout(timer);
   }, [isPlaying, activeSceneIdx, currentJob]);
 
-  // Handler: Create new mascot with Plume Bot
   const handleCreateMascot = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMascotName.trim() || !newMascotDesc.trim()) return;
@@ -123,7 +175,6 @@ export function AiVideoCrewView({ onNavigateToPosts }: AiVideoCrewViewProps) {
     }
   };
 
-  // Handler: Add action pose to mascot
   const handleAddPose = async (action: MascotPose['action'], label: string) => {
     if (!selectedMascot) return;
     setIsGeneratingPose(true);
@@ -147,7 +198,6 @@ export function AiVideoCrewView({ onNavigateToPosts }: AiVideoCrewViewProps) {
     }
   };
 
-  // Handler: Plan and script viral video with Plot Bot
   const handlePlanVideo = async () => {
     if (!videoTopic.trim()) return;
     setIsPlanning(true);
@@ -181,10 +231,8 @@ export function AiVideoCrewView({ onNavigateToPosts }: AiVideoCrewViewProps) {
         setActiveSceneIdx(0);
         setIsPlaying(true);
 
-        // Auto trigger Play Bot quality review
         handleReviewCut(res.plan.hook, res.plan.scenes);
 
-        // Se Autopilot estiver ativado, avança diretamente para Plug
         if (autopilot) {
           setActiveBot('plug');
         } else {
@@ -196,12 +244,11 @@ export function AiVideoCrewView({ onNavigateToPosts }: AiVideoCrewViewProps) {
     }
   };
 
-  // Handler: Review cut with Play Bot
   const handleReviewCut = async (hook: string, scenes: VideoCrewScene[]) => {
     setIsReviewing(true);
     try {
       const res = await reviewVideoCutAction({ hook, scenes });
-      if (res.review && currentJob) {
+      if (res.review) {
         setCurrentJob((prev) =>
           prev
             ? {
@@ -220,17 +267,19 @@ export function AiVideoCrewView({ onNavigateToPosts }: AiVideoCrewViewProps) {
     }
   };
 
-  // Handler: Publish with Plug Bot
   const handlePublishJob = async () => {
     if (!currentJob) return;
     setIsPublishing(true);
     try {
       const res = await createPostFromCrewJobAction({
         job: currentJob,
-        autoSchedule: !autopilot, // Se não for autopilot, agenda para a fila
+        autoSchedule: !autopilot,
       });
       if (res.success) {
         setPublishSuccess(true);
+        if (onNavigateToPosts && autopilot) {
+          onNavigateToPosts();
+        }
       }
     } finally {
       setIsPublishing(false);
@@ -239,147 +288,90 @@ export function AiVideoCrewView({ onNavigateToPosts }: AiVideoCrewViewProps) {
 
   const currentScene = currentJob?.scenes?.[activeSceneIdx] || null;
 
+  const bots = [
+    { id: 'pluy' as const, name: 'Pluy', role: 'Coordenação', icon: <PluyBotMark size={16} /> },
+    { id: 'plume' as const, name: 'Plume', role: 'Mascotes & Poses', icon: <PlumeBotMark size={16} /> },
+    { id: 'plot' as const, name: 'Plot', role: 'Roteiro & Vídeo', icon: <PlotBotMark size={16} /> },
+    { id: 'play' as const, name: 'Play', role: 'Revisão', icon: <PlayBotMark size={16} /> },
+    { id: 'plug' as const, name: 'Plug', role: 'Postagem', icon: <PlugBotMark size={16} /> },
+  ];
+
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#0a0a0a] text-zinc-100 overflow-y-auto custom-scrollbar select-none">
-      
-      {/* 1. TOP CREW NAVIGATION BAR (Pluy Signature .lp-crew) */}
-      <div className="sticky top-0 z-40 bg-[#0a0a0ad1] backdrop-blur-[14px] border-b border-[#1f1f1f] px-4 sm:px-6 py-2.5">
+    <div className="flex-1 flex flex-col min-h-0 bg-[#0a0a0a] text-[#ececec] overflow-y-auto custom-scrollbar select-none">
+      {/* 1. TOP CREW NAVIGATION BAR (Pluy Screenshot 6 Pill Bar) */}
+      <div className="sticky top-0 z-10 bg-[#0a0a0a]/90 backdrop-blur-[14px] border-b border-[#1f1f1f] px-3 sm:px-5 py-2.5 rounded-t-[20px]">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          
-          {/* Bots Strip */}
-          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1">
-            <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider mr-1 hidden sm:inline">
-              Equipe IA:
-            </span>
-
-            {/* Pluy (Coordinator) */}
-            <button
-              type="button"
-              onClick={() => setActiveBot('pluy')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all active:scale-[0.97] ${
-                activeBot === 'pluy'
-                  ? 'bg-[#212121] text-white border border-white/[0.15] shadow-sm'
-                  : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
-              }`}
-            >
-              <div className="size-2 rounded-full bg-[#0c8ce9] animate-pulse" />
-              <span className="font-semibold">Pluy</span>
-              <span className="text-[10px] font-mono text-zinc-500 hidden md:inline">Coordenação</span>
-            </button>
-
-            {/* Plume (Mascots) */}
-            <button
-              type="button"
-              onClick={() => setActiveBot('plume')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all active:scale-[0.97] ${
-                activeBot === 'plume'
-                  ? 'bg-[#212121] text-white border border-white/[0.15] shadow-sm'
-                  : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
-              }`}
-            >
-              <div className="size-2 rounded-full bg-pink-500" />
-              <span className="font-semibold">Plume</span>
-              <span className="text-[10px] font-mono text-zinc-500 hidden md:inline">Mascotes & Poses</span>
-            </button>
-
-            {/* Plot (Video Production) */}
-            <button
-              type="button"
-              onClick={() => setActiveBot('plot')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all active:scale-[0.97] ${
-                activeBot === 'plot'
-                  ? 'bg-[#212121] text-white border border-white/[0.15] shadow-sm'
-                  : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
-              }`}
-            >
-              <div className="size-2 rounded-full bg-amber-400" />
-              <span className="font-semibold">Plot</span>
-              <span className="text-[10px] font-mono text-zinc-500 hidden md:inline">Roteiro & Vídeo</span>
-            </button>
-
-            {/* Play (Quality Director) */}
-            <button
-              type="button"
-              onClick={() => setActiveBot('play')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all active:scale-[0.97] ${
-                activeBot === 'play'
-                  ? 'bg-[#212121] text-white border border-white/[0.15] shadow-sm'
-                  : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
-              }`}
-            >
-              <div className="size-2 rounded-full bg-emerald-400" />
-              <span className="font-semibold">Play</span>
-              <span className="text-[10px] font-mono text-zinc-500 hidden md:inline">Revisão do Corte</span>
-            </button>
-
-            {/* Plug (Publisher) */}
-            <button
-              type="button"
-              onClick={() => setActiveBot('plug')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all active:scale-[0.97] ${
-                activeBot === 'plug'
-                  ? 'bg-[#212121] text-white border border-white/[0.15] shadow-sm'
-                  : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
-              }`}
-            >
-              <div className="size-2 rounded-full bg-violet-400" />
-              <span className="font-semibold">Plug</span>
-              <span className="text-[10px] font-mono text-zinc-500 hidden md:inline">Postagem Direta</span>
-            </button>
+          {/* Bots Pill Strip */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+            {bots.map((b) => {
+              const isSelected = activeBot === b.id;
+              return (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => setActiveBot(b.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all active:scale-[0.97] shrink-0 border ${
+                    isSelected
+                      ? 'bg-[#212121] border-[#ececec] text-white shadow-sm'
+                      : 'bg-[#141414] border-[#262626] text-[#9a9a9a] hover:text-[#ececec] hover:border-[#363636]'
+                  }`}
+                >
+                  {b.icon}
+                  <span>{b.name}</span>
+                  <span className="text-[10px] font-mono text-[#6f6f6f] hidden md:inline">{b.role}</span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Autopilot Switch (Pluy Iconic Feature) */}
+          {/* Autopilot Switch (Pluy Electric Blue #0c8ce9 Exclusivo) */}
           <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-auto">
-            <span className="text-xs font-mono text-zinc-400">
-              {autopilot ? 'Autopilot Ativado' : 'Aprovação Passo a Passo'}
+            <span className="text-xs font-mono text-[#9a9a9a]">
+              Autopilot
             </span>
             <button
               type="button"
               onClick={() => setAutopilot(!autopilot)}
-              className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer border ${
-                autopilot
-                  ? 'bg-[#0c8ce9] border-[#0c8ce9]/60 shadow-lg shadow-[#0c8ce9]/20'
-                  : 'bg-[#212121] border-[#383838]'
+              className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer ${
+                autopilot ? 'bg-[#0c8ce9]' : 'bg-[#333333]'
               }`}
               title={
                 autopilot
-                  ? 'Pluy gera e posta sem pausar'
-                  : 'Pluy pausa e aguarda seu clique em cada etapa'
+                  ? 'Autopilot ligado: gera e envia sem pausar'
+                  : 'Autopilot desligado: pausa para seu sim em cada etapa'
               }
             >
               <span
-                className={`absolute top-0.5 left-0.5 size-4.5 rounded-full bg-white transition-transform ${
+                className={`absolute top-0.5 left-0.5 size-4 rounded-full bg-white transition-transform ${
                   autopilot ? 'translate-x-5' : 'translate-x-0'
                 }`}
               />
             </button>
           </div>
-
         </div>
       </div>
 
       {/* 2. MAIN CREW WORKSPACE */}
-      <div className="max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
-
-        {/* Hero Banner with Autopilot Philosophy */}
-        <div className="p-5 rounded-2xl bg-[#141416] border border-[#1f1f1f] flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="max-w-7xl w-full mx-auto pt-4 sm:pt-5 space-y-5">
+        {/* Minimal Hero Strip (Pluy Style) */}
+        <div className="p-4 sm:p-5 rounded-[22px] bg-[#161616] border border-[#222222] flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="size-11 rounded-xl bg-gradient-to-tr from-[#0c8ce9]/20 to-cyan-500/20 border border-[#0c8ce9]/30 flex items-center justify-center text-[#0c8ce9] shadow-inner shrink-0">
-              <Bot size={22} />
+            <div className="size-11 rounded-2xl bg-[#212121] border border-[#2e2e2e] flex items-center justify-center shrink-0">
+              <PluyBotMark size={24} />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                  Video Crew OS — A Equipe de Vídeo de Founders
-                </h1>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#0c8ce9]/15 text-[#0c8ce9] border border-[#0c8ce9]/30 font-semibold uppercase">
-                  5 Bots Integrados
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-base font-medium text-[#ececec] tracking-[-0.025em]">
+                  A equipe que produz seus vídeos
+                </h2>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-[5px] bg-[#262626] text-[#a0a0a0]">
+                  5 Bots • Estilo Pluy
                 </span>
               </div>
-              <p className="text-xs text-zinc-400 mt-0.5">
+              <p className="text-xs text-[#8a8a8a] mt-0.5">
                 {autopilot
-                  ? 'Modo Autônomo: Pluy coordena Plume (Mascote), Plot (Roteiro) e Play (Corte) e publica direto nas redes.'
-                  : 'Modo Controlado: Os bots desenham, roteirizam e preparam os cortes, mas aguardam seu SIM em cada etapa.'}
+                  ? 'Autopilot ativo: Pluy cria o roteiro, prepara o corte com seu mascote e despacha para publicação.'
+                  : 'Modo passo a passo: os bots desenham e montam os cortes, e aguardam seu "Approve" em cada etapa.'}
               </p>
             </div>
           </div>
@@ -388,94 +380,82 @@ export function AiVideoCrewView({ onNavigateToPosts }: AiVideoCrewViewProps) {
             <button
               type="button"
               onClick={() => setActiveBot('plume')}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#212121] hover:bg-[#282828] text-zinc-200 border border-white/[0.08] transition-all active:scale-[0.97] cursor-pointer"
+              className="px-4 py-1.5 rounded-full text-xs font-medium bg-[#212121] hover:bg-[#2a2a2a] text-[#ececec] border border-[#2c2c2c] transition-all active:scale-[0.97]"
             >
               Criar Mascote
             </button>
             <button
               type="button"
               onClick={() => setActiveBot('plot')}
-              className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#0c8ce9] hover:bg-[#0c8ce9]/90 text-white transition-all shadow-md shadow-[#0c8ce9]/25 active:scale-[0.97] cursor-pointer"
+              className="px-4 py-1.5 rounded-full text-xs font-medium bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] transition-all active:scale-[0.97] shadow-sm"
             >
-              Novo Vídeo Viral (+33 Templates)
+              Novo Vídeo Viral
             </button>
           </div>
         </div>
 
-        {/* 3. TWO-COLUMN SPLIT: CONTROLS & 9:16 LIVE PLAYER */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          
+        {/* 3. TWO-COLUMN SPLIT: ACTIVE BOT COMPUTER & 9:16 WINDOW */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           {/* LEFT COLUMN: ACTIVE BOT COMPUTER (7 cols) */}
           <div className="lg:col-span-7 space-y-5">
-            
             {/* BOT 1: PLUY (Maestro & Overview) */}
             {activeBot === 'pluy' && (
-              <div className="p-5 rounded-2xl bg-[#141416] border border-[#1f1f1f] space-y-4">
-                <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-3">
+              <div className="rounded-[22px] bg-[#161616] border border-[#222222] overflow-hidden">
+                <div className="px-4 py-3 border-b border-[#1f1f1f] bg-[#121212] flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="size-2.5 rounded-full bg-[#0c8ce9]" />
-                    <h2 className="text-sm font-bold text-white font-mono">
-                      Computador de Pluy (Coordenação)
-                    </h2>
+                    <span className="size-1.5 rounded-full bg-[#7ae6a0]" />
+                    <span className="text-xs font-mono text-[#ececec]">Pluy&apos;s computer</span>
                   </div>
-                  <span className="text-[11px] font-mono text-zinc-500">Status: Operando</span>
+                  <span className="text-[11px] font-mono text-[#6f6f6f]">Coordenação</span>
                 </div>
 
-                <p className="text-xs text-zinc-300 leading-relaxed">
-                  Diga o que você quer construir hoje. Pluy distribui o trabalho entre os 4 bots da equipe:
-                </p>
+                <div className="p-5 space-y-4">
+                  <p className="text-xs text-[#9a9a9a] leading-relaxed">
+                    Diga o que você quer publicar hoje. Pluy divide o trabalho entre os 4 bots especializados:
+                  </p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div
-                    onClick={() => setActiveBot('plume')}
-                    className="p-3.5 rounded-xl bg-[#18181c] border border-white/[0.06] hover:border-pink-500/40 transition-all cursor-pointer group space-y-1"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-pink-400">1. Plume Bot</span>
-                      <ArrowRight size={13} className="text-zinc-500 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                    <p className="text-[11px] text-zinc-400">
-                      Desenha seu mascote de marca com poses consistentes prontas para mover.
-                    </p>
-                  </div>
-
-                  <div
-                    onClick={() => setActiveBot('plot')}
-                    className="p-3.5 rounded-xl bg-[#18181c] border border-white/[0.06] hover:border-amber-500/40 transition-all cursor-pointer group space-y-1"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-amber-400">2. Plot Bot</span>
-                      <ArrowRight size={13} className="text-zinc-500 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                    <p className="text-[11px] text-zinc-400">
-                      Escolha 1 de 33 formatos virais. Plot escreve o roteiro e desenha as cenas.
-                    </p>
-                  </div>
-
-                  <div
-                    onClick={() => setActiveBot('play')}
-                    className="p-3.5 rounded-xl bg-[#18181c] border border-white/[0.06] hover:border-emerald-500/40 transition-all cursor-pointer group space-y-1"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-emerald-400">3. Play Bot</span>
-                      <ArrowRight size={13} className="text-zinc-500 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                    <p className="text-[11px] text-zinc-400">
-                      Assiste cada corte antes de você. Verifica retenção e legibilidade.
-                    </p>
-                  </div>
-
-                  <div
-                    onClick={() => setActiveBot('plug')}
-                    className="p-3.5 rounded-xl bg-[#18181c] border border-white/[0.06] hover:border-violet-500/40 transition-all cursor-pointer group space-y-1"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-violet-400">4. Plug Bot</span>
-                      <ArrowRight size={13} className="text-zinc-500 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                    <p className="text-[11px] text-zinc-400">
-                      Posta diretamente no Instagram Reels, TikTok, YouTube Shorts e X.
-                    </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      {
+                        id: 'plume' as const,
+                        icon: <PlumeBotMark size={18} />,
+                        title: '1. Plume Bot',
+                        desc: 'Desenha seu mascote autoral e gera poses consistentes prontas para cena.',
+                      },
+                      {
+                        id: 'plot' as const,
+                        icon: <PlotBotMark size={18} />,
+                        title: '2. Plot Bot',
+                        desc: 'Roteiriza e monta cenas usando templates virais testados de alta retenção.',
+                      },
+                      {
+                        id: 'play' as const,
+                        icon: <PlayBotMark size={18} />,
+                        title: '3. Play Bot',
+                        desc: 'Assiste cada corte antes de você. Valida ritmo, gancho e legendas.',
+                      },
+                      {
+                        id: 'plug' as const,
+                        icon: <PlugBotMark size={18} />,
+                        title: '4. Plug Bot',
+                        desc: 'Posta diretamente no Instagram Reels, TikTok, LinkedIn e X.',
+                      },
+                    ].map((card) => (
+                      <div
+                        key={card.id}
+                        onClick={() => setActiveBot(card.id)}
+                        className="p-4 rounded-[18px] bg-[#1a1a1a] border border-[#242424] hover:border-[#363636] transition-all cursor-pointer group space-y-2 active:scale-[0.98]"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            {card.icon}
+                            <span className="text-xs font-medium text-[#ececec]">{card.title}</span>
+                          </div>
+                          <ArrowRight size={13} className="text-[#6f6f6f] group-hover:text-[#ececec] group-hover:translate-x-0.5 transition-all" />
+                        </div>
+                        <p className="text-[11px] text-[#8a8a8a] leading-relaxed">{card.desc}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -483,503 +463,496 @@ export function AiVideoCrewView({ onNavigateToPosts }: AiVideoCrewViewProps) {
 
             {/* BOT 2: PLUME (Mascots & Poses Studio) */}
             {activeBot === 'plume' && (
-              <div className="p-5 rounded-2xl bg-[#141416] border border-[#1f1f1f] space-y-5">
-                <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-3">
+              <div className="rounded-[22px] bg-[#161616] border border-[#222222] overflow-hidden">
+                <div className="px-4 py-3 border-b border-[#1f1f1f] bg-[#121212] flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="size-2.5 rounded-full bg-pink-500" />
-                    <h2 className="text-sm font-bold text-white font-mono">
-                      Computador de Plume (Mascotes & Poses)
-                    </h2>
+                    <span className="size-1.5 rounded-full bg-[#7ae6a0]" />
+                    <span className="text-xs font-mono text-[#ececec]">Plume&apos;s computer</span>
                   </div>
-                  <span className="text-[11px] font-mono text-zinc-400">
-                    {mascots.length} Mascote(s) Salvo(s)
+                  <span className="text-[11px] font-mono text-[#6f6f6f]">
+                    {mascots.length} mascote(s)
                   </span>
                 </div>
 
-                {/* Create Mascot Form */}
-                <form onSubmit={handleCreateMascot} className="p-4 rounded-xl bg-[#0a0a0a] border border-[#1f1f1f] space-y-3">
-                  <span className="text-xs font-semibold text-white block">
-                    Criar Novo Mascote Autoral para sua Marca
-                  </span>
+                <div className="p-5 space-y-5">
+                  <form onSubmit={handleCreateMascot} className="p-4 rounded-[18px] bg-[#111111] border border-[#222222] space-y-3">
+                    <span className="text-xs font-medium text-[#ececec] block">
+                      Desenhar Novo Mascote no Seu Estilo
+                    </span>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-mono text-[#8a8a8a]">Nome do Mascote</label>
+                        <input
+                          type="text"
+                          value={newMascotName}
+                          onChange={(e) => setNewMascotName(e.target.value)}
+                          placeholder="Ex: Byte, Orbit, Robô Dev..."
+                          className="w-full px-3.5 py-2 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-xs text-[#ececec] placeholder-[#6f6f6f] focus:outline-none focus:border-[#4e4e4e]"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-mono text-[#8a8a8a]">Estilo Artístico</label>
+                        <select
+                          value={newMascotStyle}
+                          onChange={(e) => setNewMascotStyle(e.target.value as MascotProfile['style'])}
+                          className="w-full px-3.5 py-2 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-xs text-[#ececec] focus:outline-none focus:border-[#4e4e4e]"
+                        >
+                          <option value="modern_sticker">Adesivo 3D Glossy (Estilo Pluy)</option>
+                          <option value="isometric_3d">3D Octane / Linear Studio</option>
+                          <option value="flat_vector">Vetor Flat Minimalista</option>
+                          <option value="cinematic_stickman">Stickman Moderno Tech</option>
+                          <option value="paper_cutout">Colagem de Papel Recortado</option>
+                          <option value="retro_pixel">Pixel Art 16-bit</option>
+                        </select>
+                      </div>
+                    </div>
+
                     <div className="space-y-1">
-                      <label className="text-[11px] font-mono text-zinc-400">Nome do Mascote</label>
+                      <label className="text-[11px] font-mono text-[#8a8a8a]">Descrição Visual</label>
                       <input
                         type="text"
-                        value={newMascotName}
-                        onChange={(e) => setNewMascotName(e.target.value)}
-                        placeholder="Ex: Byte, Orbit, Robô Dev..."
-                        className="w-full px-3 py-1.5 rounded-lg bg-[#141416] border border-[#1f1f1f] text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-[#0c8ce9]"
+                        value={newMascotDesc}
+                        onChange={(e) => setNewMascotDesc(e.target.value)}
+                        placeholder="Ex: Pequeno cérebro amigável com contorno nítido segurando um celular..."
+                        className="w-full px-3.5 py-2 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-xs text-[#ececec] placeholder-[#6f6f6f] focus:outline-none focus:border-[#4e4e4e]"
                       />
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="text-[11px] font-mono text-zinc-400">Estilo Artístico</label>
-                      <select
-                        value={newMascotStyle}
-                        onChange={(e) => setNewMascotStyle(e.target.value as any)}
-                        className="w-full px-3 py-1.5 rounded-lg bg-[#141416] border border-[#1f1f1f] text-xs text-white focus:outline-none"
-                      >
-                        <option value="modern_sticker">Adesivo 3D Glossy (Estilo Pluy)</option>
-                        <option value="isometric_3d">3D Octane / Linear Studio</option>
-                        <option value="flat_vector">Vetor Flat Minimalista</option>
-                        <option value="cinematic_stickman">Stickman Moderno Tech</option>
-                        <option value="paper_cutout">Colagem de Papel Recortado</option>
-                        <option value="retro_pixel">Pixel Art 16-bit</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-mono text-zinc-400">Descrição Visual</label>
-                    <input
-                      type="text"
-                      value={newMascotDesc}
-                      onChange={(e) => setNewMascotDesc(e.target.value)}
-                      placeholder="Ex: Pequeno robô roxo com antena de wifi e olhos digitais azuis brilhantes..."
-                      className="w-full px-3 py-1.5 rounded-lg bg-[#141416] border border-[#1f1f1f] text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-[#0c8ce9]"
-                    />
-                  </div>
-
-                  <div className="flex justify-end pt-1">
-                    <button
-                      type="submit"
-                      disabled={isDrawingMascot || !newMascotName.trim() || !newMascotDesc.trim()}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-pink-600 hover:bg-pink-500 text-white shadow-md transition-all active:scale-[0.97] disabled:opacity-40 cursor-pointer"
-                    >
-                      <Sparkles size={13} className={isDrawingMascot ? 'animate-spin' : ''} />
-                      <span>{isDrawingMascot ? 'Plume está desenhando…' : 'Desenhar Mascote com Plume'}</span>
-                    </button>
-                  </div>
-                </form>
-
-                {/* Mascots List & Poses Drawer */}
-                <div className="space-y-3">
-                  <span className="text-xs font-semibold text-zinc-300 block">
-                    Mascote Ativo & Galeria de Poses
-                  </span>
-
-                  <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-2">
-                    {mascots.map((m) => (
+                    <div className="flex justify-end pt-1">
                       <button
-                        key={m.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedMascot(m);
-                          setSelectedPose(m.poses[0] || null);
-                        }}
-                        className={`flex items-center gap-2.5 p-2 rounded-xl border transition-all shrink-0 active:scale-[0.97] ${
-                          selectedMascot?.id === m.id
-                            ? 'bg-[#212121] border-[#0c8ce9]'
-                            : 'bg-[#18181c] border-[#1f1f1f] hover:border-white/20'
-                        }`}
+                        type="submit"
+                        disabled={isDrawingMascot || !newMascotName.trim() || !newMascotDesc.trim()}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] shadow-sm transition-all active:scale-[0.97] disabled:opacity-40 cursor-pointer"
                       >
-                        <img
-                          src={m.baseImageUrl}
-                          alt={m.name}
-                          className="size-10 rounded-lg object-cover bg-black/50"
-                        />
-                        <div className="text-left">
-                          <span className="text-xs font-bold text-white block">{m.name}</span>
-                          <span className="text-[10px] font-mono text-zinc-500 capitalize">{m.style}</span>
-                        </div>
+                        <Sparkles size={13} className={isDrawingMascot ? 'animate-spin' : ''} />
+                        <span>{isDrawingMascot ? 'Plume está desenhando…' : 'Desenhar Mascote'}</span>
                       </button>
-                    ))}
-                  </div>
+                    </div>
+                  </form>
 
-                  {/* Poses generator */}
-                  {selectedMascot && (
-                    <div className="p-4 rounded-xl bg-[#18181c] border border-white/[0.06] space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-white">
-                          Poses de {selectedMascot.name} ({selectedMascot.poses.length})
-                        </span>
-                        <span className="text-[10px] font-mono text-zinc-500">
-                          Clique em uma pose para selecionar
-                        </span>
-                      </div>
+                  <div className="space-y-3">
+                    <span className="text-xs font-medium text-[#9a9a9a] block">
+                      Mascote Ativo &amp; Galeria de Poses
+                    </span>
 
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                        {selectedMascot.poses.map((p) => (
-                          <div
-                            key={p.id}
-                            onClick={() => setSelectedPose(p)}
-                            className={`p-2 rounded-xl border flex flex-col items-center gap-2 text-center transition-all cursor-pointer ${
-                              selectedPose?.id === p.id
-                                ? 'bg-[#0c8ce9]/15 border-[#0c8ce9]'
-                                : 'bg-[#141416] border-[#1f1f1f] hover:border-white/20'
-                            }`}
-                          >
-                            <img
-                              src={p.imageUrl}
-                              alt={p.name}
-                              className="size-16 rounded-lg object-contain bg-black/40"
-                            />
-                            <span className="text-[11px] font-medium text-white truncate max-w-full">
-                              {p.name}
-                            </span>
+                    <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar pb-1">
+                      {mascots.map((m) => (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedMascot(m);
+                            setSelectedPose(m.poses[0] || null);
+                          }}
+                          className={`flex items-center gap-2.5 p-2 rounded-[14px] border transition-all shrink-0 active:scale-[0.97] ${
+                            selectedMascot?.id === m.id
+                              ? 'bg-[#212121] border-[#ececec]/50 text-white'
+                              : 'bg-[#1a1a1a] border-[#242424] hover:border-[#363636] text-[#9a9a9a]'
+                          }`}
+                        >
+                          <img
+                            src={m.baseImageUrl}
+                            alt={m.name}
+                            className="size-10 rounded-lg object-cover bg-[#111111]"
+                          />
+                          <div className="text-left">
+                            <span className="text-xs font-medium text-[#ececec] block">{m.name}</span>
+                            <span className="text-[10px] font-mono text-[#6f6f6f] capitalize">{m.style.replace('_', ' ')}</span>
                           </div>
-                        ))}
-                      </div>
+                        </button>
+                      ))}
+                    </div>
 
-                      {/* Request New Pose Buttons */}
-                      <div className="pt-2 border-t border-[#1f1f1f] flex items-center justify-between gap-2 flex-wrap">
-                        <span className="text-[11px] font-mono text-zinc-400">Pedir nova pose:</span>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <button
-                            type="button"
-                            disabled={isGeneratingPose}
-                            onClick={() => handleAddPose('holding_phone', 'Segurando Celular')}
-                            className="px-2.5 py-1 rounded bg-[#212121] hover:bg-[#282828] text-white text-[11px] font-medium transition-colors"
-                          >
-                            + No Celular
-                          </button>
-                          <button
-                            type="button"
-                            disabled={isGeneratingPose}
-                            onClick={() => handleAddPose('pointing', 'Apontando para Métrica')}
-                            className="px-2.5 py-1 rounded bg-[#212121] hover:bg-[#282828] text-white text-[11px] font-medium transition-colors"
-                          >
-                            + Apontando
-                          </button>
-                          <button
-                            type="button"
-                            disabled={isGeneratingPose}
-                            onClick={() => handleAddPose('laptop', 'No Laptop')}
-                            className="px-2.5 py-1 rounded bg-[#212121] hover:bg-[#282828] text-white text-[11px] font-medium transition-colors"
-                          >
-                            + No Laptop
-                          </button>
-                          <button
-                            type="button"
-                            disabled={isGeneratingPose}
-                            onClick={() => handleAddPose('surprised', 'Expressão Chocada')}
-                            className="px-2.5 py-1 rounded bg-[#212121] hover:bg-[#282828] text-white text-[11px] font-medium transition-colors"
-                          >
-                            + Chocado
-                          </button>
+                    {selectedMascot && (
+                      <div className="p-4 rounded-[18px] bg-[#1a1a1a] border border-[#242424] space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-[#ececec]">
+                            Poses de {selectedMascot.name} ({selectedMascot.poses.length})
+                          </span>
+                          <span className="text-[10px] font-mono text-[#6f6f6f]">
+                            Toque para selecionar
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                          {selectedMascot.poses.map((p) => (
+                            <div
+                              key={p.id}
+                              onClick={() => setSelectedPose(p)}
+                              className={`p-2 rounded-[14px] border flex flex-col items-center gap-2 text-center transition-all cursor-pointer active:scale-[0.97] ${
+                                selectedPose?.id === p.id
+                                  ? 'bg-[#212121] border-[#ececec]/50'
+                                  : 'bg-[#141414] border-[#222222] hover:border-[#333333]'
+                              }`}
+                            >
+                              <img
+                                src={p.imageUrl}
+                                alt={p.name}
+                                className="size-16 rounded-lg object-contain bg-[#0e0e0e]"
+                              />
+                              <span className="text-[11px] font-medium text-[#ececec] truncate max-w-full">
+                                {p.name}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Request New Pose Chips */}
+                        <div className="pt-2.5 border-t border-[#242424] flex items-center justify-between gap-2 flex-wrap">
+                          <span className="text-[11px] font-mono text-[#6f6f6f]">Pedir nova pose:</span>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {[
+                              { action: 'holding_phone' as const, label: 'Segurando Celular', chip: 'No Celular' },
+                              { action: 'pointing' as const, label: 'Apontando para Métrica', chip: 'Apontando' },
+                              { action: 'laptop' as const, label: 'No Laptop', chip: 'No Laptop' },
+                              { action: 'surprised' as const, label: 'Expressão Chocada', chip: 'Chocado' },
+                            ].map((item) => (
+                              <button
+                                key={item.action}
+                                type="button"
+                                disabled={isGeneratingPose}
+                                onClick={() => handleAddPose(item.action, item.label)}
+                                className="px-3 py-1 rounded-full bg-[#242424] hover:bg-[#2e2e2e] border border-[#303030] text-[#ececec] text-[11px] font-medium transition-all active:scale-[0.97]"
+                              >
+                                + {item.chip}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* BOT 3: PLOT (Viral Video Producer & 33 Templates) */}
+            {/* BOT 3: PLOT (Viral Video Producer & Templates) */}
             {activeBot === 'plot' && (
-              <div className="p-5 rounded-2xl bg-[#141416] border border-[#1f1f1f] space-y-5">
-                <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-3">
+              <div className="rounded-[22px] bg-[#161616] border border-[#222222] overflow-hidden">
+                <div className="px-4 py-3 border-b border-[#1f1f1f] bg-[#121212] flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="size-2.5 rounded-full bg-amber-400" />
-                    <h2 className="text-sm font-bold text-white font-mono">
-                      Computador de Plot (Roteiro & Vídeos Virais)
-                    </h2>
+                    <span className="size-1.5 rounded-full bg-[#7ae6a0]" />
+                    <span className="text-xs font-mono text-[#ececec]">Plot&apos;s computer</span>
                   </div>
-                  <span className="text-[11px] font-mono text-zinc-500">
-                    33 Formatos Testados
+                  <span className="text-[11px] font-mono text-[#6f6f6f]">
+                    Templates Virais
                   </span>
                 </div>
 
-                {/* Topic Input */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-white flex items-center justify-between">
-                    <span>Sobre o que é seu vídeo?</span>
-                    <span className="text-[11px] font-mono text-zinc-500">Plot cuidará do gancho e cortes</span>
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={videoTopic}
-                    onChange={(e) => setVideoTopic(e.target.value)}
-                    placeholder="Ex: Como 1 linha de código nos economizou R$ 80.000 em servidores no mês passado..."
-                    className="w-full p-3 rounded-xl bg-[#0a0a0a] border border-[#1f1f1f] text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-[#0c8ce9] resize-none"
-                  />
-                </div>
-
-                {/* Template Selection Grid */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-zinc-300">
-                      Escolha um Formato Viral (Benchmark Pluy):
-                    </span>
-                    <span className="text-[11px] font-mono text-[#0c8ce9]">
-                      {selectedTemplate.viewsBenchmark}
-                    </span>
+                <div className="p-5 space-y-5">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-[#ececec] flex items-center justify-between">
+                      <span>Sobre o que é seu vídeo?</span>
+                      <span className="text-[11px] font-mono text-[#6f6f6f]">Plot escreve o gancho e cenas</span>
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={videoTopic}
+                      onChange={(e) => setVideoTopic(e.target.value)}
+                      placeholder="Ex: Rankeando 12 ferramentas de IA que realmente uso todo dia..."
+                      className="w-full p-3.5 rounded-2xl bg-[#1c1c1c] border border-[#2a2a2a] text-xs text-[#ececec] placeholder-[#6f6f6f] focus:outline-none focus:border-[#4e4e4e] resize-none"
+                    />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-56 overflow-y-auto custom-scrollbar p-1">
-                    {VIRAL_TEMPLATES.map((tpl) => (
-                      <button
-                        key={tpl.id}
-                        type="button"
-                        onClick={() => setSelectedTemplate(tpl)}
-                        className={`p-3 rounded-xl border text-left transition-all active:scale-[0.98] ${
-                          selectedTemplate.id === tpl.id
-                            ? 'bg-[#212121] border-[#0c8ce9] shadow-sm'
-                            : 'bg-[#18181c] border-[#1f1f1f] hover:border-white/20'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-bold text-white truncate max-w-[180px]">
-                            {tpl.name}
-                          </span>
-                          <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded border border-amber-500/20">
-                            {tpl.viewsBenchmark}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-zinc-400 line-clamp-2">
-                          {tpl.description}
-                        </p>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                  {/* Template Selection Grid */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-[#9a9a9a]">
+                        Escolha um Formato Viral (Benchmark Pluy):
+                      </span>
+                      <span className="text-[11px] font-mono text-[#7ae6a0]">
+                        {selectedTemplate.viewsBenchmark}
+                      </span>
+                    </div>
 
-                {/* Plan Trigger Button */}
-                <div className="flex items-center justify-between pt-2 border-t border-[#1f1f1f]">
-                  <div className="flex items-center gap-2 text-[11px] font-mono text-zinc-400">
-                    <Clock size={13} className="text-[#0c8ce9]" />
-                    <span>Duração média: ~{selectedTemplate.suggestedDuration}s em 9:16 vertical</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-60 overflow-y-auto custom-scrollbar pr-1">
+                      {VIRAL_TEMPLATES.map((tpl) => {
+                        const isSelected = selectedTemplate.id === tpl.id;
+                        return (
+                          <button
+                            key={tpl.id}
+                            type="button"
+                            onClick={() => setSelectedTemplate(tpl)}
+                            className={`p-3.5 rounded-[16px] border text-left transition-all active:scale-[0.98] ${
+                              isSelected
+                                ? 'bg-[#212121] border-[#ececec]/50 shadow-sm'
+                                : 'bg-[#1a1a1a] border-[#242424] hover:border-[#333333]'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <span className="text-xs font-medium text-[#ececec] truncate">
+                                {tpl.name}
+                              </span>
+                              <span className="text-[10px] font-mono text-[#9a9a9a] bg-[#262626] px-1.5 py-0.5 rounded-[5px] shrink-0">
+                                {tpl.viewsBenchmark}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-[#8a8a8a] line-clamp-2">
+                              {tpl.description}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
-                  <button
-                    type="button"
-                    disabled={isPlanning || !videoTopic.trim()}
-                    onClick={handlePlanVideo}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-[#0c8ce9] hover:bg-[#0c8ce9]/90 text-white shadow-lg shadow-[#0c8ce9]/25 transition-all active:scale-[0.97] disabled:opacity-40 cursor-pointer"
-                  >
-                    <Sparkles size={14} className={isPlanning ? 'animate-spin' : ''} />
-                    <span>{isPlanning ? 'Plot está roteirizando…' : 'Plot: Criar Roteiro & Animar'}</span>
-                  </button>
+                  {/* Pluy Signature Approval Bar (Approve + Change + Autopilot) */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-[#222222]">
+                    <div className="flex items-center gap-2 text-[11px] font-mono text-[#8a8a8a]">
+                      <Clock size={13} className="text-[#9a9a9a]" />
+                      <span>Duração: ~{selectedTemplate.suggestedDuration}s (9:16)</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={isPlanning || !videoTopic.trim()}
+                      onClick={handlePlanVideo}
+                      className="flex items-center justify-center gap-2 px-5 py-2 rounded-full text-xs font-medium bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] shadow-sm transition-all active:scale-[0.97] disabled:opacity-40 cursor-pointer"
+                    >
+                      <Sparkles size={13} className={isPlanning ? 'animate-spin' : ''} />
+                      <span>{isPlanning ? 'Plot está criando…' : 'Gerar Roteiro & Cenas'}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
 
             {/* BOT 4: PLAY (Director & Cut Reviewer) */}
             {activeBot === 'play' && (
-              <div className="p-5 rounded-2xl bg-[#141416] border border-[#1f1f1f] space-y-4">
-                <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-3">
+              <div className="rounded-[22px] bg-[#161616] border border-[#222222] overflow-hidden">
+                <div className="px-4 py-3 border-b border-[#1f1f1f] bg-[#121212] flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="size-2.5 rounded-full bg-emerald-400" />
-                    <h2 className="text-sm font-bold text-white font-mono">
-                      Computador de Play (Revisão do Corte)
-                    </h2>
+                    <span className="size-1.5 rounded-full bg-[#7ae6a0]" />
+                    <span className="text-xs font-mono text-[#ececec]">Play&apos;s computer</span>
                   </div>
-                  <span className="text-[11px] font-mono text-emerald-400 flex items-center gap-1">
+                  <span className="text-[11px] font-mono text-[#7ae6a0] flex items-center gap-1">
                     <ShieldCheck size={13} />
-                    {currentJob?.reviewScore?.verdict || 'Aguardando corte'}
+                    {isReviewing ? 'Assistindo cortes...' : currentJob?.reviewScore?.verdict || 'Aguardando corte'}
                   </span>
                 </div>
 
-                {currentJob ? (
-                  <div className="space-y-4">
-                    {/* Score Cards */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="p-3.5 rounded-xl bg-[#18181c] border border-white/[0.06] space-y-1">
-                        <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
-                          Força do Gancho (0-3s)
-                        </span>
-                        <div className="text-xl font-bold font-mono text-emerald-400">
-                          {currentJob.reviewScore?.hookStrength || 94}/100
+                <div className="p-5">
+                  {currentJob ? (
+                    <div className="space-y-4">
+                      {/* Score Cards */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="p-3.5 rounded-[16px] bg-[#1a1a1a] border border-[#242424] space-y-1">
+                          <span className="text-[10px] font-mono text-[#6f6f6f] uppercase tracking-wider">
+                            Força do Gancho (0-3s)
+                          </span>
+                          <div className="text-xl font-medium tracking-[-0.03em] font-mono text-[#7ae6a0]">
+                            {currentJob.reviewScore?.hookStrength || 94}/100
+                          </div>
+                        </div>
+                        <div className="p-3.5 rounded-[16px] bg-[#1a1a1a] border border-[#242424] space-y-1">
+                          <span className="text-[10px] font-mono text-[#6f6f6f] uppercase tracking-wider">
+                            Ritmo dos Cortes
+                          </span>
+                          <div className="text-xl font-medium tracking-[-0.03em] font-mono text-[#ececec]">
+                            {currentJob.reviewScore?.pacingScore || 91}/100
+                          </div>
                         </div>
                       </div>
-                      <div className="p-3.5 rounded-xl bg-[#18181c] border border-white/[0.06] space-y-1">
-                        <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
-                          Ritmo dos Cortes
+
+                      {/* Hook callout */}
+                      <div className="p-3.5 rounded-[16px] bg-[#111111] border border-[#242424] space-y-1">
+                        <span className="text-[10px] font-mono text-[#7ae6a0] uppercase tracking-wider">
+                          Gancho Validado por Play:
                         </span>
-                        <div className="text-xl font-bold font-mono text-[#0c8ce9]">
-                          {currentJob.reviewScore?.pacingScore || 91}/100
+                        <p className="text-xs text-[#ececec] italic">
+                          &ldquo;{currentJob.hook}&rdquo;
+                        </p>
+                      </div>
+
+                      {/* Scenes */}
+                      <div className="space-y-2">
+                        <span className="text-xs font-medium text-[#9a9a9a]">
+                          Cenas Montadas ({currentJob.scenes.length}):
+                        </span>
+                        <div className="space-y-1.5 max-h-48 overflow-y-auto custom-scrollbar">
+                          {currentJob.scenes.map((s, idx) => (
+                            <div
+                              key={idx}
+                              onClick={() => setActiveSceneIdx(idx)}
+                              className={`p-2.5 rounded-xl border flex items-center justify-between text-xs cursor-pointer transition-all ${
+                                activeSceneIdx === idx
+                                  ? 'bg-[#212121] border-[#ececec]/50 text-white'
+                                  : 'bg-[#1a1a1a] border-[#242424] text-[#8a8a8a] hover:text-[#ececec]'
+                              }`}
+                            >
+                              <span className="font-mono text-[11px] text-[#9a9a9a]">
+                                #{s.order} ({s.durationSeconds}s)
+                              </span>
+                              <span className="font-medium text-[#ececec] truncate max-w-[200px]">
+                                {s.onScreenText}
+                              </span>
+                              <span className="text-[10px] text-[#6f6f6f] capitalize">
+                                {s.backgroundStyle.replace('_', ' ')}
+                              </span>
+                            </div>
+                          ))}
                         </div>
+                      </div>
+
+                      {/* Pluy Screenshot 6 Bottom Control Strip (Approve + Change + Autopilot status) */}
+                      <div className="flex items-center justify-between pt-3 border-t border-[#222222] flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setActiveBot('plug')}
+                            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] shadow-sm transition-all active:scale-[0.97]"
+                          >
+                            <CheckCircle2 size={13} />
+                            <span>Approve</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setActiveBot('plot')}
+                            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium bg-[#212121] hover:bg-[#2a2a2a] text-[#ececec] border border-[#2c2c2c] transition-all active:scale-[0.97]"
+                          >
+                            <Sliders size={12} />
+                            <span>Change</span>
+                          </button>
+                        </div>
+
+                        <span className="text-[11px] font-mono text-[#6f6f6f]">
+                          {autopilot ? 'Autopilot ON' : 'Aguardando seu sim'}
+                        </span>
                       </div>
                     </div>
-
-                    {/* Hook callout */}
-                    <div className="p-3 rounded-xl bg-[#0a0a0a] border border-emerald-500/25 space-y-1">
-                      <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider">
-                        Gancho Aprovado por Play:
-                      </span>
-                      <p className="text-xs text-white font-medium italic">
-                        "{currentJob.hook}"
+                  ) : (
+                    <div className="py-12 text-center text-[#6f6f6f] space-y-2">
+                      <Award size={30} className="mx-auto text-[#4a4a4a]" />
+                      <p className="text-xs">
+                        Nenhum corte gerado ainda. Selecione um formato no Plot Bot para começar.
                       </p>
                     </div>
-
-                    {/* Step by step scenes */}
-                    <div className="space-y-2">
-                      <span className="text-xs font-semibold text-zinc-300">
-                        Cenas Montadas ({currentJob.scenes.length}):
-                      </span>
-                      <div className="space-y-1.5 max-h-48 overflow-y-auto custom-scrollbar">
-                        {currentJob.scenes.map((s, idx) => (
-                          <div
-                            key={idx}
-                            onClick={() => setActiveSceneIdx(idx)}
-                            className={`p-2.5 rounded-lg border flex items-center justify-between text-xs cursor-pointer transition-all ${
-                              activeSceneIdx === idx
-                                ? 'bg-[#212121] border-[#0c8ce9] text-white'
-                                : 'bg-[#18181c] border-white/[0.04] text-zinc-400 hover:text-white'
-                            }`}
-                          >
-                            <span className="font-mono text-[11px] text-[#0c8ce9]">
-                              Cena #{s.order} ({s.durationSeconds}s)
-                            </span>
-                            <span className="font-bold text-white truncate max-w-[200px]">
-                              {s.onScreenText}
-                            </span>
-                            <span className="text-[10px] text-zinc-500 capitalize">
-                              {s.backgroundStyle.replace('_', ' ')}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end pt-2 border-t border-[#1f1f1f]">
-                      <button
-                        type="button"
-                        onClick={() => setActiveBot('plug')}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md transition-all active:scale-[0.97] cursor-pointer"
-                      >
-                        <CheckCircle2 size={14} />
-                        <span>Aprovar Corte & Ir para Postagem (Plug)</span>
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="py-12 text-center text-zinc-500 space-y-2">
-                    <Award size={32} className="mx-auto text-zinc-600" />
-                    <p className="text-xs">
-                      Nenhum corte foi gerado ainda. Selecione um formato no Plot Bot para começar.
-                    </p>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             )}
 
             {/* BOT 5: PLUG (Publisher & Direct Social Output) */}
             {activeBot === 'plug' && (
-              <div className="p-5 rounded-2xl bg-[#141416] border border-[#1f1f1f] space-y-4">
-                <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-3">
+              <div className="rounded-[22px] bg-[#161616] border border-[#222222] overflow-hidden">
+                <div className="px-4 py-3 border-b border-[#1f1f1f] bg-[#121212] flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="size-2.5 rounded-full bg-violet-400" />
-                    <h2 className="text-sm font-bold text-white font-mono">
-                      Computador de Plug (Postagem Social)
-                    </h2>
+                    <span className="size-1.5 rounded-full bg-[#7ae6a0]" />
+                    <span className="text-xs font-mono text-[#ececec]">Plug&apos;s computer</span>
                   </div>
-                  <span className="text-[11px] font-mono text-zinc-500">
-                    Contas Conectadas no CreateFlow
+                  <span className="text-[11px] font-mono text-[#6f6f6f]">
+                    Signed in
                   </span>
                 </div>
 
-                {publishSuccess && (
-                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-xs flex items-center gap-2">
-                    <CheckCircle2 size={16} />
-                    <span>
-                      Vídeo enviado com sucesso para a fila de publicação das redes sociais!
-                    </span>
-                  </div>
-                )}
-
-                <div className="space-y-3">
-                  <span className="text-xs font-semibold text-white block">
-                    Canais de Destino para este Vídeo:
-                  </span>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    <div className="p-3 rounded-xl bg-[#18181c] border border-white/[0.08] flex items-center gap-2">
-                      <InstagramLogo className="size-4 text-pink-400" />
-                      <div>
-                        <span className="text-xs font-bold text-white block">Reels</span>
-                        <span className="text-[10px] font-mono text-emerald-400">Ativo</span>
-                      </div>
+                <div className="p-5 space-y-4">
+                  {publishSuccess && (
+                    <div className="p-3 rounded-2xl bg-[#7ae6a0]/12 border border-[#7ae6a0]/25 text-[#7ae6a0] text-xs flex items-center gap-2">
+                      <CheckCircle2 size={16} />
+                      <span>
+                        Vídeo enviado com sucesso para a fila de publicação das redes sociais!
+                      </span>
                     </div>
+                  )}
 
-                    <div className="p-3 rounded-xl bg-[#18181c] border border-white/[0.08] flex items-center gap-2">
-                      <TikTokLogo className="size-4 text-cyan-400" />
-                      <div>
-                        <span className="text-xs font-bold text-white block">TikTok</span>
-                        <span className="text-[10px] font-mono text-emerald-400">Ativo</span>
-                      </div>
-                    </div>
-
-                    <div className="p-3 rounded-xl bg-[#18181c] border border-white/[0.08] flex items-center gap-2">
-                      <XLogo className="size-4 text-white" />
-                      <div>
-                        <span className="text-xs font-bold text-white block">X Video</span>
-                        <span className="text-[10px] font-mono text-emerald-400">Ativo</span>
-                      </div>
-                    </div>
-
-                    <div className="p-3 rounded-xl bg-[#18181c] border border-white/[0.08] flex items-center gap-2">
-                      <LinkedInLogo className="size-4 text-[#0A66C2]" />
-                      <div>
-                        <span className="text-xs font-bold text-white block">LinkedIn</span>
-                        <span className="text-[10px] font-mono text-emerald-400">Ativo</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="pt-3 border-t border-[#1f1f1f] flex items-center justify-between gap-3">
-                    <span className="text-xs text-zinc-400">
-                      Disparo imediato ou agendado na fila inteligente de Brasília.
+                  <div className="space-y-3">
+                    <span className="text-xs font-medium text-[#ececec] block">
+                      Canais Conectados para Publicação:
                     </span>
 
-                    <button
-                      type="button"
-                      disabled={isPublishing || !currentJob}
-                      onClick={handlePublishJob}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-lg shadow-violet-600/25 transition-all active:scale-[0.97] disabled:opacity-40 cursor-pointer"
-                    >
-                      <Send size={14} className={isPublishing ? 'animate-spin' : ''} />
-                      <span>{isPublishing ? 'Plug está postando…' : 'Postar Agora com Plug'}</span>
-                    </button>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                      <div className="p-3 rounded-[16px] bg-[#1a1a1a] border border-[#242424] flex items-center gap-2">
+                        <InstagramLogo className="size-4 text-pink-400" />
+                        <div>
+                          <span className="text-xs font-medium text-[#ececec] block">Reels</span>
+                          <span className="text-[10px] font-mono text-[#7ae6a0]">Signed in</span>
+                        </div>
+                      </div>
+
+                      <div className="p-3 rounded-[16px] bg-[#1a1a1a] border border-[#242424] flex items-center gap-2">
+                        <TikTokLogo className="size-4 text-cyan-400" />
+                        <div>
+                          <span className="text-xs font-medium text-[#ececec] block">TikTok</span>
+                          <span className="text-[10px] font-mono text-[#7ae6a0]">Signed in</span>
+                        </div>
+                      </div>
+
+                      <div className="p-3 rounded-[16px] bg-[#1a1a1a] border border-[#242424] flex items-center gap-2">
+                        <XLogo className="size-4 text-white" />
+                        <div>
+                          <span className="text-xs font-medium text-[#ececec] block">X Video</span>
+                          <span className="text-[10px] font-mono text-[#7ae6a0]">Signed in</span>
+                        </div>
+                      </div>
+
+                      <div className="p-3 rounded-[16px] bg-[#1a1a1a] border border-[#242424] flex items-center gap-2">
+                        <LinkedInLogo className="size-4 text-[#0A66C2]" />
+                        <div>
+                          <span className="text-xs font-medium text-[#ececec] block">LinkedIn</span>
+                          <span className="text-[10px] font-mono text-[#7ae6a0]">Signed in</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-[#222222] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <span className="text-xs text-[#8a8a8a]">
+                        Disparo imediato ou agendado na fila inteligente de Brasília.
+                      </span>
+
+                      <button
+                        type="button"
+                        disabled={isPublishing || !currentJob}
+                        onClick={handlePublishJob}
+                        className="flex items-center justify-center gap-2 px-5 py-2 rounded-full text-xs font-medium bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] shadow-sm transition-all active:scale-[0.97] disabled:opacity-40 cursor-pointer"
+                      >
+                        <Send size={13} className={isPublishing ? 'animate-spin' : ''} />
+                        <span>{isPublishing ? 'Plug está postando…' : 'Postar Agora com Plug'}</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
-
           </div>
 
-          {/* RIGHT COLUMN: 9:16 LIVE VIDEO SIMULATOR (5 cols) */}
+          {/* RIGHT COLUMN: 9:16 LIVE VIDEO SIMULATOR (macOS Window Chrome) */}
           <div className="lg:col-span-5 space-y-4">
-            
-            {/* macOS Window Chrome Container (Pluy Signature) */}
-            <div className="rounded-2xl bg-[#141416] border border-[#1f1f1f] overflow-hidden shadow-2xl">
-              
-              {/* Window bar */}
-              <div className="px-4 py-2.5 border-b border-[#1f1f1f] bg-[#0c0c0e] flex items-center justify-between">
+            <div className="rounded-[24px] bg-[#161616] border border-[#242424] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.85)]">
+              {/* macOS Window bar */}
+              <div className="px-4 py-2.5 border-b border-[#1f1f1f] bg-[#121212] flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <div className="size-2.5 rounded-full bg-[#ff5f56]" />
                   <div className="size-2.5 rounded-full bg-[#ffbd2e]" />
                   <div className="size-2.5 rounded-full bg-[#27c93f]" />
                 </div>
-                <span className="text-[11px] font-mono text-zinc-400">
-                  9:16 Vertical Cut — {selectedTemplate.name}
+                <span className="text-[11px] font-mono text-[#8a8a8a] truncate max-w-[180px]">
+                  9:16 Cut — {selectedTemplate.name}
                 </span>
-                <span className="text-[10px] font-mono text-emerald-400">
-                  {isPlaying ? '● AO VIVO' : 'PAUSADO'}
+                <span className="text-[10px] font-mono text-[#7ae6a0]">
+                  {isPlaying ? '● LIVE' : 'PAUSED'}
                 </span>
               </div>
 
               {/* 9:16 Canvas Simulator */}
-              <div className="relative aspect-[9/16] max-h-[520px] w-full bg-gradient-to-b from-black via-zinc-950 to-[#0a0a0c] overflow-hidden flex flex-col justify-between p-6">
-                
+              <div className="relative aspect-[9/16] max-h-[520px] w-full bg-[#0a0a0a] overflow-hidden flex flex-col justify-between p-6">
                 {/* Top Overlay Header */}
-                <div className="flex items-center justify-between text-xs font-mono text-zinc-400 z-10">
-                  <span className="px-2 py-0.5 rounded-md bg-black/60 border border-white/[0.1] text-[10px]">
+                <div className="flex items-center justify-between text-xs font-mono text-[#8a8a8a] z-10">
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#161616]/90 border border-[#262626] text-[10px] text-[#ececec]">
                     Cena #{currentScene ? currentScene.order : 1}/{currentJob?.scenes?.length || 1}
                   </span>
-                  <span className="text-[10px] text-zinc-400">
+                  <span className="text-[10px] text-[#9a9a9a]">
                     {currentScene ? `${currentScene.durationSeconds}s` : '3s'}
                   </span>
                 </div>
 
                 {/* Center Dynamic Kinetic Caption */}
                 <div className="my-auto text-center space-y-3 z-10 px-2">
-                  <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight leading-tight drop-shadow-md">
+                  <h3 className="text-xl sm:text-2xl font-bold text-white uppercase tracking-tight leading-tight">
                     {currentScene ? currentScene.onScreenText : currentJob?.hook || 'SEU GANCHO VIRAL AQUI'}
                   </h3>
-                  <p className="text-xs text-zinc-300 font-sans leading-relaxed drop-shadow">
+                  <p className="text-xs text-[#9a9a9a] font-sans leading-relaxed">
                     {currentScene?.narration || 'Aguardando o roteiro ser compilado pelo Plot Bot...'}
                   </p>
                 </div>
@@ -993,7 +966,7 @@ export function AiVideoCrewView({ onNavigateToPosts }: AiVideoCrewViewProps) {
                       isPlaying ? 'animate-bounce' : ''
                     }`}
                   />
-                  <span className="text-[10px] font-mono text-zinc-500 mt-1">
+                  <span className="text-[10px] font-mono text-[#6f6f6f] mt-1">
                     {selectedMascot?.name || 'Mascote Ativo'}
                   </span>
                 </div>
@@ -1003,39 +976,32 @@ export function AiVideoCrewView({ onNavigateToPosts }: AiVideoCrewViewProps) {
               </div>
 
               {/* Playback Controls */}
-              <div className="p-3.5 border-t border-[#1f1f1f] bg-[#0c0c0e] flex items-center justify-between">
+              <div className="p-3.5 border-t border-[#1f1f1f] bg-[#121212] flex items-center justify-between">
                 <button
                   type="button"
                   onClick={() => setIsPlaying(!isPlaying)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#212121] hover:bg-[#282828] text-white transition-all active:scale-[0.97]"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium bg-[#212121] hover:bg-[#2a2a2a] border border-[#2c2c2c] text-[#ececec] transition-all active:scale-[0.97]"
                 >
-                  {isPlaying ? <Pause size={14} /> : <Play size={14} />}
-                  <span>{isPlaying ? 'Pausar' : 'Reproduzir Cena'}</span>
+                  {isPlaying ? <Pause size={13} /> : <Play size={13} />}
+                  <span>{isPlaying ? 'Pausar' : 'Reproduzir'}</span>
                 </button>
 
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveSceneIdx(0);
-                      setIsPlaying(true);
-                    }}
-                    className="p-1.5 rounded-lg bg-[#212121] hover:bg-[#282828] text-zinc-300 hover:text-white transition-colors"
-                    title="Reiniciar prévia"
-                  >
-                    <RotateCcw size={14} />
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveSceneIdx(0);
+                    setIsPlaying(true);
+                  }}
+                  className="p-2 rounded-full bg-[#212121] hover:bg-[#2a2a2a] border border-[#2c2c2c] text-[#9a9a9a] hover:text-[#ececec] transition-all active:scale-[0.97]"
+                  title="Reiniciar prévia"
+                >
+                  <RotateCcw size={13} />
+                </button>
               </div>
-
             </div>
-
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 }

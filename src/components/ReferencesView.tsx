@@ -65,10 +65,10 @@ export function ReferencesView({
       {/* Reverse Engineering Panel */}
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-3 p-4 rounded-xl bg-white/[0.025] border border-white/[0.08]"
+        className="flex flex-col gap-3 p-5 rounded-[22px] bg-[#141414] border border-[#242424]"
       >
-        <div className="flex items-center gap-2 text-xs font-semibold text-white/90">
-          <BookOpen size={15} className="text-violet-400" />
+        <div className="flex items-center gap-2 text-xs font-semibold text-[#ececec]">
+          <BookOpen size={15} className="text-[#8a8a8a]" />
           <span>Engenharia Reversa de Post Viral (Referência)</span>
         </div>
 
@@ -78,7 +78,7 @@ export function ReferencesView({
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="Link do post original (opcional)..."
-            className="px-3 py-2 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs placeholder:text-white/35 focus:outline-none focus:border-violet-500/50"
+            className="px-3.5 py-2.5 rounded-[14px] bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] text-xs placeholder:text-[#6f6f6f] focus:outline-none focus:border-[#4a4a4a] transition-colors"
           />
 
           <input
@@ -86,17 +86,17 @@ export function ReferencesView({
             value={author}
             onChange={(e) => setAuthor(e.target.value)}
             placeholder="Nome / @ do Autor..."
-            className="px-3 py-2 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs placeholder:text-white/35 focus:outline-none focus:border-violet-500/50"
+            className="px-3.5 py-2.5 rounded-[14px] bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] text-xs placeholder:text-[#6f6f6f] focus:outline-none focus:border-[#4a4a4a] transition-colors"
           />
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 p-1 rounded-full bg-[#0e0e0e] border border-[#262626]">
             <button
               type="button"
               onClick={() => setPlatform('x')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
                 platform === 'x'
-                  ? 'bg-white text-black font-semibold'
-                  : 'bg-white/[0.05] text-white/50 hover:text-white'
+                  ? 'bg-[#f2f2f2] text-[#0a0a0a]'
+                  : 'text-[#8a8a8a] hover:text-[#ececec]'
               }`}
             >
               <XLogo className="size-3" />
@@ -106,13 +106,13 @@ export function ReferencesView({
             <button
               type="button"
               onClick={() => setPlatform('linkedin')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
                 platform === 'linkedin'
-                  ? 'bg-[#0A66C2] text-white font-semibold'
-                  : 'bg-white/[0.05] text-white/50 hover:text-white'
+                  ? 'bg-[#0A66C2] text-white'
+                  : 'text-[#8a8a8a] hover:text-[#ececec]'
               }`}
             >
-              <LinkedInLogo className="size-3 text-white" />
+              <LinkedInLogo className="size-3" />
               <span>LinkedIn</span>
             </button>
           </div>
@@ -123,16 +123,16 @@ export function ReferencesView({
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Cole aqui o texto completo do post que você quer desconstruir e modelar..."
-          className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs placeholder:text-white/35 focus:outline-none focus:border-violet-500/50 resize-none"
+          className="w-full px-3.5 py-2.5 rounded-[14px] bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] text-xs placeholder:text-[#6f6f6f] focus:outline-none focus:border-[#4a4a4a] resize-none transition-colors"
         />
 
         <div className="flex justify-end">
           <button
             type="submit"
             disabled={!text.trim() || isAnalyzing}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-violet-600 hover:bg-violet-500 text-white disabled:opacity-40 transition-all cursor-pointer shadow-md shadow-violet-600/20 active:scale-[0.98]"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] disabled:opacity-40 transition-all cursor-pointer active:scale-[0.97]"
           >
-            <Sparkles size={14} className={isAnalyzing ? 'animate-spin' : ''} />
+            <Sparkles size={13} className={isAnalyzing ? 'animate-spin' : ''} />
             <span>{isAnalyzing ? 'Desconstruindo com IA…' : 'Desconstruir & Gerar Template'}</span>
           </button>
         </div>
@@ -140,7 +140,7 @@ export function ReferencesView({
 
       {/* References Grid */}
       <div className="flex flex-col gap-3">
-        <h3 className="text-xs font-mono text-white/50 uppercase tracking-wider">
+        <h3 className="text-[11px] font-mono text-[#6f6f6f] uppercase tracking-wider">
           REFERÊNCIAS & TEMPLATES SALVOS ({references.length})
         </h3>
 
@@ -148,17 +148,17 @@ export function ReferencesView({
           {references.map((ref) => (
             <div
               key={ref.id}
-              className="flex flex-col justify-between p-4 rounded-xl bg-[#0f0f15] border border-white/[0.07] hover:border-violet-500/30 transition-all group"
+              className="flex flex-col justify-between p-5 rounded-[20px] bg-[#161616] border border-[#222222] hover:border-[#323232] transition-all group"
             >
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     {ref.platform === 'x' ? (
-                      <XLogo className="size-3 text-white/80" />
+                      <XLogo className="size-3 text-[#ececec]" />
                     ) : (
                       <LinkedInLogo className="size-3 text-[#0A66C2]" />
                     )}
-                    <span className="text-xs font-semibold text-white/90">{ref.author}</span>
+                    <span className="text-xs font-semibold text-[#ececec]">{ref.author}</span>
                   </div>
 
                   {ref.url && (
@@ -166,7 +166,7 @@ export function ReferencesView({
                       href={ref.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-white/40 hover:text-white transition-colors"
+                      className="text-[#7a7a7a] hover:text-[#ececec] transition-colors"
                     >
                       <ExternalLink size={13} />
                     </a>
@@ -174,20 +174,20 @@ export function ReferencesView({
                 </div>
 
                 {/* Original Snippet */}
-                <div className="p-2.5 rounded-lg bg-black/40 border border-white/[0.05] text-xs text-white/70 italic line-clamp-3">
+                <div className="p-3 rounded-[14px] bg-[#1c1c1c] border border-[#262626] text-xs text-[#9a9a9a] italic line-clamp-3">
                   "{ref.text}"
                 </div>
 
                 {/* AI Breakdown */}
                 {ref.hook_analysis && (
-                  <div className="flex flex-col gap-1 text-[11px] text-white/75 bg-violet-500/[0.06] border border-violet-500/20 p-2.5 rounded-lg">
+                  <div className="flex flex-col gap-1 text-[11px] text-[#9a9a9a] bg-[#212121] border border-[#2c2c2c] p-3 rounded-[14px]">
                     <div>
-                      <strong className="text-violet-300 font-medium">Gancho: </strong>
+                      <strong className="text-[#ececec] font-medium">Gancho: </strong>
                       {ref.hook_analysis}
                     </div>
                     {ref.structure && (
                       <div className="mt-1">
-                        <strong className="text-violet-300 font-medium">Estrutura: </strong>
+                        <strong className="text-[#ececec] font-medium">Estrutura: </strong>
                         {ref.structure}
                       </div>
                     )}
@@ -196,15 +196,15 @@ export function ReferencesView({
 
                 {/* Reusable Template */}
                 {ref.reusable_template && (
-                  <div className="flex flex-col gap-1 text-[11px] font-mono text-emerald-300 bg-emerald-500/[0.06] border border-emerald-500/20 p-2.5 rounded-lg">
-                    <div className="flex items-center justify-between text-[10px] text-emerald-400 font-semibold mb-0.5">
+                  <div className="flex flex-col gap-1 text-[11px] font-mono text-[#7ae6a0] bg-[#141414] border border-[#7ae6a0]/25 p-3 rounded-[14px]">
+                    <div className="flex items-center justify-between text-[10px] text-[#7ae6a0] font-semibold mb-0.5">
                       <span>TEMPLATE REUTILIZÁVEL:</span>
                       <button
                         type="button"
                         onClick={() => copyTemplate(ref.id, ref.reusable_template)}
-                        className="flex items-center gap-1 text-white/50 hover:text-white transition-colors"
+                        className="flex items-center gap-1 text-[#8a8a8a] hover:text-[#ececec] transition-colors cursor-pointer"
                       >
-                        {copiedId === ref.id ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
+                        {copiedId === ref.id ? <Check size={11} className="text-[#7ae6a0]" /> : <Copy size={11} />}
                         <span>{copiedId === ref.id ? 'Copiado' : 'Copiar'}</span>
                       </button>
                     </div>
@@ -213,21 +213,21 @@ export function ReferencesView({
                 )}
               </div>
 
-              <div className="flex items-center justify-between pt-3 mt-3 border-t border-white/[0.05]">
+              <div className="flex items-center justify-between pt-3.5 mt-4 border-t border-[#222222]">
                 <button
                   type="button"
                   onClick={() => onUseTemplate(ref)}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-violet-300 hover:text-violet-200 transition-colors"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium bg-[#212121] hover:bg-[#2a2a2a] text-[#ececec] border border-[#2e2e2e] transition-all active:scale-[0.97] cursor-pointer"
                 >
-                  <Sparkles size={13} className="text-violet-400" />
+                  <Sparkles size={12} className="text-[#a0a0a0]" />
                   <span>Gerar post usando este modelo</span>
-                  <ArrowRight size={12} />
+                  <ArrowRight size={11} />
                 </button>
 
                 <button
                   type="button"
                   onClick={() => onDeleteReference(ref.id)}
-                  className="p-1 rounded text-white/30 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                  className="p-1.5 rounded-full text-[#7a7a7a] hover:text-[#ff5f56] hover:bg-[#ff5f56]/10 transition-colors cursor-pointer"
                 >
                   <Trash2 size={13} />
                 </button>

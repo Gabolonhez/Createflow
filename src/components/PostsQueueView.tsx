@@ -72,28 +72,28 @@ export function PostsQueueView({
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Due Posts Banner (PayPosts Inspired) */}
+      {/* Due Posts Banner (Pluy Soft Warning) */}
       {awaitingCount > 0 && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-200">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-[18px] bg-[#ffbd2e]/10 border border-[#ffbd2e]/25 text-[#ffd27d]">
           <div className="flex items-center gap-2.5">
-            <Clock size={16} className="text-amber-400 shrink-0" />
+            <Clock size={16} className="text-[#ffbd2e] shrink-0" />
             <span className="text-xs font-medium">
-              Você tem <strong className="text-amber-300 font-bold">{awaitingCount} {awaitingCount === 1 ? 'post' : 'posts'}</strong> aguardando sua revisão e aprovação antes de ir para o ar.
+              Você tem <strong className="text-[#ffbd2e] font-semibold">{awaitingCount} {awaitingCount === 1 ? 'post' : 'posts'}</strong> aguardando sua revisão e aprovação antes de ir para o ar.
             </span>
           </div>
           <button
             type="button"
             onClick={() => setActiveStatus('AWAITING_APPROVAL')}
-            className="w-full sm:w-auto text-center px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 transition-all shrink-0"
+            className="w-full sm:w-auto text-center px-3.5 py-1 rounded-full text-xs font-medium bg-[#ffbd2e]/20 hover:bg-[#ffbd2e]/30 text-[#ffbd2e] border border-[#ffbd2e]/30 transition-all active:scale-[0.97] shrink-0"
           >
             Revisar agora
           </button>
         </div>
       )}
 
-      {/* Action Controls & Status Tabs Bar */}
+      {/* Action Controls & Status Tabs Bar (Pluy Segmented Pill) */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-1 overflow-x-auto p-1 rounded-lg bg-white/[0.03] border border-white/[0.07] max-w-full no-scrollbar">
+        <div className="flex items-center gap-1 overflow-x-auto p-1 rounded-full bg-[#141414] border border-[#242424] max-w-full no-scrollbar">
           {tabs.map((tab) => {
             const isSelected = activeStatus === tab.id;
             return (
@@ -101,17 +101,17 @@ export function PostsQueueView({
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveStatus(tab.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap active:scale-[0.97] ${
                   isSelected
-                    ? 'bg-white/[0.10] text-white shadow-sm font-semibold'
-                    : 'text-white/50 hover:text-white/80'
+                    ? 'bg-[#282828] text-white shadow-sm'
+                    : 'text-[#8a8a8a] hover:text-[#ececec]'
                 }`}
               >
                 <span>{tab.label}</span>
                 {tab.count !== undefined && tab.count > 0 && (
                   <span
-                    className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
-                      isSelected ? 'bg-violet-500/30 text-violet-200' : 'bg-white/[0.08] text-white/50'
+                    className={`text-[10px] font-mono px-1.5 py-0.2 rounded-[5px] ${
+                      isSelected ? 'bg-[#363636] text-[#ececec]' : 'bg-[#212121] text-[#6f6f6f]'
                     }`}
                   >
                     {tab.count}
@@ -128,10 +128,10 @@ export function PostsQueueView({
               type="button"
               onClick={handleAutoDrafts}
               disabled={isAutoGenerating}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700/80 transition-all active:scale-[0.98] disabled:opacity-50"
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium bg-[#212121] hover:bg-[#2a2a2a] text-[#ececec] border border-[#2c2c2c] transition-all active:scale-[0.97] disabled:opacity-50"
               title="Transforma ideias e referências anotadas em 3 posts prontos aguardando sua revisão"
             >
-              <Bot size={14} className={isAutoGenerating ? 'animate-spin text-zinc-400' : 'text-zinc-400'} />
+              <Bot size={14} className={isAutoGenerating ? 'animate-spin text-[#ececec]' : 'text-[#9a9a9a]'} />
               <span>{isAutoGenerating ? 'Gerando rascunhos…' : 'Auto-gerar rascunhos (+3)'}</span>
             </button>
           )}
@@ -154,19 +154,19 @@ export function PostsQueueView({
         </div>
       ) : (
         /* Empty State */
-        <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl bg-white/[0.015] border border-white/[0.06] my-6">
-          <div className="size-12 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-white/40 mb-3">
+        <div className="flex flex-col items-center justify-center p-12 text-center rounded-[24px] bg-[#141414] border border-[#222222] my-6">
+          <div className="size-12 rounded-2xl bg-[#212121] border border-[#2c2c2c] flex items-center justify-center text-[#9a9a9a] mb-3">
             <Layers size={22} />
           </div>
-          <h3 className="text-sm font-semibold text-white/90 mb-1">Nenhum post nesta aba</h3>
-          <p className="text-xs text-white/45 max-w-sm mb-4">
+          <h3 className="text-sm font-medium text-[#ececec] mb-1">Nenhum post nesta aba</h3>
+          <p className="text-xs text-[#8a8a8a] max-w-sm mb-4">
             Crie um novo rascunho manualmente ou deixe a IA gerar conteúdos autorais com base nas suas ideias e fatos.
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-center">
             <button
               type="button"
               onClick={onOpenGenerate}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-violet-600 hover:bg-violet-500 text-white shadow-md transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] shadow-sm transition-all active:scale-[0.97]"
             >
               <Sparkles size={13} />
               Gerar post com IA
@@ -174,7 +174,7 @@ export function PostsQueueView({
             <button
               type="button"
               onClick={onOpenComposer}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.06] hover:bg-white/[0.1] text-white border border-white/[0.1] transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium bg-[#212121] hover:bg-[#2a2a2a] text-[#ececec] border border-[#2c2c2c] transition-all active:scale-[0.97]"
             >
               <Plus size={13} />
               Escrever rascunho

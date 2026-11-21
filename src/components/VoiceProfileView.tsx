@@ -140,10 +140,12 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
   return (
     <form onSubmit={handleSave} className="flex flex-col gap-6">
       {/* Top Save Bar */}
-      <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.025] border border-white/[0.08] sticky top-[72px] z-10 backdrop-blur-md">
-        <div className="flex items-center gap-2">
-          <Sliders size={16} className="text-violet-400" />
-          <span className="text-xs font-semibold text-white">
+      <div className="flex items-center justify-between p-4 sm:p-5 rounded-[22px] bg-[#141414]/90 border border-[#242424] sticky top-[72px] z-10 backdrop-blur-[14px] gap-3 flex-wrap">
+        <div className="flex items-center gap-2.5">
+          <div className="size-8 rounded-full bg-[#212121] border border-[#2c2c2c] flex items-center justify-center text-[#ececec]">
+            <Sliders size={14} />
+          </div>
+          <span className="text-xs font-semibold text-[#ececec]">
             Manual de Voz, Regras & Estilo Autoral
           </span>
         </div>
@@ -151,11 +153,11 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
         <button
           type="submit"
           disabled={isSaving}
-          className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-violet-600 hover:bg-violet-500 text-white transition-all shadow-md shadow-violet-600/20 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] transition-all active:scale-[0.97] disabled:opacity-50 cursor-pointer"
         >
           {savedSuccess ? (
             <>
-              <Check size={14} className="text-emerald-300" />
+              <Check size={14} className="text-[#16a34a]" />
               <span>Salvo com sucesso!</span>
             </>
           ) : (
@@ -166,59 +168,59 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Basic Identity Info */}
-        <div className="flex flex-col gap-4 p-5 rounded-xl bg-[#0f0f15] border border-white/[0.07]">
-          <h3 className="text-xs font-mono font-semibold text-white/80 uppercase tracking-wider">
+        <div className="flex flex-col gap-4 p-5 rounded-[22px] bg-[#161616] border border-[#222222]">
+          <h3 className="text-[11px] font-mono font-semibold text-[#8a8a8a] uppercase tracking-wider">
             1. IDENTIDADE DO CRIADOR
           </h3>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-mono text-white/50">Nome do Autor</label>
+            <label className="text-[11px] font-mono text-[#7a7a7a]">Nome do Autor</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Gabriel Bolonhez"
-              className="px-3 py-2 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50"
+              className="px-3.5 py-2.5 rounded-[14px] bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] placeholder:text-[#6f6f6f] text-xs focus:outline-none focus:border-[#4a4a4a] transition-colors"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-mono text-white/50">Handle no X (Twitter)</label>
+            <label className="text-[11px] font-mono text-[#7a7a7a]">Handle no X (Twitter)</label>
             <input
               type="text"
               value={handleX}
               onChange={(e) => setHandleX(e.target.value)}
               placeholder="Ex: @gabolonhez"
-              className="px-3 py-2 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50"
+              className="px-3.5 py-2.5 rounded-[14px] bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] placeholder:text-[#6f6f6f] text-xs focus:outline-none focus:border-[#4a4a4a] transition-colors"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-mono text-white/50">Headline (LinkedIn / Bio Curta)</label>
+            <label className="text-[11px] font-mono text-[#7a7a7a]">Headline (LinkedIn / Bio Curta)</label>
             <input
               type="text"
               value={headline}
               onChange={(e) => setHeadline(e.target.value)}
               placeholder="Ex: Software Engineer & Tech Founder | Building AI Tools"
-              className="px-3 py-2 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50"
+              className="px-3.5 py-2.5 rounded-[14px] bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] placeholder:text-[#6f6f6f] text-xs focus:outline-none focus:border-[#4a4a4a] transition-colors"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-mono text-white/50">Bio & Contexto Geral do Perfil</label>
+            <label className="text-[11px] font-mono text-[#7a7a7a]">Bio & Contexto Geral do Perfil</label>
             <textarea
               rows={3}
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder="Explique quem você é, o que constrói e sobre o que gosta de falar..."
-              className="px-3 py-2 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50 resize-none leading-relaxed"
+              className="px-3.5 py-2.5 rounded-[14px] bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] placeholder:text-[#6f6f6f] text-xs focus:outline-none focus:border-[#4a4a4a] resize-none leading-relaxed transition-colors"
             />
           </div>
         </div>
 
         {/* Tone Traits & Rules */}
-        <div className="flex flex-col gap-4 p-5 rounded-xl bg-[#0f0f15] border border-white/[0.07]">
-          <h3 className="text-xs font-mono font-semibold text-white/80 uppercase tracking-wider">
+        <div className="flex flex-col gap-4 p-5 rounded-[22px] bg-[#161616] border border-[#222222]">
+          <h3 className="text-[11px] font-mono font-semibold text-[#8a8a8a] uppercase tracking-wider">
             2. TOM DE VOZ & TRAÇOS AUTORAIS
           </h3>
 
@@ -229,13 +231,13 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
                 value={newTrait}
                 onChange={(e) => setNewTrait(e.target.value)}
                 placeholder="Adicionar traço de tom (ex: Direto, sem rodeios)..."
-                className="flex-1 px-3 py-1.5 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50"
+                className="flex-1 px-3.5 py-2 rounded-[14px] bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] placeholder:text-[#6f6f6f] text-xs focus:outline-none focus:border-[#4a4a4a] transition-colors"
                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTrait())}
               />
               <button
                 type="button"
                 onClick={addTrait}
-                className="px-2.5 py-1.5 rounded-lg bg-white/[0.08] hover:bg-white/[0.14] text-white text-xs font-medium"
+                className="px-3.5 py-2 rounded-full bg-[#212121] hover:bg-[#2a2a2a] text-[#ececec] border border-[#2e2e2e] text-xs font-medium transition-all cursor-pointer"
               >
                 Adicionar
               </button>
@@ -245,13 +247,13 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
               {toneTraits.map((trait, i) => (
                 <span
                   key={i}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-violet-500/10 text-violet-300 border border-violet-500/20"
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#212121] text-[#ececec] border border-[#2c2c2c]"
                 >
                   <span>{trait}</span>
                   <button
                     type="button"
                     onClick={() => removeTrait(i)}
-                    className="text-white/40 hover:text-white"
+                    className="text-[#7a7a7a] hover:text-[#ececec] cursor-pointer"
                   >
                     ×
                   </button>
@@ -260,25 +262,25 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
             </div>
           </div>
 
-          <div className="pt-2 border-t border-white/[0.05]">
-            <h4 className="text-xs font-semibold text-rose-300 flex items-center gap-1.5 mb-2">
+          <div className="pt-3 border-t border-[#222222]">
+            <h4 className="text-xs font-semibold text-[#ff5f56] flex items-center gap-1.5 mb-2">
               <AlertTriangle size={13} />
               Palavras e Expressões Banidas (NUNCA usar)
             </h4>
 
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2.5">
               <input
                 type="text"
                 value={newForbidden}
                 onChange={(e) => setNewForbidden(e.target.value)}
                 placeholder="Ex: Mergulhe, Neste artigo vamos desvendar..."
-                className="flex-1 px-3 py-1.5 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-rose-500/50"
+                className="flex-1 px-3.5 py-2 rounded-[14px] bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] placeholder:text-[#6f6f6f] text-xs focus:outline-none focus:border-[#ff5f56]/50 transition-colors"
                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addForbidden())}
               />
               <button
                 type="button"
                 onClick={addForbidden}
-                className="px-2.5 py-1.5 rounded-lg bg-rose-500/15 text-rose-300 hover:bg-rose-500/25 text-xs font-medium"
+                className="px-3.5 py-2 rounded-full bg-[#ff5f56]/15 text-[#ff5f56] hover:bg-[#ff5f56]/25 border border-[#ff5f56]/25 text-xs font-medium transition-colors cursor-pointer"
               >
                 Banir
               </button>
@@ -288,13 +290,13 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
               {forbiddenWords.map((word, i) => (
                 <span
                   key={i}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-rose-500/10 text-rose-300 border border-rose-500/20"
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#ff5f56]/10 text-[#ff5f56] border border-[#ff5f56]/25"
                 >
                   <span>{word}</span>
                   <button
                     type="button"
                     onClick={() => removeForbidden(i)}
-                    className="text-rose-400/60 hover:text-rose-300"
+                    className="text-[#ff5f56]/70 hover:text-[#ff5f56] cursor-pointer"
                   >
                     ×
                   </button>
@@ -306,13 +308,13 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
       </div>
 
       {/* Writing Samples Section */}
-      <div className="flex flex-col gap-4 p-5 rounded-xl bg-[#0f0f15] border border-white/[0.07]">
+      <div className="flex flex-col gap-4 p-5 rounded-[22px] bg-[#161616] border border-[#222222]">
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
-            <h3 className="text-xs font-mono font-semibold text-white/80 uppercase tracking-wider">
+            <h3 className="text-[11px] font-mono font-semibold text-[#8a8a8a] uppercase tracking-wider">
               3. AMOSTRAS DE ESCRITA REAL (FEW-SHOT LEARNING)
             </h3>
-            <p className="text-xs text-white/50 mt-0.5">
+            <p className="text-xs text-[#7a7a7a] mt-0.5">
               Cole exemplos de posts que você mesmo escreveu no X ou LinkedIn. A IA usará esses textos como modelo direto de ritmo, tamanho de frase e vocabulário.
             </p>
           </div>
@@ -324,14 +326,14 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
             value={newSample}
             onChange={(e) => setNewSample(e.target.value)}
             placeholder="Cole aqui um post real seu que você gostou muito do estilo..."
-            className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50 resize-none"
+            className="w-full px-3.5 py-2.5 rounded-[14px] bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] placeholder:text-[#6f6f6f] text-xs focus:outline-none focus:border-[#4a4a4a] resize-none transition-colors"
           />
           <div className="flex justify-end">
             <button
               type="button"
               onClick={addSample}
               disabled={!newSample.trim()}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/[0.08] hover:bg-white/[0.14] text-white disabled:opacity-40 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium bg-[#212121] hover:bg-[#2a2a2a] text-[#ececec] border border-[#2e2e2e] disabled:opacity-40 transition-all cursor-pointer"
             >
               <Plus size={13} />
               <span>Adicionar amostra</span>
@@ -339,18 +341,18 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
           {samples.map((sample, i) => (
             <div
               key={i}
-              className="relative p-3 rounded-lg bg-black/40 border border-white/[0.06] text-xs text-white/80 leading-relaxed font-sans flex flex-col justify-between"
+              className="relative p-4 rounded-[16px] bg-[#1c1c1c] border border-[#262626] text-xs text-[#d0d0d0] leading-relaxed font-sans flex flex-col justify-between"
             >
               <p className="whitespace-pre-line line-clamp-4 italic">&quot;{sample}&quot;</p>
-              <div className="flex justify-end pt-2 mt-2 border-t border-white/[0.04]">
+              <div className="flex justify-end pt-2.5 mt-2.5 border-t border-[#262626]">
                 <button
                   type="button"
                   onClick={() => removeSample(i)}
-                  className="text-white/30 hover:text-rose-400 text-[11px] flex items-center gap-1 transition-colors"
+                  className="text-[#7a7a7a] hover:text-[#ff5f56] text-[11px] flex items-center gap-1 transition-colors cursor-pointer"
                 >
                   <Trash2 size={11} /> Remover
                 </button>
@@ -361,18 +363,18 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
       </div>
 
       {/* Smart Post Slots Section */}
-      <div className="flex flex-col gap-4 p-5 rounded-xl bg-[#0f0f15] border border-white/[0.07]">
+      <div className="flex flex-col gap-4 p-5 rounded-[22px] bg-[#161616] border border-[#222222]">
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <h3 className="text-xs font-mono font-semibold text-white/80 uppercase tracking-wider">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-[11px] font-mono font-semibold text-[#8a8a8a] uppercase tracking-wider">
                 4. FILA COM HORÁRIOS INTELIGENTES (SMART POST SLOTS)
               </h3>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20 font-semibold">
+              <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-[#212121] text-[#ececec] border border-[#2e2e2e] font-medium">
                 Auto-Scheduling
               </span>
             </div>
-            <p className="text-xs text-white/50 mt-0.5">
+            <p className="text-xs text-[#7a7a7a] mt-0.5">
               Horários nobres fixos em Horário de Brasília (UTC-03:00). Ao aprovar qualquer post sem escolher data/hora manual, a fila ocupará automaticamente o próximo horário livre disponível.
             </p>
           </div>
@@ -384,20 +386,20 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
               type="time"
               value={newSlotTime}
               onChange={(e) => setNewSlotTime(e.target.value)}
-              className="px-3 py-1.5 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs font-mono focus:outline-none focus:border-violet-500/50"
+              className="px-3.5 py-2 rounded-[14px] bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] text-xs font-mono focus:outline-none focus:border-[#4a4a4a]"
             />
             <button
               type="button"
               onClick={handleAddSlot}
               disabled={bestTimeSlots.includes(newSlotTime) || bestTimeSlots.length >= 8}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-violet-600 hover:bg-violet-500 text-white disabled:opacity-40 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] disabled:opacity-40 transition-all active:scale-[0.97] cursor-pointer"
             >
               <Plus size={13} />
               <span>Adicionar Horário</span>
             </button>
           </div>
 
-          <span className="text-[11px] font-mono text-zinc-500">
+          <span className="text-[11px] font-mono text-[#6f6f6f]">
             Fuso: America/Sao_Paulo (UTC-03:00) • Margem de 30 min • Máx 8 horários
           </span>
         </div>
@@ -406,15 +408,15 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
           {bestTimeSlots.map((slot) => (
             <div
               key={slot}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white"
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#212121] border border-[#2c2c2c] text-[#ececec]"
             >
-              <Clock size={13} className="text-violet-400" />
+              <Clock size={12} className="text-[#a0a0a0]" />
               <span className="text-xs font-mono font-semibold">{slot} BRT</span>
               {bestTimeSlots.length > 1 && (
                 <button
                   type="button"
                   onClick={() => handleRemoveSlot(slot)}
-                  className="text-zinc-500 hover:text-rose-400 text-xs ml-1 transition-colors"
+                  className="text-[#7a7a7a] hover:text-[#ff5f56] text-xs ml-0.5 transition-colors cursor-pointer"
                   title="Remover horário"
                 >
                   ×
@@ -425,16 +427,16 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
         </div>
 
         {/* Auto-Pilot Mode Selector */}
-        <div className="flex flex-col gap-2 pt-3 border-t border-white/[0.06]">
-          <label className="text-xs font-mono font-medium text-white/70 uppercase tracking-wider">
+        <div className="flex flex-col gap-2.5 pt-4 border-t border-[#222222]">
+          <label className="text-[11px] font-mono font-medium text-[#8a8a8a] uppercase tracking-wider">
             Modo de Autonomia da Criação:
           </label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <label
-              className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors ${
+              className={`flex items-start gap-2.5 p-3.5 rounded-[16px] border cursor-pointer transition-colors ${
                 autoPilotMode === 'review_first'
-                  ? 'bg-violet-500/10 border-violet-500/40 text-white'
-                  : 'bg-black/30 border-white/[0.06] text-white/70 hover:border-white/[0.12]'
+                  ? 'bg-[#212121] border-[#ececec] text-[#ececec]'
+                  : 'bg-[#1c1c1c] border-[#262626] text-[#8a8a8a] hover:border-[#363636]'
               }`}
             >
               <input
@@ -443,23 +445,23 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
                 value="review_first"
                 checked={autoPilotMode === 'review_first'}
                 onChange={() => setAutoPilotMode('review_first')}
-                className="mt-0.5 accent-violet-500"
+                className="mt-0.5 accent-[#0c8ce9]"
               />
               <div className="flex flex-col text-xs">
-                <span className="font-semibold text-white">
-                  🛡️ Revisão do Criador (Padrão)
+                <span className="font-semibold text-[#ececec]">
+                  Revisão do Criador (Padrão)
                 </span>
-                <span className="text-white/50 text-[11px] mt-0.5 leading-relaxed">
+                <span className="text-[#7a7a7a] text-[11px] mt-0.5 leading-relaxed">
                   A IA gera rascunhos com base nas suas ideias e referências e os coloca em &quot;Aguardando Aprovação&quot;. Você aprova com 1 clique antes de ir para a fila.
                 </span>
               </div>
             </label>
 
             <label
-              className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors ${
+              className={`flex items-start gap-2.5 p-3.5 rounded-[16px] border cursor-pointer transition-colors ${
                 autoPilotMode === 'autonomous'
-                  ? 'bg-amber-500/10 border-amber-500/40 text-white'
-                  : 'bg-black/30 border-white/[0.06] text-white/70 hover:border-white/[0.12]'
+                  ? 'bg-[#212121] border-[#0c8ce9] text-[#ececec]'
+                  : 'bg-[#1c1c1c] border-[#262626] text-[#8a8a8a] hover:border-[#363636]'
               }`}
             >
               <input
@@ -468,13 +470,13 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
                 value="autonomous"
                 checked={autoPilotMode === 'autonomous'}
                 onChange={() => setAutoPilotMode('autonomous')}
-                className="mt-0.5 accent-amber-500"
+                className="mt-0.5 accent-[#0c8ce9]"
               />
               <div className="flex flex-col text-xs">
-                <span className="font-semibold text-white">
-                  ⚡ Piloto Automático 100% Autônomo
+                <span className="font-semibold text-[#ececec]">
+                  Piloto Automático 100% Autônomo
                 </span>
-                <span className="text-white/50 text-[11px] mt-0.5 leading-relaxed">
+                <span className="text-[#7a7a7a] text-[11px] mt-0.5 leading-relaxed">
                   A IA gera os posts e já os agenda automaticamente nos próximos Smart Slots livres. Se as conexões de API estiverem configuradas, posta sem intervenção.
                 </span>
               </div>
@@ -483,21 +485,21 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
         </div>
 
         {/* Preferred Language Selector */}
-        <div className="flex flex-col gap-2 pt-3 border-t border-white/[0.06]">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-mono font-medium text-white/70 uppercase tracking-wider">
+        <div className="flex flex-col gap-2.5 pt-4 border-t border-[#222222]">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <label className="text-[11px] font-mono font-medium text-[#8a8a8a] uppercase tracking-wider">
               Idioma Padrão de Redação da IA:
             </label>
-            <span className="text-[11px] font-mono text-zinc-500">
+            <span className="text-[11px] font-mono text-[#6f6f6f]">
               (Você pode alternar no gerador ou traduzir qualquer post com 1 clique)
             </span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <label
-              className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors ${
+              className={`flex items-start gap-2.5 p-3.5 rounded-[16px] border cursor-pointer transition-colors ${
                 preferredLanguage === 'pt-BR'
-                  ? 'bg-emerald-500/10 border-emerald-500/40 text-white'
-                  : 'bg-black/30 border-white/[0.06] text-white/70 hover:border-white/[0.12]'
+                  ? 'bg-[#212121] border-[#ececec] text-[#ececec]'
+                  : 'bg-[#1c1c1c] border-[#262626] text-[#8a8a8a] hover:border-[#363636]'
               }`}
             >
               <input
@@ -506,23 +508,23 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
                 value="pt-BR"
                 checked={preferredLanguage === 'pt-BR'}
                 onChange={() => setPreferredLanguage('pt-BR')}
-                className="mt-0.5 accent-emerald-500"
+                className="mt-0.5 accent-[#0c8ce9]"
               />
               <div className="flex flex-col text-xs">
-                <span className="font-semibold text-white">
-                  🇧🇷 Português do Brasil (Padrão)
+                <span className="font-semibold text-[#ececec]">
+                  Português do Brasil (Padrão)
                 </span>
-                <span className="text-white/50 text-[11px] mt-0.5 leading-relaxed">
+                <span className="text-[#7a7a7a] text-[11px] mt-0.5 leading-relaxed">
                   Gera todos os posts em português com vocabulário natural do mercado tech brasileiro.
                 </span>
               </div>
             </label>
 
             <label
-              className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors ${
+              className={`flex items-start gap-2.5 p-3.5 rounded-[16px] border cursor-pointer transition-colors ${
                 preferredLanguage === 'en-US'
-                  ? 'bg-sky-500/10 border-sky-500/40 text-white'
-                  : 'bg-black/30 border-white/[0.06] text-white/70 hover:border-white/[0.12]'
+                  ? 'bg-[#212121] border-[#ececec] text-[#ececec]'
+                  : 'bg-[#1c1c1c] border-[#262626] text-[#8a8a8a] hover:border-[#363636]'
               }`}
             >
               <input
@@ -531,13 +533,13 @@ export function VoiceProfileView({ profile, onSaveProfile }: VoiceProfileViewPro
                 value="en-US"
                 checked={preferredLanguage === 'en-US'}
                 onChange={() => setPreferredLanguage('en-US')}
-                className="mt-0.5 accent-sky-500"
+                className="mt-0.5 accent-[#0c8ce9]"
               />
               <div className="flex flex-col text-xs">
-                <span className="font-semibold text-white">
-                  🇺🇸 Inglês (US Tech Operator)
+                <span className="font-semibold text-[#ececec]">
+                  Inglês (US Tech Operator)
                 </span>
-                <span className="text-white/50 text-[11px] mt-0.5 leading-relaxed">
+                <span className="text-[#7a7a7a] text-[11px] mt-0.5 leading-relaxed">
                   Gera nativamente em inglês no estilo founder / staff engineer do Vale do Silício.
                 </span>
               </div>

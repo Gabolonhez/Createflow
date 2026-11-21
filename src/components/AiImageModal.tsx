@@ -142,42 +142,47 @@ export function AiImageModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-2 sm:p-4 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl max-h-[92dvh] sm:max-h-[92vh] flex flex-col rounded-2xl bg-[#0e0e12] border border-white/[0.08] shadow-2xl shadow-black/80 overflow-hidden text-zinc-100 font-sans">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-md p-2 sm:p-4 animate-in fade-in duration-200">
+      <div className="relative w-full max-w-4xl max-h-[92dvh] sm:max-h-[92vh] flex flex-col rounded-[24px] bg-[#141414] border border-[#262626] shadow-[0_24px_80px_rgba(0,0,0,0.85)] overflow-hidden text-[#ececec] font-sans">
         
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-white/[0.06] bg-zinc-950/40">
+        {/* Header (macOS Window Chrome) */}
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-[#1f1f1f] bg-[#111111]">
           <div className="flex items-center gap-2.5 sm:gap-3">
-            <div className="size-8 sm:size-9 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-violet-500/20 shrink-0">
-              <Sparkles size={18} />
+            <div className="hidden sm:flex items-center gap-1.5 mr-1 shrink-0">
+              <span className="size-2.5 rounded-full bg-[#ff5f56]" />
+              <span className="size-2.5 rounded-full bg-[#ffbd2e]" />
+              <span className="size-2.5 rounded-full bg-[#27c93f]" />
+            </div>
+            <div className="size-8 sm:size-9 rounded-xl bg-[#212121] border border-[#2c2c2c] flex items-center justify-center text-[#ececec] shrink-0">
+              <Sparkles size={17} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm sm:text-base font-semibold text-white tracking-tight">
+                <h3 className="text-sm sm:text-base font-medium text-[#ececec] tracking-[-0.02em]">
                   Gerador Visual com IA
                 </h3>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-violet-500/15 border border-violet-500/30 text-violet-300 font-medium">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-[5px] bg-[#262626] text-[#a0a0a0] font-medium">
                   FLUX Pro Engine
                 </span>
               </div>
-              <p className="text-[11px] sm:text-xs text-zinc-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
-                Gere visuais de alta densidade técnica ideais para atrair engenheiros e fundadores no LinkedIn & X.
+              <p className="text-[11px] sm:text-xs text-[#8a8a8a] mt-0.5 line-clamp-1 sm:line-clamp-none">
+                Gere visuais de alta densidade técnica ideais para atrair engenheiros e fundadores no LinkedIn &amp; X.
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="size-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-colors shrink-0"
+            className="size-8 rounded-full flex items-center justify-center text-[#6f6f6f] hover:text-[#ececec] hover:bg-[#212121] transition-colors shrink-0"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 custom-scrollbar">
           {error && (
-            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center gap-2">
+            <div className="p-3.5 rounded-2xl bg-[#ff5f56]/10 border border-[#ff5f56]/25 text-[#ff8a84] text-xs flex items-center gap-2">
               <span className="font-semibold">Erro:</span> {error}
             </div>
           )}
@@ -188,15 +193,15 @@ export function AiImageModal({
               {/* Context / Topic Input */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
-                  <label className="font-medium text-zinc-300 flex items-center gap-1.5">
+                  <label className="font-medium text-[#ececec] flex items-center gap-1.5">
                     <span>Tema do Post ou Insight</span>
-                    <span className="text-[10px] text-zinc-500 font-mono">(A IA converterá em arte técnica)</span>
+                    <span className="text-[10px] text-[#6f6f6f] font-mono">(A IA converterá em arte técnica)</span>
                   </label>
                   {initialContext && (
                     <button
                       type="button"
                       onClick={() => setTopicOrText(initialContext)}
-                      className="text-[11px] font-mono text-violet-400 hover:text-violet-300"
+                      className="text-[11px] font-mono text-[#ececec] hover:underline"
                     >
                       Puxar do Rascunho
                     </button>
@@ -207,13 +212,13 @@ export function AiImageModal({
                   value={topicOrText}
                   onChange={(e) => setTopicOrText(e.target.value)}
                   placeholder="Ex: Como migramos de microsserviços para monólito modular e reduzimos a latência p99 em 60%..."
-                  className="w-full p-3 rounded-xl bg-zinc-950/60 border border-white/[0.08] text-zinc-100 text-xs leading-relaxed placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/20 resize-none font-sans"
+                  className="w-full p-3.5 rounded-2xl bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] text-xs leading-relaxed placeholder:text-[#6f6f6f] focus:outline-none focus:border-[#4e4e4e] resize-none font-sans"
                 />
               </div>
 
               {/* Visual Archetype Selector */}
               <div className="space-y-2">
-                <label className="text-xs font-medium text-zinc-300 block">
+                <label className="text-xs font-medium text-[#9a9a9a] block">
                   Estilo Visual (Anti-Slop):
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -225,33 +230,33 @@ export function AiImageModal({
                         key={arch.id}
                         type="button"
                         onClick={() => setSelectedStyle(arch.id)}
-                        className={`text-left p-3 rounded-xl border transition-all flex flex-col justify-between gap-1.5 ${
+                        className={`text-left p-3 rounded-[16px] border transition-all flex flex-col justify-between gap-1.5 active:scale-[0.98] ${
                           isSelected
-                            ? 'bg-violet-600/15 border-violet-500/50 shadow-sm shadow-violet-500/10'
-                            : 'bg-zinc-950/40 border-white/[0.05] hover:border-white/[0.12] hover:bg-zinc-900/40'
+                            ? 'bg-[#212121] border-[#ececec]/50 shadow-sm'
+                            : 'bg-[#161616] border-[#242424] hover:border-[#333333]'
                         }`}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Icon
                               size={15}
-                              className={isSelected ? 'text-violet-400' : 'text-zinc-400'}
+                              className={isSelected ? 'text-[#ececec]' : 'text-[#8a8a8a]'}
                             />
-                            <span className="text-xs font-semibold text-zinc-200">
+                            <span className="text-xs font-medium text-[#ececec]">
                               {arch.label}
                             </span>
                           </div>
                           <span
-                            className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
+                            className={`text-[9px] font-mono px-1.5 py-0.5 rounded-[5px] ${
                               isSelected
-                                ? 'bg-violet-500/25 text-violet-300'
-                                : 'bg-white/[0.04] text-zinc-500'
+                                ? 'bg-[#303030] text-[#ececec]'
+                                : 'bg-[#212121] text-[#6f6f6f]'
                             }`}
                           >
                             {arch.badge}
                           </span>
                         </div>
-                        <p className="text-[11px] text-zinc-400 leading-tight">
+                        <p className="text-[11px] text-[#8a8a8a] leading-tight">
                           {arch.desc}
                         </p>
                       </button>
@@ -261,48 +266,48 @@ export function AiImageModal({
               </div>
 
               {/* Aspect Ratio Selector */}
-              <div className="flex items-center justify-between gap-3 pt-1 border-t border-white/[0.04]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-[#1f1f1f]">
                 <div className="space-y-0.5">
-                  <span className="text-xs font-medium text-zinc-300 block">
+                  <span className="text-xs font-medium text-[#ececec] block">
                     Formato da Imagem:
                   </span>
-                  <span className="text-[11px] text-zinc-500">
+                  <span className="text-[11px] text-[#6f6f6f]">
                     Otimizado para feeds sociais sem corte acidental.
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1.5 p-1 rounded-xl bg-zinc-950 border border-white/[0.06]">
+                <div className="inline-flex items-center gap-1 p-1 rounded-full bg-[#101010] border border-[#242424]">
                   <button
                     type="button"
                     onClick={() => setAspectRatio('16:9')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                       aspectRatio === '16:9'
-                        ? 'bg-violet-600 text-white font-semibold shadow'
-                        : 'text-zinc-400 hover:text-white'
+                        ? 'bg-[#282828] text-white shadow'
+                        : 'text-[#8a8a8a] hover:text-[#ececec]'
                     }`}
                   >
-                    16:9 (X / Feed Amplo)
+                    16:9 (X)
                   </button>
                   <button
                     type="button"
                     onClick={() => setAspectRatio('1:1')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                       aspectRatio === '1:1'
-                        ? 'bg-[#0A66C2] text-white font-semibold shadow'
-                        : 'text-zinc-400 hover:text-white'
+                        ? 'bg-[#282828] text-white shadow'
+                        : 'text-[#8a8a8a] hover:text-[#ececec]'
                     }`}
                   >
-                    1:1 (LinkedIn Quadrado)
+                    1:1 (LinkedIn)
                   </button>
                 </div>
               </div>
 
               {/* Advanced Prompt Mode Toggle */}
-              <div className="pt-2">
+              <div className="pt-1">
                 <button
                   type="button"
                   onClick={() => setShowAdvancedPrompt(!showAdvancedPrompt)}
-                  className="text-[11px] font-mono text-zinc-500 hover:text-zinc-300 flex items-center gap-1"
+                  className="text-[11px] font-mono text-[#6f6f6f] hover:text-[#ececec] flex items-center gap-1"
                 >
                   <span>{showAdvancedPrompt ? '− Ocultar Prompt Manual' : '+ Modo Prompt Manual (Avançado)'}</span>
                 </button>
@@ -314,27 +319,27 @@ export function AiImageModal({
                       value={customPrompt}
                       onChange={(e) => setCustomPrompt(e.target.value)}
                       placeholder="Sobrescreva o prompt do FLUX diretamente em inglês se desejar total controle..."
-                      className="w-full p-2.5 rounded-lg bg-zinc-950 border border-white/[0.08] text-zinc-200 text-xs font-mono placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/50"
+                      className="w-full p-3 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] text-xs font-mono placeholder:text-[#6f6f6f] focus:outline-none focus:border-[#4e4e4e]"
                     />
                   </div>
                 )}
               </div>
 
-              {/* Action Button */}
+              {/* Action Button (Pluy White Pill) */}
               <button
                 type="button"
                 disabled={isGenerating || (!topicOrText.trim() && !customPrompt.trim())}
                 onClick={handleGenerate}
-                className="w-full py-3 px-4 rounded-xl font-semibold text-xs text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-lg shadow-violet-600/20 active:scale-[0.99] cursor-pointer"
+                className="w-full py-2.5 px-5 rounded-full font-medium text-xs text-[#0a0a0a] bg-[#f2f2f2] hover:bg-white disabled:opacity-40 transition-all flex items-center justify-center gap-2 shadow-sm active:scale-[0.97] cursor-pointer"
               >
                 {isGenerating ? (
                   <>
-                    <Loader2 size={16} className="animate-spin text-white" />
+                    <Loader2 size={15} className="animate-spin text-[#0a0a0a]" />
                     <span>Renderizando visual com FLUX Pro (~3s)...</span>
                   </>
                 ) : (
                   <>
-                    <Wand2 size={16} />
+                    <Wand2 size={15} />
                     <span>Gerar Visual com IA</span>
                   </>
                 )}
@@ -342,15 +347,15 @@ export function AiImageModal({
             </div>
 
             {/* Right Column: Preview & Action Box */}
-            <div className="lg:col-span-5 flex flex-col justify-between rounded-xl bg-zinc-950/60 border border-white/[0.06] p-4 min-h-[380px]">
+            <div className="lg:col-span-5 flex flex-col justify-between rounded-[20px] bg-[#161616] border border-[#242424] p-4 min-h-[380px]">
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium text-zinc-300 flex items-center gap-1.5">
-                    <ImageIcon size={14} className="text-violet-400" />
+                  <span className="font-medium text-[#ececec] flex items-center gap-1.5">
+                    <ImageIcon size={14} className="text-[#9a9a9a]" />
                     Preview em Alta Resolução
                   </span>
                   {generatedUrl && (
-                    <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
+                    <span className="text-[10px] font-mono text-[#7ae6a0] flex items-center gap-1">
                       <Check size={11} /> Salvo no Acervo
                     </span>
                   )}
@@ -358,18 +363,18 @@ export function AiImageModal({
 
                 {/* Image Canvas / Placeholder */}
                 <div
-                  className={`w-full rounded-xl overflow-hidden border border-white/[0.08] bg-black/80 flex items-center justify-center relative ${
+                  className={`w-full rounded-2xl overflow-hidden border border-[#262626] bg-[#0a0a0a] flex items-center justify-center relative ${
                     aspectRatio === '16:9' ? 'aspect-video' : 'aspect-square'
                   }`}
                 >
                   {isGenerating ? (
                     <div className="flex flex-col items-center gap-3 p-6 text-center">
-                      <div className="size-12 rounded-full border-2 border-violet-500/20 border-t-violet-400 animate-spin flex items-center justify-center" />
+                      <div className="size-10 rounded-full border-2 border-[#2a2a2a] border-t-[#ececec] animate-spin flex items-center justify-center" />
                       <div className="space-y-1">
-                        <span className="text-xs font-medium text-violet-300 block">
+                        <span className="text-xs font-medium text-[#ececec] block">
                           Compondo estética obsidian...
                         </span>
-                        <span className="text-[10px] text-zinc-500">
+                        <span className="text-[10px] text-[#6f6f6f]">
                           Aplicando iluminação laser e eliminando ruídos.
                         </span>
                       </div>
@@ -381,12 +386,12 @@ export function AiImageModal({
                       className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                     />
                   ) : (
-                    <div className="flex flex-col items-center gap-2 p-6 text-center text-zinc-500">
-                      <ImageIcon size={32} className="stroke-[1.2] text-zinc-600" />
-                      <span className="text-xs">
+                    <div className="flex flex-col items-center gap-2 p-6 text-center text-[#6f6f6f]">
+                      <ImageIcon size={32} className="stroke-[1.2] text-[#4a4a4a]" />
+                      <span className="text-xs text-[#8a8a8a]">
                         Nenhum visual gerado ainda.
                       </span>
-                      <span className="text-[10px] text-zinc-600 max-w-[200px]">
+                      <span className="text-[10px] text-[#6f6f6f] max-w-[200px]">
                         Digite seu tema e clique no botão para renderizar a arte.
                       </span>
                     </div>
@@ -395,11 +400,11 @@ export function AiImageModal({
 
                 {/* Prompt Info */}
                 {generatedPrompt && (
-                  <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.04] space-y-1">
-                    <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">
+                  <div className="p-2.5 rounded-xl bg-[#111111] border border-[#222222] space-y-1">
+                    <span className="text-[10px] font-mono text-[#6f6f6f] uppercase tracking-wider block">
                       Prompt Otimizado (FLUX):
                     </span>
-                    <p className="text-[11px] text-zinc-400 leading-snug line-clamp-3 font-mono">
+                    <p className="text-[11px] text-[#8a8a8a] leading-snug line-clamp-3 font-mono">
                       {generatedPrompt}
                     </p>
                   </div>
@@ -408,12 +413,12 @@ export function AiImageModal({
 
               {/* Bottom Buttons if image generated */}
               {generatedUrl && (
-                <div className="pt-3 border-t border-white/[0.06] flex flex-col gap-2">
+                <div className="pt-3 border-t border-[#222222] flex flex-col gap-2">
                   {onSelectImage && (
                     <button
                       type="button"
                       onClick={handleApply}
-                      className="w-full py-2.5 px-3 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-900/30 cursor-pointer"
+                      className="w-full py-2 px-4 rounded-full text-xs font-medium text-[#0a0a0a] bg-[#f2f2f2] hover:bg-white transition-all active:scale-[0.97] flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
                     >
                       <Check size={14} />
                       <span>Anexar ao Post Agora</span>
@@ -424,9 +429,9 @@ export function AiImageModal({
                     <button
                       type="button"
                       onClick={handleCopyUrl}
-                      className="flex-1 py-1.5 px-2 rounded-lg text-[11px] font-medium bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 border border-white/[0.06] transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      className="flex-1 py-1.5 px-3 rounded-full text-[11px] font-medium bg-[#212121] hover:bg-[#2a2a2a] text-[#ececec] border border-[#2c2c2c] transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-[0.97]"
                     >
-                      {copiedUrl ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                      {copiedUrl ? <Check size={12} className="text-[#7ae6a0]" /> : <Copy size={12} />}
                       <span>{copiedUrl ? 'Copiado!' : 'Copiar Link'}</span>
                     </button>
 
@@ -434,7 +439,7 @@ export function AiImageModal({
                       href={generatedUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="py-1.5 px-2.5 rounded-lg text-[11px] font-medium bg-white/[0.04] hover:bg-white/[0.08] text-zinc-400 hover:text-white border border-white/[0.06] transition-all flex items-center justify-center gap-1"
+                      className="py-1.5 px-3 rounded-full text-[11px] font-medium bg-[#212121] hover:bg-[#2a2a2a] text-[#9a9a9a] hover:text-white border border-[#2c2c2c] transition-all flex items-center justify-center gap-1"
                       title="Abrir em nova aba"
                     >
                       <ExternalLink size={12} />

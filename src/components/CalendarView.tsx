@@ -61,36 +61,36 @@ export function CalendarView({
   return (
     <div className="flex flex-col gap-4">
       {/* Week Navigation Header */}
-      <div className="flex items-center justify-between p-3.5 rounded-xl bg-white/[0.025] border border-white/[0.07]">
+      <div className="flex items-center justify-between p-4 rounded-[20px] bg-[#141414] border border-[#222222]">
         <div className="flex items-center gap-2">
-          <CalendarClock size={16} className="text-violet-400" />
-          <span className="text-xs font-semibold text-white">
+          <CalendarClock size={16} className="text-[#ececec]" />
+          <span className="text-xs font-medium text-[#ececec]">
             Semana de {daysOfWeek[0].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} a{' '}
             {daysOfWeek[6].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="inline-flex items-center gap-1 p-1 rounded-full bg-[#101010] border border-[#242424]">
           <button
             type="button"
             onClick={() => setWeekOffset((prev) => prev - 1)}
-            className="p-1.5 rounded-md text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] transition-colors"
+            className="p-1.5 rounded-full text-[#8a8a8a] hover:text-[#ececec] hover:bg-[#212121] transition-colors"
           >
-            <ChevronLeft size={15} />
+            <ChevronLeft size={14} />
           </button>
           <button
             type="button"
             onClick={() => setWeekOffset(0)}
-            className="px-2.5 py-1 rounded-md text-xs font-medium text-white/70 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] transition-colors"
+            className="px-3 py-1 rounded-full text-xs font-medium text-[#ececec] bg-[#212121] hover:bg-[#2a2a2a] transition-colors"
           >
             Hoje
           </button>
           <button
             type="button"
             onClick={() => setWeekOffset((prev) => prev + 1)}
-            className="p-1.5 rounded-md text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] transition-colors"
+            className="p-1.5 rounded-full text-[#8a8a8a] hover:text-[#ececec] hover:bg-[#212121] transition-colors"
           >
-            <ChevronRight size={15} />
+            <ChevronRight size={14} />
           </button>
         </div>
       </div>
@@ -105,23 +105,23 @@ export function CalendarView({
           return (
             <div
               key={i}
-              className={`flex flex-col rounded-xl border p-3 min-h-[300px] transition-all ${
+              className={`flex flex-col rounded-[18px] border p-3 min-h-[300px] transition-all ${
                 activeToday
-                  ? 'bg-violet-500/[0.06] border-violet-500/30 ring-1 ring-violet-500/20'
+                  ? 'bg-[#1a1a1a] border-[#ececec]/40'
                   : past
-                  ? 'bg-black/40 border-white/[0.04] calendar-past-hatch'
-                  : 'bg-white/[0.02] border-white/[0.06]'
+                  ? 'bg-[#101010] border-[#1f1f1f] calendar-past-hatch'
+                  : 'bg-[#141414] border-[#222222]'
               }`}
             >
               {/* Day Header */}
-              <div className="flex items-center justify-between pb-2 border-b border-white/[0.05] mb-2">
+              <div className="flex items-center justify-between pb-2 border-b border-[#1f1f1f] mb-2">
                 <div className="flex flex-col">
-                  <span className="text-[11px] font-mono text-white/40 uppercase">
+                  <span className="text-[11px] font-mono text-[#6f6f6f] uppercase">
                     {dayNames[i]}
                   </span>
                   <span
-                    className={`text-sm font-bold font-mono ${
-                      activeToday ? 'text-violet-300' : 'text-white/80'
+                    className={`text-sm font-medium font-mono ${
+                      activeToday ? 'text-white' : 'text-[#9a9a9a]'
                     }`}
                   >
                     {dayDate.getDate()}
@@ -132,7 +132,7 @@ export function CalendarView({
                   type="button"
                   onClick={() => onOpenComposerWithDate(dayDate.toISOString())}
                   title="Agendar post neste dia"
-                  className="size-6 rounded flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.08] transition-colors"
+                  className="size-6 rounded-full flex items-center justify-center text-[#6f6f6f] hover:text-[#ececec] hover:bg-[#212121] transition-colors"
                 >
                   <Plus size={13} />
                 </button>
@@ -152,21 +152,21 @@ export function CalendarView({
                     <div
                       key={post.id}
                       onClick={() => onOpenPost(post)}
-                      className="group flex flex-col p-2 rounded-lg bg-[#14141c] hover:bg-[#1a1a24] border border-white/[0.08] hover:border-violet-500/40 transition-all cursor-pointer shadow-sm"
+                      className="group flex flex-col p-2.5 rounded-xl bg-[#1c1c1c] hover:bg-[#242424] border border-[#282828] hover:border-[#383838] transition-all cursor-pointer"
                     >
                       <div className="flex items-center justify-between mb-1 text-[10px] font-mono">
-                        <span className="text-violet-300 flex items-center gap-1">
-                          <Clock size={10} />
+                        <span className="text-[#ececec] flex items-center gap-1">
+                          <Clock size={10} className="text-[#9a9a9a]" />
                           {timeStr}
                         </span>
                         <div className="flex items-center gap-1">
-                          {post.platforms.includes('x') && <XLogo className="size-2.5 text-white/70" />}
+                          {post.platforms.includes('x') && <XLogo className="size-2.5 text-[#ececec]" />}
                           {post.platforms.includes('linkedin') && (
                             <LinkedInLogo className="size-2.5 text-[#0A66C2]" />
                           )}
                         </div>
                       </div>
-                      <p className="text-[11px] text-white/80 line-clamp-2 leading-snug">
+                      <p className="text-[11px] text-[#9a9a9a] line-clamp-2 leading-snug">
                         {post.text}
                       </p>
                     </div>
@@ -175,7 +175,7 @@ export function CalendarView({
 
                 {dayPosts.length === 0 && (
                   <div className="flex-1 flex items-center justify-center">
-                    <span className="text-[10px] font-mono text-white/20">Vazio</span>
+                    <span className="text-[10px] font-mono text-[#4a4a4a]">Vazio</span>
                   </div>
                 )}
               </div>

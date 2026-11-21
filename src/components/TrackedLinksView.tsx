@@ -94,15 +94,15 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#0a0a0c] overflow-y-auto custom-scrollbar">
+    <div className="flex-1 flex flex-col min-h-0 bg-[#0a0a0a] overflow-y-auto custom-scrollbar">
       {/* Header & Metrics Strip */}
-      <div className="p-3.5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-800/80 space-y-3 sm:space-y-4">
+      <div className="p-3.5 sm:p-6 pb-3 sm:pb-4 border-b border-[#1f1f1f] space-y-3 sm:space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-indigo-500/15 text-indigo-300 border border-indigo-500/25">
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-[#1a1a1a] text-[#ececec] border border-[#262626]">
               Encurtador &amp; CTR
             </span>
-            <span className="text-xs text-zinc-400 font-mono">
+            <span className="text-xs text-[#9a9a9a] font-mono">
               Monitoramento oficial de cliques para Direct no Instagram e TikTok
             </span>
           </div>
@@ -110,7 +110,7 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white hover:bg-zinc-200 text-xs font-semibold text-zinc-950 transition-all active:scale-[0.98] shadow-sm shrink-0"
+            className="flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-[#f2f2f2] hover:bg-white text-xs font-medium text-[#0a0a0a] transition-all active:scale-[0.97] shadow-sm shrink-0"
           >
             <Plus size={14} />
             Novo Link Rastreado
@@ -119,34 +119,34 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
 
         {/* 4 Stat Cards (Only when links exist) */}
         {links.length > 0 && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 pt-1">
-            <div className="p-3 sm:p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
-              <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 pt-1">
+            <div className="p-3.5 sm:p-4 rounded-[20px] bg-[#161616] border border-[#222222] space-y-1">
+              <span className="text-[10px] sm:text-[11px] font-mono text-[#6f6f6f] uppercase tracking-wider">
                 Links Ativos
               </span>
-              <div className="text-lg sm:text-xl font-bold text-white font-mono">{stats.totalLinks}</div>
+              <div className="text-lg sm:text-2xl font-medium tracking-[-0.03em] text-[#ececec] font-mono">{stats.totalLinks}</div>
             </div>
-            <div className="p-3 sm:p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
-              <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+            <div className="p-3.5 sm:p-4 rounded-[20px] bg-[#161616] border border-[#222222] space-y-1">
+              <span className="text-[10px] sm:text-[11px] font-mono text-[#6f6f6f] uppercase tracking-wider">
                 Cliques Totais
               </span>
-              <div className="text-lg sm:text-xl font-bold text-indigo-400 font-mono">
+              <div className="text-lg sm:text-2xl font-medium tracking-[-0.03em] text-[#ececec] font-mono">
                 {stats.totalClicks}
               </div>
             </div>
-            <div className="p-3 sm:p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
-              <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+            <div className="p-3.5 sm:p-4 rounded-[20px] bg-[#161616] border border-[#222222] space-y-1">
+              <span className="text-[10px] sm:text-[11px] font-mono text-[#6f6f6f] uppercase tracking-wider">
                 Visitantes Únicos
               </span>
-              <div className="text-lg sm:text-xl font-bold text-emerald-400 font-mono">
+              <div className="text-lg sm:text-2xl font-medium tracking-[-0.03em] text-[#7ae6a0] font-mono">
                 {stats.totalUnique}
               </div>
             </div>
-            <div className="p-3 sm:p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
-              <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+            <div className="p-3.5 sm:p-4 rounded-[20px] bg-[#161616] border border-[#222222] space-y-1">
+              <span className="text-[10px] sm:text-[11px] font-mono text-[#6f6f6f] uppercase tracking-wider">
                 Taxa de Conversão Média
               </span>
-              <div className="text-lg sm:text-xl font-bold text-amber-400 font-mono">
+              <div className="text-lg sm:text-2xl font-medium tracking-[-0.03em] text-[#ececec] font-mono">
                 {stats.avgCtr}%
               </div>
             </div>
@@ -155,29 +155,29 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
       </div>
 
       {/* Filter Bar */}
-      <div className="p-3.5 sm:p-6 py-2.5 sm:py-3.5 flex items-center justify-between border-b border-white/[0.05] bg-[#0c0c10]/40">
+      <div className="p-3.5 sm:p-6 py-2.5 sm:py-3.5 flex items-center justify-between border-b border-[#1f1f1f] bg-[#0e0e0e]">
         <div className="relative w-full max-w-sm">
           <Search
             size={13}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6f6f6f]"
           />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por rótulo, campanha ou URL..."
-            className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.08] text-xs text-white placeholder-white/30 focus:outline-none focus:border-indigo-500"
+            className="w-full pl-9 pr-3.5 py-1.5 rounded-full bg-[#161616] border border-[#262626] text-xs text-[#ececec] placeholder-[#6f6f6f] focus:outline-none focus:border-[#4e4e4e]"
           />
         </div>
       </div>
 
       {/* Tracked Links Table */}
       <div className="p-3.5 sm:p-6">
-        <div className="rounded-xl border border-white/[0.08] bg-[#111116] overflow-hidden">
+        <div className="rounded-[20px] border border-[#222222] bg-[#161616] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-white/[0.08] bg-[#0c0c10] text-[11px] font-mono text-white/50">
+                <tr className="border-b border-[#222222] bg-[#121212] text-[11px] font-mono text-[#6f6f6f]">
                   <th className="py-3 px-4">CANAL & RÓTULO</th>
                   <th className="py-3 px-4">URL ORIGINAL</th>
                   <th className="py-3 px-4">LINK CURTO RASTREADO</th>
@@ -186,22 +186,22 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
                   <th className="py-3 px-4">CTR</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.05] text-xs">
+              <tbody className="divide-y divide-[#222222] text-xs">
                 {filtered.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-12 text-center">
-                      <div className="flex flex-col items-center justify-center gap-2 max-w-sm mx-auto">
-                        <div className="size-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400">
+                      <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
+                        <div className="size-10 rounded-xl bg-[#212121] border border-[#2c2c2c] flex items-center justify-center text-[#9a9a9a]">
                           <LinkIcon size={18} />
                         </div>
-                        <span className="text-xs font-semibold text-white">Nenhum link rastreado cadastrado</span>
-                        <p className="text-[11px] text-zinc-400">
+                        <span className="text-xs font-medium text-[#ececec]">Nenhum link rastreado cadastrado</span>
+                        <p className="text-[11px] text-[#8a8a8a]">
                           Crie links curtos para incluir em suas mensagens automáticas de DM e monitorar cliques em tempo real.
                         </p>
                         <button
                           type="button"
                           onClick={() => setIsModalOpen(true)}
-                          className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-xs font-medium text-zinc-200 border border-zinc-700/80 transition-all"
+                          className="mt-2 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#f2f2f2] hover:bg-white text-xs font-medium text-[#0a0a0a] transition-all active:scale-[0.97]"
                         >
                           <Plus size={13} />
                           Criar Primeiro Link
@@ -211,26 +211,20 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
                   </tr>
                 ) : (
                   filtered.map((item) => (
-                    <tr key={item.id} className="hover:bg-white/[0.02] transition-colors">
+                    <tr key={item.id} className="hover:bg-[#1a1a1a] transition-colors">
                       {/* Label & Platform */}
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
-                          <div
-                            className={`size-6 rounded-md flex items-center justify-center shrink-0 ${
-                              item.platform === 'instagram'
-                                ? 'bg-pink-500/15 text-pink-300'
-                                : 'bg-cyan-500/15 text-cyan-300'
-                            }`}
-                          >
+                          <div className="size-6 rounded-md flex items-center justify-center shrink-0 bg-[#212121] border border-[#2c2c2c]">
                             {item.platform === 'instagram' ? (
-                              <InstagramLogo className="size-3" />
+                              <InstagramLogo className="size-3 text-pink-400" />
                             ) : (
-                              <TikTokLogo className="size-3" />
+                              <TikTokLogo className="size-3 text-cyan-400" />
                             )}
                           </div>
                           <div>
-                            <div className="font-semibold text-white">{item.label}</div>
-                            <div className="text-[10px] text-white/40">{item.campaignName}</div>
+                            <div className="font-medium text-[#ececec]">{item.label}</div>
+                            <div className="text-[10px] text-[#6f6f6f]">{item.campaignName}</div>
                           </div>
                         </div>
                       </td>
@@ -241,25 +235,25 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
                           href={item.destinationUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] text-white/60 hover:text-white truncate max-w-[220px]"
+                          className="inline-flex items-center gap-1 text-[11px] text-[#9a9a9a] hover:text-[#ececec] truncate max-w-[220px]"
                         >
                           <span className="truncate">{item.destinationUrl}</span>
-                          <ExternalLink size={10} className="shrink-0 text-white/40" />
+                          <ExternalLink size={10} className="shrink-0 text-[#6f6f6f]" />
                         </a>
                       </td>
 
                       {/* Short Tracked Link + Copy */}
                       <td className="py-3 px-4">
-                        <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-black/40 border border-white/[0.08] font-mono text-[11px] text-indigo-300">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1c1c1c] border border-[#2a2a2a] font-mono text-[11px] text-[#ececec]">
                           <span>{item.shortUrl}</span>
                           <button
                             type="button"
                             onClick={() => handleCopy(item.shortUrl, item.shortSlug)}
                             title="Copiar link rastreado"
-                            className="p-0.5 rounded text-white/40 hover:text-white transition-colors"
+                            className="p-0.5 rounded text-[#6f6f6f] hover:text-[#ececec] transition-colors"
                           >
                             {copiedSlug === item.shortSlug ? (
-                              <Check size={12} className="text-emerald-400" />
+                              <Check size={12} className="text-[#7ae6a0]" />
                             ) : (
                               <Copy size={12} />
                             )}
@@ -268,25 +262,25 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
                       </td>
 
                       {/* Total Clicks */}
-                      <td className="py-3 px-4 font-mono font-bold text-white">
+                      <td className="py-3 px-4 font-mono font-medium text-[#ececec]">
                         {item.clicks}
                       </td>
 
                       {/* Unique */}
-                      <td className="py-3 px-4 font-mono text-emerald-400">
+                      <td className="py-3 px-4 font-mono text-[#7ae6a0]">
                         {item.uniqueClicks}
                       </td>
 
                       {/* CTR Bar */}
                       <td className="py-3 px-4 min-w-[120px]">
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
+                          <div className="flex-1 h-1.5 rounded-full bg-[#242424] overflow-hidden">
                             <div
-                              className="h-full bg-indigo-500 rounded-full"
+                              className="h-full bg-[#ececec] rounded-full"
                               style={{ width: `${Math.min(item.ctr, 100)}%` }}
                             />
                           </div>
-                          <span className="text-[11px] font-mono font-bold text-white">
+                          <span className="text-[11px] font-mono font-medium text-[#ececec]">
                             {item.ctr}%
                           </span>
                         </div>
@@ -303,43 +297,43 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
       {/* Create Link Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md rounded-2xl bg-[#0e0e12] border border-white/[0.1] p-4 sm:p-6 space-y-4 shadow-2xl">
-            <h3 className="text-base font-semibold text-white">Criar Novo Link Rastreado</h3>
+          <div className="w-full max-w-md rounded-[24px] bg-[#141414] border border-[#262626] p-5 sm:p-6 space-y-4 shadow-2xl">
+            <h3 className="text-base font-medium text-[#ececec] tracking-[-0.02em]">Criar Novo Link Rastreado</h3>
             <form onSubmit={handleCreateLink} className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-white/70 mb-1">
+                <label className="block text-xs font-medium text-[#9a9a9a] mb-1.5">
                   Canal
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 p-1 rounded-full bg-[#101010] border border-[#242424]">
                   <button
                     type="button"
                     onClick={() => setNewPlatform('instagram')}
-                    className={`py-1.5 rounded-lg text-xs font-medium border flex items-center justify-center gap-1.5 transition-all ${
+                    className={`py-1.5 rounded-full text-xs font-medium flex items-center justify-center gap-1.5 transition-all active:scale-[0.97] ${
                       newPlatform === 'instagram'
-                        ? 'bg-pink-600/20 border-pink-500/40 text-pink-300'
-                        : 'border-white/[0.08] text-white/50'
+                        ? 'bg-[#262626] text-white'
+                        : 'text-[#8a8a8a] hover:text-[#ececec]'
                     }`}
                   >
-                    <InstagramLogo className="size-3.5" />
+                    <InstagramLogo className="size-3.5 text-pink-400" />
                     Instagram
                   </button>
                   <button
                     type="button"
                     onClick={() => setNewPlatform('tiktok')}
-                    className={`py-1.5 rounded-lg text-xs font-medium border flex items-center justify-center gap-1.5 transition-all ${
+                    className={`py-1.5 rounded-full text-xs font-medium flex items-center justify-center gap-1.5 transition-all active:scale-[0.97] ${
                       newPlatform === 'tiktok'
-                        ? 'bg-cyan-600/20 border-cyan-500/40 text-cyan-300'
-                        : 'border-white/[0.08] text-white/50'
+                        ? 'bg-[#262626] text-white'
+                        : 'text-[#8a8a8a] hover:text-[#ececec]'
                     }`}
                   >
-                    <TikTokLogo className="size-3.5" />
+                    <TikTokLogo className="size-3.5 text-cyan-400" />
                     TikTok
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-white/70 mb-1">
+                <label className="block text-xs font-medium text-[#9a9a9a] mb-1">
                   Rótulo do Link
                 </label>
                 <input
@@ -347,13 +341,13 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
                   value={newLabel}
                   onChange={(e) => setNewLabel(e.target.value)}
                   placeholder="Ex: Ebook Agentes IA"
-                  className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.1] text-xs text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-xs text-[#ececec] placeholder-[#6f6f6f] focus:outline-none focus:border-[#4e4e4e]"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-white/70 mb-1">
+                <label className="block text-xs font-medium text-[#9a9a9a] mb-1">
                   Campanha Associada
                 </label>
                 <input
@@ -361,12 +355,12 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
                   value={newCampName}
                   onChange={(e) => setNewCampName(e.target.value)}
                   placeholder="Ex: Campanha Guia 2026"
-                  className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.1] text-xs text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-xs text-[#ececec] placeholder-[#6f6f6f] focus:outline-none focus:border-[#4e4e4e]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-white/70 mb-1">
+                <label className="block text-xs font-medium text-[#9a9a9a] mb-1">
                   URL de Destino
                 </label>
                 <input
@@ -374,23 +368,23 @@ export function TrackedLinksView({ links, onSaveLink }: TrackedLinksViewProps) {
                   value={newDestination}
                   onChange={(e) => setNewDestination(e.target.value)}
                   placeholder="https://createflow.ai/..."
-                  className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.1] text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-xs text-[#ececec] placeholder-[#6f6f6f] font-mono focus:outline-none focus:border-[#4e4e4e]"
                   required
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-white/[0.06]">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#222222]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-3.5 py-1.5 rounded-lg text-xs text-white/60 hover:text-white"
+                  className="px-4 py-1.5 rounded-full bg-[#212121] hover:bg-[#2a2a2a] text-xs font-medium text-[#ececec] border border-[#2c2c2c] transition-all active:scale-[0.97]"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition-colors"
+                  className="px-4 py-1.5 rounded-full bg-[#f2f2f2] hover:bg-white text-xs font-medium text-[#0a0a0a] transition-all active:scale-[0.97]"
                 >
                   {isSaving ? 'Salvando...' : 'Gerar Link'}
                 </button>

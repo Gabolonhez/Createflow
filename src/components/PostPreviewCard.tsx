@@ -51,27 +51,32 @@ export function PostPreviewCard({
   );
 
   return (
-    <div className="flex flex-col rounded-xl overflow-hidden bg-[#0c0c11] border border-white/[0.08] shadow-xl">
-      {/* Network Switcher Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-white/[0.02] border-b border-white/[0.06] flex-wrap gap-2">
+    <div className="flex flex-col rounded-[20px] overflow-hidden bg-[#161616] border border-[#242424] shadow-xl">
+      {/* Network Switcher Header (macOS Chrome) */}
+      <div className="flex items-center justify-between px-4 py-2.5 bg-[#121212] border-b border-[#1f1f1f] flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider">PREVIEW REAL</span>
+          <div className="flex items-center gap-1 mr-1">
+            <span className="size-2 rounded-full bg-[#ff5f56]" />
+            <span className="size-2 rounded-full bg-[#ffbd2e]" />
+            <span className="size-2 rounded-full bg-[#27c93f]" />
+          </div>
+          <span className="text-[11px] font-mono text-[#8a8a8a] uppercase tracking-wider">PREVIEW REAL</span>
           {platforms.length > 1 && (
-            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-violet-500/10 text-violet-300 border border-violet-500/20">
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-[5px] bg-[#262626] text-[#a0a0a0]">
               CROSS-POST
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-1 flex-wrap">
+        <div className="inline-flex items-center p-0.5 rounded-full bg-[#1a1a1a] border border-[#262626] flex-wrap">
           {platforms.includes('x') && (
             <button
               type="button"
               onClick={() => setActiveTab('x')}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
                 activeTab === 'x'
-                  ? 'bg-white text-black font-semibold shadow-sm'
-                  : 'text-white/50 hover:text-white'
+                  ? 'bg-[#f2f2f2] text-[#0a0a0a] shadow-sm'
+                  : 'text-[#8a8a8a] hover:text-[#ececec]'
               }`}
             >
               <XLogo className="size-3" />
@@ -83,13 +88,13 @@ export function PostPreviewCard({
             <button
               type="button"
               onClick={() => setActiveTab('linkedin')}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
                 activeTab === 'linkedin'
-                  ? 'bg-[#0A66C2] text-white font-semibold shadow-sm'
-                  : 'text-white/50 hover:text-white'
+                  ? 'bg-[#0A66C2] text-white shadow-sm'
+                  : 'text-[#8a8a8a] hover:text-[#ececec]'
               }`}
             >
-              <LinkedInLogo className="size-3 text-white" />
+              <LinkedInLogo className="size-3 text-current" />
               <span>LinkedIn</span>
             </button>
           )}
@@ -98,13 +103,13 @@ export function PostPreviewCard({
             <button
               type="button"
               onClick={() => setActiveTab('instagram')}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
                 activeTab === 'instagram'
-                  ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white font-semibold shadow-sm'
-                  : 'text-white/50 hover:text-white'
+                  ? 'bg-[#282828] text-white shadow-sm'
+                  : 'text-[#8a8a8a] hover:text-[#ececec]'
               }`}
             >
-              <InstagramLogo className="size-3" />
+              <InstagramLogo className="size-3 text-pink-400" />
               <span>Reels / IG</span>
             </button>
           )}
@@ -113,13 +118,13 @@ export function PostPreviewCard({
             <button
               type="button"
               onClick={() => setActiveTab('tiktok')}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
                 activeTab === 'tiktok'
-                  ? 'bg-gradient-to-r from-cyan-600 to-teal-600 text-white font-semibold shadow-sm'
-                  : 'text-white/50 hover:text-white'
+                  ? 'bg-[#282828] text-white shadow-sm'
+                  : 'text-[#8a8a8a] hover:text-[#ececec]'
               }`}
             >
-              <TikTokLogo className="size-3" />
+              <TikTokLogo className="size-3 text-cyan-400" />
               <span>TikTok</span>
             </button>
           )}
@@ -127,34 +132,34 @@ export function PostPreviewCard({
       </div>
 
       {/* Preview Content Body */}
-      <div className="p-4 sm:p-5">
+      <div className="p-4 sm:p-5 bg-[#121212]">
         {activeTab === 'x' ? (
           /* X / TWITTER POST PREVIEW */
-          <div className="flex flex-col gap-3 font-sans text-[14px] text-white/90">
+          <div className="flex flex-col gap-3 font-sans text-[14px] text-[#ececec]">
             {/* Main Tweet */}
             <div className="flex gap-3">
               <div className="flex flex-col items-center">
-                <div className="size-10 rounded-full bg-gradient-to-tr from-violet-600 to-indigo-500 flex items-center justify-center font-bold text-xs text-white shrink-0">
+                <div className="size-10 rounded-full bg-[#262626] border border-[#333333] flex items-center justify-center font-medium text-xs text-[#ececec] shrink-0">
                   GB
                 </div>
                 {thread.length > 0 && (
-                  <div className="w-0.5 flex-1 bg-white/[0.15] my-1 rounded-full" />
+                  <div className="w-0.5 flex-1 bg-[#2a2a2a] my-1 rounded-full" />
                 )}
               </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-1.5 truncate">
-                    <span className="font-bold text-white text-[14px] hover:underline cursor-pointer">
+                    <span className="font-semibold text-white text-[14px] hover:underline cursor-pointer">
                       {authorName}
                     </span>
-                    <span className="text-white/40 text-[13px]">{authorHandle}</span>
-                    <span className="text-white/30 text-[12px]">· agora</span>
+                    <span className="text-[#6f6f6f] text-[13px]">{authorHandle}</span>
+                    <span className="text-[#4a4a4a] text-[12px]">· agora</span>
                   </div>
-                  <MoreHorizontal size={14} className="text-white/40" />
+                  <MoreHorizontal size={14} className="text-[#6f6f6f]" />
                 </div>
 
-                <p className="whitespace-pre-line leading-relaxed text-white/95">
+                <p className="whitespace-pre-line leading-relaxed text-[#ececec]">
                   {text || 'Digite o texto do seu post no editor ao lado...'}
                 </p>
 
@@ -163,22 +168,22 @@ export function PostPreviewCard({
                   <img
                     src={mediaUrls[0]}
                     alt="Mídia anexada"
-                    className="mt-3 rounded-2xl border border-white/[0.1] max-h-72 w-full object-cover"
+                    className="mt-3 rounded-2xl border border-[#2a2a2a] max-h-72 w-full object-cover"
                   />
                 )}
 
                 {/* Tweet Action Icons */}
-                <div className="flex items-center justify-between mt-3 pt-2 text-white/45 max-w-md">
-                  <span className="flex items-center gap-1.5 hover:text-sky-400 cursor-pointer text-xs">
+                <div className="flex items-center justify-between mt-3 pt-2 text-[#6f6f6f] max-w-md">
+                  <span className="flex items-center gap-1.5 hover:text-[#ececec] cursor-pointer text-xs">
                     <MessageCircle size={15} /> 12
                   </span>
-                  <span className="flex items-center gap-1.5 hover:text-emerald-400 cursor-pointer text-xs">
+                  <span className="flex items-center gap-1.5 hover:text-[#7ae6a0] cursor-pointer text-xs">
                     <Repeat2 size={16} /> 5
                   </span>
-                  <span className="flex items-center gap-1.5 hover:text-rose-400 cursor-pointer text-xs">
+                  <span className="flex items-center gap-1.5 hover:text-[#ff5f56] cursor-pointer text-xs">
                     <Heart size={15} /> 48
                   </span>
-                  <span className="flex items-center gap-1.5 hover:text-sky-400 cursor-pointer text-xs">
+                  <span className="flex items-center gap-1.5 hover:text-[#ececec] cursor-pointer text-xs">
                     <Bookmark size={15} />
                   </span>
                   <span className="flex items-center gap-1.5 hover:text-white cursor-pointer text-xs">
@@ -192,24 +197,24 @@ export function PostPreviewCard({
             {thread.map((t, idx) => (
               <div key={idx} className="flex gap-3 pt-1">
                 <div className="flex flex-col items-center">
-                  <div className="size-10 rounded-full bg-gradient-to-tr from-violet-600 to-indigo-500 flex items-center justify-center font-bold text-xs text-white shrink-0">
+                  <div className="size-10 rounded-full bg-[#262626] border border-[#333333] flex items-center justify-center font-medium text-xs text-[#ececec] shrink-0">
                     GB
                   </div>
                   {idx < thread.length - 1 && (
-                    <div className="w-0.5 flex-1 bg-white/[0.15] my-1 rounded-full" />
+                    <div className="w-0.5 flex-1 bg-[#2a2a2a] my-1 rounded-full" />
                   )}
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <span className="font-bold text-white text-[14px]">{authorName}</span>
-                    <span className="text-white/40 text-[13px]">{authorHandle}</span>
-                    <span className="text-white/30 text-[12px]">· {idx + 2}/{thread.length + 1}</span>
+                    <span className="font-semibold text-white text-[14px]">{authorName}</span>
+                    <span className="text-[#6f6f6f] text-[13px]">{authorHandle}</span>
+                    <span className="text-[#4a4a4a] text-[12px]">· {idx + 2}/{thread.length + 1}</span>
                   </div>
 
-                  <p className="whitespace-pre-line leading-relaxed text-white/90">{t}</p>
+                  <p className="whitespace-pre-line leading-relaxed text-[#ececec]">{t}</p>
 
-                  <div className="flex items-center justify-between mt-2 pt-1 text-white/40 max-w-md">
+                  <div className="flex items-center justify-between mt-2 pt-1 text-[#6f6f6f] max-w-md">
                     <span className="flex items-center gap-1.5 text-xs"><MessageCircle size={14} /></span>
                     <span className="flex items-center gap-1.5 text-xs"><Repeat2 size={15} /></span>
                     <span className="flex items-center gap-1.5 text-xs"><Heart size={14} /></span>
@@ -225,7 +230,7 @@ export function PostPreviewCard({
             {/* LinkedIn Header */}
             <div className="flex items-start justify-between">
               <div className="flex gap-2.5">
-                <div className="size-11 rounded-full bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center font-bold text-sm text-white shrink-0">
+                <div className="size-11 rounded-full bg-[#0A66C2] flex items-center justify-center font-semibold text-sm text-white shrink-0">
                   GB
                 </div>
                 <div className="flex flex-col">

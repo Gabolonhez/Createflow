@@ -151,114 +151,79 @@ export function GeneratePostModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
-      <div className="relative w-full max-w-lg max-h-[92dvh] rounded-2xl bg-[#0c0c12] border border-white/[0.1] shadow-2xl flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 border-b border-white/[0.08]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto">
+      <div className="relative w-full max-w-lg max-h-[92dvh] rounded-[24px] bg-[#141414] border border-[#262626] shadow-[0_24px_80px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden">
+        {/* Header (macOS Chrome) */}
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 border-b border-[#1f1f1f] bg-[#141414]">
           <div className="flex items-center gap-2">
-            <Sparkles size={16} className="text-violet-400" />
-            <span className="font-semibold text-sm text-white">Gerar Post com IA</span>
+            <Sparkles size={15} className="text-[#ececec]" />
+            <span className="font-medium text-sm text-[#ececec] tracking-[-0.02em]">Gerar Post com IA</span>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="size-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.08]"
+            className="size-7 rounded-full flex items-center justify-center text-[#6f6f6f] hover:text-[#ececec] hover:bg-[#212121]"
           >
             <X size={15} />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-4 sm:p-5 flex flex-col gap-4 overflow-y-auto">
+        <div className="p-4 sm:p-5 flex flex-col gap-4 overflow-y-auto custom-scrollbar">
           {error && (
-            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/25 text-xs text-rose-300">
+            <div className="p-3 rounded-2xl bg-[#ff5f56]/10 border border-[#ff5f56]/25 text-xs text-[#ff8a84]">
               {error}
             </div>
           )}
 
-          {/* Source Type Selector */}
+          {/* Source Type Selector (Pluy Segmented Pill) */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-mono text-white/50">Base de Origem do Post:</label>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5 p-1 rounded-lg bg-black/40 border border-white/[0.06]">
-              <button
-                type="button"
-                onClick={() => setSourceType('scratch')}
-                className={`py-1.5 px-2 rounded text-[11px] font-medium transition-all ${
-                  sourceType === 'scratch'
-                    ? 'bg-violet-600 text-white font-semibold shadow-sm'
-                    : 'text-white/40 hover:text-white'
-                }`}
-              >
-                Do Zero
-              </button>
-              <button
-                type="button"
-                onClick={() => setSourceType('idea')}
-                className={`py-1.5 px-2 rounded text-[11px] font-medium transition-all ${
-                  sourceType === 'idea'
-                    ? 'bg-violet-600 text-white font-semibold shadow-sm'
-                    : 'text-white/40 hover:text-white'
-                }`}
-              >
-                Ideia
-              </button>
-              <button
-                type="button"
-                onClick={() => setSourceType('topic')}
-                className={`py-1.5 px-2 rounded text-[11px] font-medium transition-all ${
-                  sourceType === 'topic'
-                    ? 'bg-violet-600 text-white font-semibold shadow-sm'
-                    : 'text-white/40 hover:text-white'
-                }`}
-              >
-                Pauta
-              </button>
-              <button
-                type="button"
-                onClick={() => setSourceType('fact')}
-                className={`py-1.5 px-2 rounded text-[11px] font-medium transition-all ${
-                  sourceType === 'fact'
-                    ? 'bg-violet-600 text-white font-semibold shadow-sm'
-                    : 'text-white/40 hover:text-white'
-                }`}
-              >
-                Fato Real
-              </button>
-              <button
-                type="button"
-                onClick={() => setSourceType('reference')}
-                className={`py-1.5 px-2 rounded text-[11px] font-medium transition-all ${
-                  sourceType === 'reference'
-                    ? 'bg-violet-600 text-white font-semibold shadow-sm'
-                    : 'text-white/40 hover:text-white'
-                }`}
-              >
-                Modelo
-              </button>
+            <label className="text-[11px] font-mono text-[#8a8a8a]">Base de Origem do Post:</label>
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 p-1 rounded-2xl sm:rounded-full bg-[#101010] border border-[#242424]">
+              {[
+                { id: 'scratch' as const, label: 'Do Zero' },
+                { id: 'idea' as const, label: 'Ideia' },
+                { id: 'topic' as const, label: 'Pauta' },
+                { id: 'fact' as const, label: 'Fato Real' },
+                { id: 'reference' as const, label: 'Modelo' },
+              ].map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setSourceType(s.id)}
+                  className={`py-1.5 px-2 rounded-full text-[11px] font-medium transition-all active:scale-[0.97] ${
+                    sourceType === s.id
+                      ? 'bg-[#282828] text-white shadow-sm'
+                      : 'text-[#8a8a8a] hover:text-[#ececec]'
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
             </div>
           </div>
 
           {/* Conditional Picker for Selected Source */}
           {sourceType === 'scratch' && (
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-mono text-white/50">Sobre o que você quer falar?</label>
+              <label className="text-[11px] font-mono text-[#8a8a8a]">Sobre o que você quer falar?</label>
               <input
                 type="text"
                 value={scratchTopic}
                 onChange={(e) => setScratchTopic(e.target.value)}
                 placeholder="Ex: Como lidar com dívida técnica em startups iniciantes..."
-                className="px-3 py-2 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50"
+                className="px-3.5 py-2 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] placeholder-[#6f6f6f] text-xs focus:outline-none focus:border-[#4e4e4e]"
               />
             </div>
           )}
 
           {sourceType === 'idea' && (
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-mono text-white/50">Escolha a Ideia Salva:</label>
+              <label className="text-[11px] font-mono text-[#8a8a8a]">Escolha a Ideia Salva:</label>
               <select
                 value={selectedIdeaId}
                 onChange={(e) => setSelectedIdeaId(e.target.value)}
-                className="px-3 py-2 rounded-lg bg-[#14141c] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50"
+                className="px-3.5 py-2 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] text-xs focus:outline-none focus:border-[#4e4e4e]"
               >
                 <option value="">Selecione uma ideia...</option>
                 {ideas.map((i) => (
@@ -272,11 +237,11 @@ export function GeneratePostModal({
 
           {sourceType === 'topic' && (
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-mono text-white/50">Escolha a Pauta:</label>
+              <label className="text-[11px] font-mono text-[#8a8a8a]">Escolha a Pauta:</label>
               <select
                 value={selectedTopicId}
                 onChange={(e) => setSelectedTopicId(e.target.value)}
-                className="px-3 py-2 rounded-lg bg-[#14141c] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50"
+                className="px-3.5 py-2 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] text-xs focus:outline-none focus:border-[#4e4e4e]"
               >
                 <option value="">Selecione uma pauta...</option>
                 {topics.map((t) => (
@@ -290,11 +255,11 @@ export function GeneratePostModal({
 
           {sourceType === 'fact' && (
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-mono text-white/50">Escolha o Fato Real:</label>
+              <label className="text-[11px] font-mono text-[#8a8a8a]">Escolha o Fato Real:</label>
               <select
                 value={selectedFactId}
                 onChange={(e) => setSelectedFactId(e.target.value)}
-                className="px-3 py-2 rounded-lg bg-[#14141c] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50"
+                className="px-3.5 py-2 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] text-xs focus:outline-none focus:border-[#4e4e4e]"
               >
                 <option value="">Selecione um fato cadastrado...</option>
                 {facts.map((f) => (
@@ -308,11 +273,11 @@ export function GeneratePostModal({
 
           {sourceType === 'reference' && (
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-mono text-white/50">Escolha o Modelo/Referência:</label>
+              <label className="text-[11px] font-mono text-[#8a8a8a]">Escolha o Modelo/Referência:</label>
               <select
                 value={selectedRefId}
                 onChange={(e) => setSelectedRefId(e.target.value)}
-                className="px-3 py-2 rounded-lg bg-[#14141c] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50"
+                className="px-3.5 py-2 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] text-xs focus:outline-none focus:border-[#4e4e4e]"
               >
                 <option value="">Selecione um template salvo...</option>
                 {references.map((r) => (
@@ -325,15 +290,15 @@ export function GeneratePostModal({
           )}
 
           {/* Formats & Platforms */}
-          <div className="grid grid-cols-2 gap-3 pt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-mono text-white/50">Formato:</label>
-              <div className="flex gap-1 p-1 rounded-lg bg-black/40 border border-white/[0.06]">
+              <label className="text-[11px] font-mono text-[#8a8a8a]">Formato:</label>
+              <div className="flex gap-1 p-1 rounded-full bg-[#101010] border border-[#242424]">
                 <button
                   type="button"
                   onClick={() => setFormat('single')}
-                  className={`flex-1 py-1 rounded text-xs font-medium transition-all ${
-                    format === 'single' ? 'bg-white text-black font-semibold' : 'text-white/40'
+                  className={`flex-1 py-1 rounded-full text-xs font-medium transition-all ${
+                    format === 'single' ? 'bg-[#f2f2f2] text-[#0a0a0a]' : 'text-[#8a8a8a]'
                   }`}
                 >
                   Post Único
@@ -341,8 +306,8 @@ export function GeneratePostModal({
                 <button
                   type="button"
                   onClick={() => setFormat('thread')}
-                  className={`flex-1 py-1 rounded text-xs font-medium transition-all ${
-                    format === 'thread' ? 'bg-violet-600 text-white font-semibold' : 'text-white/40'
+                  className={`flex-1 py-1 rounded-full text-xs font-medium transition-all ${
+                    format === 'thread' ? 'bg-[#282828] text-white' : 'text-[#8a8a8a]'
                   }`}
                 >
                   Fio (Thread)
@@ -351,15 +316,15 @@ export function GeneratePostModal({
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-mono text-white/50">Canais de Destino:</label>
+              <label className="text-[11px] font-mono text-[#8a8a8a]">Canais de Destino:</label>
               <div className="flex items-center gap-1.5 pt-0.5">
                 <button
                   type="button"
                   onClick={() => togglePlatform('x')}
-                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
                     platforms.includes('x')
-                      ? 'bg-white text-black font-semibold'
-                      : 'bg-white/[0.05] text-white/40'
+                      ? 'bg-[#f2f2f2] text-[#0a0a0a] border-transparent'
+                      : 'bg-[#1a1a1a] border-[#262626] text-[#8a8a8a]'
                   }`}
                 >
                   <XLogo className="size-3" /> X
@@ -367,33 +332,33 @@ export function GeneratePostModal({
                 <button
                   type="button"
                   onClick={() => togglePlatform('linkedin')}
-                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
                     platforms.includes('linkedin')
-                      ? 'bg-[#0A66C2] text-white font-semibold'
-                      : 'bg-white/[0.05] text-white/40'
+                      ? 'bg-[#0A66C2] text-white border-transparent'
+                      : 'bg-[#1a1a1a] border-[#262626] text-[#8a8a8a]'
                   }`}
                 >
-                  <LinkedInLogo className="size-3 text-white" /> LinkedIn
+                  <LinkedInLogo className="size-3 text-current" /> LinkedIn
                 </button>
               </div>
             </div>
           </div>
 
-          {/* 21 Battle-tested Hook Formulas from linkedin-agent-skill */}
+          {/* 21 Battle-tested Hook Formulas */}
           <div className="flex flex-col gap-1.5 pt-1">
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-mono text-white/50 flex items-center gap-1.5">
-                <Target size={12} className="text-violet-400" />
+              <label className="text-[11px] font-mono text-[#8a8a8a] flex items-center gap-1.5">
+                <Target size={12} className="text-[#ececec]" />
                 <span>Fórmula de Gancho (21 Modelos de Elite):</span>
               </label>
-              <span className="text-[10px] text-zinc-500 font-mono">
+              <span className="text-[10px] text-[#6f6f6f] font-mono">
                 {hookFormulaId ? 'Modelo Selecionado' : 'IA escolhe o melhor'}
               </span>
             </div>
             <select
               value={hookFormulaId}
               onChange={(e) => setHookFormulaId(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50"
+              className="w-full px-3.5 py-2 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] text-xs focus:outline-none focus:border-[#4e4e4e]"
             >
               <option value="">✨ Automático (A IA escolhe o gancho de maior impacto para o tema)</option>
               {HOOK_FORMULAS.map((formula) => (
@@ -403,11 +368,11 @@ export function GeneratePostModal({
               ))}
             </select>
             {hookFormulaId && (
-              <div className="p-2.5 rounded-lg bg-violet-500/10 border border-violet-500/20 text-[11px] text-violet-200 space-y-1">
-                <p className="font-mono text-[10px] text-violet-300 font-semibold">
+              <div className="p-3 rounded-2xl bg-[#1a1a1a] border border-[#262626] text-[11px] text-[#9a9a9a] space-y-1">
+                <p className="font-mono text-[10px] text-[#ececec] font-medium">
                   Estrutura: {HOOK_FORMULAS.find((f) => f.id === hookFormulaId)?.blueprint}
                 </p>
-                <p className="text-violet-200/80 text-[11px]">
+                <p className="text-[#8a8a8a] text-[11px]">
                   {HOOK_FORMULAS.find((f) => f.id === hookFormulaId)?.description}
                 </p>
               </div>
@@ -416,32 +381,32 @@ export function GeneratePostModal({
 
           {/* Optional Direct Instruction */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-mono text-white/50">Instruções extras (opcional):</label>
+            <label className="text-[11px] font-mono text-[#8a8a8a]">Instruções extras (opcional):</label>
             <input
               type="text"
               value={instruction}
               onChange={(e) => setInstruction(e.target.value)}
               placeholder="Ex: Foque no aprendizado de engenharia e use tom provocativo..."
-              className="px-3 py-2 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50"
+              className="px-3.5 py-2 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] placeholder-[#6f6f6f] text-xs focus:outline-none focus:border-[#4e4e4e]"
             />
           </div>
 
           {/* Language Selector */}
           <div className="flex flex-col gap-1.5 pt-1">
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-mono text-white/50">Idioma de Geração:</label>
-              <span className="text-[10px] text-zinc-500 font-mono">
+              <label className="text-[11px] font-mono text-[#8a8a8a]">Idioma de Geração:</label>
+              <span className="text-[10px] text-[#6f6f6f] font-mono">
                 {language === 'pt-BR' ? 'Português Nativo BR (Padrão)' : 'US Tech Operator English'}
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 p-1 rounded-full bg-[#101010] border border-[#242424] gap-1">
               <button
                 type="button"
                 onClick={() => setLanguage('pt-BR')}
-                className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium border transition-all ${
+                className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium transition-all ${
                   language === 'pt-BR'
-                    ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 font-semibold shadow-sm'
-                    : 'bg-white/[0.03] border-white/[0.06] text-white/50 hover:text-white'
+                    ? 'bg-[#282828] text-white shadow-sm'
+                    : 'text-[#8a8a8a] hover:text-[#ececec]'
                 }`}
               >
                 <span>🇧🇷 Português (padrão)</span>
@@ -449,10 +414,10 @@ export function GeneratePostModal({
               <button
                 type="button"
                 onClick={() => setLanguage('en-US')}
-                className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium border transition-all ${
+                className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium transition-all ${
                   language === 'en-US'
-                    ? 'bg-sky-500/15 border-sky-500/40 text-sky-300 font-semibold shadow-sm'
-                    : 'bg-white/[0.03] border-white/[0.06] text-white/50 hover:text-white'
+                    ? 'bg-[#282828] text-white shadow-sm'
+                    : 'text-[#8a8a8a] hover:text-[#ececec]'
                 }`}
               >
                 <span>🇺🇸 Inglês (US Tech)</span>
@@ -462,11 +427,11 @@ export function GeneratePostModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-white/[0.08] bg-[#0c0c12]">
+        <div className="flex items-center justify-between sm:justify-end gap-2 px-4 sm:px-5 py-3 border-t border-[#1f1f1f] bg-[#141414]">
           <button
             type="button"
             onClick={onClose}
-            className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-white/50 hover:text-white"
+            className="px-4 py-1.5 rounded-full text-xs font-medium bg-[#212121] hover:bg-[#2a2a2a] border border-[#2c2c2c] text-[#ececec] transition-all active:scale-[0.97]"
           >
             Cancelar
           </button>
@@ -474,7 +439,7 @@ export function GeneratePostModal({
             type="button"
             disabled={isGenerating}
             onClick={handleGenerate}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-violet-600 hover:bg-violet-500 text-white shadow-md shadow-violet-600/25 transition-all disabled:opacity-50 cursor-pointer active:scale-[0.98]"
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] shadow-sm transition-all disabled:opacity-50 cursor-pointer active:scale-[0.97]"
           >
             {isGenerating ? (
               <>

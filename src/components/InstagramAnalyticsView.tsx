@@ -94,56 +94,56 @@ export function InstagramAnalyticsView({
   return (
     <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto pb-12">
       {/* Top Header Card / Profile Strip */}
-      <div className="p-5 rounded-2xl bg-[#111114] border border-zinc-800/80 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-5">
+      <div className="p-5 sm:p-6 rounded-[22px] bg-[#141414] border border-[#242424] flex flex-col md:flex-row md:items-center justify-between gap-5">
         <div className="flex items-center gap-4">
           <div className="relative">
             {data?.account.profilePictureUrl ? (
               <img
                 src={data.account.profilePictureUrl}
                 alt={data.account.username}
-                className="size-14 rounded-full object-cover border-2 border-pink-500/30 p-0.5"
+                className="size-14 rounded-full object-cover border border-[#323232] p-0.5 bg-[#1c1c1c]"
               />
             ) : (
-              <div className="size-14 rounded-full bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl">
+              <div className="size-14 rounded-full bg-[#212121] border border-[#2e2e2e] flex items-center justify-center text-[#ececec] font-bold text-xl">
                 {data?.account.username?.[0]?.toUpperCase() || 'G'}
               </div>
             )}
-            <div className="absolute -bottom-1 -right-1 p-1 rounded-full bg-[#111114] border border-zinc-800">
-              <InstagramLogo className="size-3.5 text-pink-400" />
+            <div className="absolute -bottom-1 -right-1 p-1 rounded-full bg-[#141414] border border-[#2a2a2a]">
+              <InstagramLogo className="size-3.5 text-[#ececec]" />
             </div>
           </div>
 
           <div className="flex flex-col">
             <div className="flex items-center gap-2.5 flex-wrap">
-              <h2 className="text-lg font-bold text-white tracking-tight">
+              <h2 className="text-lg font-semibold text-[#ececec] tracking-tight">
                 {data?.account.name || 'Gabriel Bolonhez'}
               </h2>
-              <span className="font-mono text-xs text-zinc-400">
+              <span className="font-mono text-xs text-[#7a7a7a]">
                 @{data?.account.username || 'gabolonhez'}
               </span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-                <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium bg-[#212121] text-[#7ae6a0] border border-[#2c2c2c] flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-[#7ae6a0] animate-pulse" />
                 Meta API v25.0 Ao Vivo
               </span>
             </div>
 
-            <div className="flex items-center gap-3 mt-1.5 text-xs text-zinc-400 font-mono">
+            <div className="flex items-center gap-3 mt-1.5 text-xs text-[#7a7a7a] font-mono flex-wrap">
               <span>
-                <strong className="text-white font-semibold">
+                <strong className="text-[#ececec] font-semibold">
                   {data?.account.followersCount.toLocaleString() || '681'}
                 </strong>{' '}
                 seguidores
               </span>
               <span>·</span>
               <span>
-                <strong className="text-white font-semibold">
+                <strong className="text-[#ececec] font-semibold">
                   {data?.account.followsCount.toLocaleString() || '1.939'}
                 </strong>{' '}
                 seguindo
               </span>
               <span>·</span>
               <span>
-                <strong className="text-white font-semibold">
+                <strong className="text-[#ececec] font-semibold">
                   {data?.account.mediaCount || data?.media.length || '6'}
                 </strong>{' '}
                 posts & reels
@@ -153,18 +153,18 @@ export function InstagramAnalyticsView({
         </div>
 
         {/* Header Right Actions */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap">
           {/* Period selector */}
-          <div className="flex items-center p-1 rounded-xl bg-[#0a0a0c] border border-zinc-800/80">
+          <div className="flex items-center p-1 rounded-full bg-[#0e0e0e] border border-[#242424]">
             {(['7d', '14d', '28d'] as const).map((p) => (
               <button
                 key={p}
                 type="button"
                 onClick={() => setPeriod(p)}
-                className={`px-3 py-1 text-xs font-mono rounded-lg transition-all ${
+                className={`px-3 py-1 text-xs font-mono rounded-full transition-all cursor-pointer ${
                   period === p
-                    ? 'bg-zinc-800 text-white font-semibold shadow-sm'
-                    : 'text-zinc-500 hover:text-zinc-300'
+                    ? 'bg-[#212121] text-[#ececec] font-semibold'
+                    : 'text-[#7a7a7a] hover:text-[#ececec]'
                 }`}
               >
                 {p === '7d' ? '7 dias' : p === '14d' ? '14 dias' : '28 dias'}
@@ -178,9 +178,9 @@ export function InstagramAnalyticsView({
             onClick={() => fetchInsights(true)}
             disabled={refreshing || loading}
             aria-label="Atualizar métricas da conta"
-            className="p-2 rounded-xl bg-[#0a0a0c] border border-zinc-800/80 hover:border-zinc-700 text-zinc-300 hover:text-white transition-all disabled:opacity-50 flex items-center gap-1.5 text-xs font-mono"
+            className="px-3.5 py-1.5 rounded-full bg-[#212121] border border-[#2e2e2e] hover:bg-[#2a2a2a] text-[#ececec] transition-all disabled:opacity-50 flex items-center gap-1.5 text-xs font-mono cursor-pointer active:scale-[0.97]"
           >
-            <RefreshCw className={`size-3.5 ${refreshing ? 'animate-spin text-pink-400' : ''}`} />
+            <RefreshCw className={`size-3.5 ${refreshing ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Atualizar</span>
           </button>
         </div>
@@ -188,15 +188,15 @@ export function InstagramAnalyticsView({
 
       {/* Error Banner */}
       {error && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center justify-between gap-3">
+        <div className="p-4 rounded-[18px] bg-[#ff5f56]/10 border border-[#ff5f56]/25 text-[#ff5f56] text-xs flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <AlertCircle className="size-4 shrink-0 text-rose-400" />
+            <AlertCircle className="size-4 shrink-0" />
             <span>{error}</span>
           </div>
           <button
             type="button"
             onClick={() => fetchInsights(false)}
-            className="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 font-mono text-[11px] text-white transition-all"
+            className="px-3 py-1 rounded-full bg-[#212121] hover:bg-[#2a2a2a] font-mono text-[11px] text-[#ececec] border border-[#2e2e2e] transition-all cursor-pointer"
           >
             Tentar novamente
           </button>
@@ -206,226 +206,226 @@ export function InstagramAnalyticsView({
       {/* KPI Cards Row (6 High-Density Micro-Cards) */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {/* KPI 1: Alcance de Contas */}
-        <div className="p-4 rounded-xl bg-[#111114] border border-zinc-800/80 hover:border-zinc-700/80 transition-all flex flex-col justify-between">
+        <div className="p-4 rounded-[20px] bg-[#161616] border border-[#222222] hover:border-[#323232] transition-all flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+            <span className="text-[10px] font-mono text-[#7a7a7a] uppercase tracking-wider">
               ALCANCE ÚNICO
             </span>
-            <Users className="size-3.5 text-indigo-400" />
+            <Users className="size-3.5 text-[#8a8a8a]" />
           </div>
           <div className="my-2">
             {loading ? (
-              <div className="h-7 w-16 bg-zinc-800/60 rounded animate-pulse" />
+              <div className="h-7 w-16 bg-[#212121] rounded-lg animate-pulse" />
             ) : (
-              <span className="text-2xl font-bold font-mono text-white tracking-tight">
+              <span className="text-2xl font-bold font-mono text-[#ececec] tracking-tight">
                 {data?.kpis.reach.toLocaleString() || '366'}
               </span>
             )}
           </div>
-          <span className="text-[11px] font-mono text-emerald-400 flex items-center gap-1">
+          <span className="text-[11px] font-mono text-[#7ae6a0] flex items-center gap-1">
             <TrendingUp className="size-3" /> Contas únicas
           </span>
         </div>
 
         {/* KPI 2: Visualizações Totais */}
-        <div className="p-4 rounded-xl bg-[#111114] border border-zinc-800/80 hover:border-zinc-700/80 transition-all flex flex-col justify-between">
+        <div className="p-4 rounded-[20px] bg-[#161616] border border-[#222222] hover:border-[#323232] transition-all flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+            <span className="text-[10px] font-mono text-[#7a7a7a] uppercase tracking-wider">
               VIEWS REELS & POSTS
             </span>
-            <Play className="size-3.5 text-pink-400" />
+            <Play className="size-3.5 text-[#8a8a8a]" />
           </div>
           <div className="my-2">
             {loading ? (
-              <div className="h-7 w-16 bg-zinc-800/60 rounded animate-pulse" />
+              <div className="h-7 w-16 bg-[#212121] rounded-lg animate-pulse" />
             ) : (
-              <span className="text-2xl font-bold font-mono text-pink-300 tracking-tight">
+              <span className="text-2xl font-bold font-mono text-[#ececec] tracking-tight">
                 {data?.kpis.views.toLocaleString() || '819'}
               </span>
             )}
           </div>
-          <span className="text-[11px] font-mono text-zinc-400">
+          <span className="text-[11px] font-mono text-[#7a7a7a]">
             Reproduções totais
           </span>
         </div>
 
         {/* KPI 3: Interações */}
-        <div className="p-4 rounded-xl bg-[#111114] border border-zinc-800/80 hover:border-zinc-700/80 transition-all flex flex-col justify-between">
+        <div className="p-4 rounded-[20px] bg-[#161616] border border-[#222222] hover:border-[#323232] transition-all flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+            <span className="text-[10px] font-mono text-[#7a7a7a] uppercase tracking-wider">
               INTERAÇÕES TOTAIS
             </span>
-            <Sparkles className="size-3.5 text-amber-400" />
+            <Sparkles className="size-3.5 text-[#8a8a8a]" />
           </div>
           <div className="my-2">
             {loading ? (
-              <div className="h-7 w-16 bg-zinc-800/60 rounded animate-pulse" />
+              <div className="h-7 w-16 bg-[#212121] rounded-lg animate-pulse" />
             ) : (
-              <span className="text-2xl font-bold font-mono text-amber-300 tracking-tight">
+              <span className="text-2xl font-bold font-mono text-[#ececec] tracking-tight">
                 {data?.kpis.totalInteractions.toLocaleString() || '93'}
               </span>
             )}
           </div>
-          <span className="text-[11px] font-mono text-amber-400">
+          <span className="text-[11px] font-mono text-[#9a9a9a]">
             {data?.kpis.engagementRate || '11.3'}% engajamento
           </span>
         </div>
 
         {/* KPI 4: Visitas ao Perfil */}
-        <div className="p-4 rounded-xl bg-[#111114] border border-zinc-800/80 hover:border-zinc-700/80 transition-all flex flex-col justify-between">
+        <div className="p-4 rounded-[20px] bg-[#161616] border border-[#222222] hover:border-[#323232] transition-all flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+            <span className="text-[10px] font-mono text-[#7a7a7a] uppercase tracking-wider">
               VISITAS AO PERFIL
             </span>
-            <Eye className="size-3.5 text-cyan-400" />
+            <Eye className="size-3.5 text-[#8a8a8a]" />
           </div>
           <div className="my-2">
             {loading ? (
-              <div className="h-7 w-16 bg-zinc-800/60 rounded animate-pulse" />
+              <div className="h-7 w-16 bg-[#212121] rounded-lg animate-pulse" />
             ) : (
-              <span className="text-2xl font-bold font-mono text-cyan-300 tracking-tight">
+              <span className="text-2xl font-bold font-mono text-[#ececec] tracking-tight">
                 {data?.kpis.profileViews.toLocaleString() || '28'}
               </span>
             )}
           </div>
-          <span className="text-[11px] font-mono text-zinc-400">
+          <span className="text-[11px] font-mono text-[#7a7a7a]">
             Acessos ao seu perfil
           </span>
         </div>
 
         {/* KPI 5: DMs Disparadas (Auto-DM) */}
-        <div className="p-4 rounded-xl bg-[#111114] border border-zinc-800/80 hover:border-zinc-700/80 transition-all flex flex-col justify-between">
+        <div className="p-4 rounded-[20px] bg-[#161616] border border-[#222222] hover:border-[#323232] transition-all flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+            <span className="text-[10px] font-mono text-[#7a7a7a] uppercase tracking-wider">
               DMS DISPARADAS
             </span>
-            <Send className="size-3.5 text-emerald-400" />
+            <Send className="size-3.5 text-[#7ae6a0]" />
           </div>
           <div className="my-2">
             {loading ? (
-              <div className="h-7 w-16 bg-zinc-800/60 rounded animate-pulse" />
+              <div className="h-7 w-16 bg-[#212121] rounded-lg animate-pulse" />
             ) : (
-              <span className="text-2xl font-bold font-mono text-emerald-400 tracking-tight">
+              <span className="text-2xl font-bold font-mono text-[#7ae6a0] tracking-tight">
                 {data?.funnel.dmsSent ?? 1}
               </span>
             )}
           </div>
-          <span className="text-[11px] font-mono text-emerald-400">
+          <span className="text-[11px] font-mono text-[#7ae6a0]">
             {data?.funnel.dmsDeliveredRate ?? 100}% entrega Meta
           </span>
         </div>
 
         {/* KPI 6: Follow-Gate (Conversões de Novos Seguidores) */}
-        <div className="p-4 rounded-xl bg-[#111114] border border-zinc-800/80 hover:border-zinc-700/80 transition-all flex flex-col justify-between">
+        <div className="p-4 rounded-[20px] bg-[#161616] border border-[#222222] hover:border-[#323232] transition-all flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+            <span className="text-[10px] font-mono text-[#7a7a7a] uppercase tracking-wider">
               TRAVA DE SEGUIDOR
             </span>
-            <ShieldCheck className="size-3.5 text-violet-400" />
+            <ShieldCheck className="size-3.5 text-[#0c8ce9]" />
           </div>
           <div className="my-2">
             {loading ? (
-              <div className="h-7 w-16 bg-zinc-800/60 rounded animate-pulse" />
+              <div className="h-7 w-16 bg-[#212121] rounded-lg animate-pulse" />
             ) : (
-              <span className="text-2xl font-bold font-mono text-violet-300 tracking-tight">
+              <span className="text-2xl font-bold font-mono text-[#ececec] tracking-tight">
                 {data?.funnel.followGateConversionRate ?? 100}%
               </span>
             )}
           </div>
-          <span className="text-[11px] font-mono text-violet-400">
+          <span className="text-[11px] font-mono text-[#7a7a7a]">
             Validação oficial ativa
           </span>
         </div>
       </div>
 
-      {/* Auto-DM Conversion Funnel Pipeline (AutoDM / ManyChat Style) */}
-      <div className="p-5 rounded-2xl bg-[#111114] border border-zinc-800/80">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2.5">
-            <span className="p-1.5 rounded-lg bg-pink-500/10 border border-pink-500/20 text-pink-400">
+      {/* Auto-DM Conversion Funnel Pipeline */}
+      <div className="p-5 sm:p-6 rounded-[22px] bg-[#141414] border border-[#242424]">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <div className="flex items-center gap-3">
+            <span className="size-9 rounded-full bg-[#212121] border border-[#2c2c2c] text-[#ececec] flex items-center justify-center">
               <Flame className="size-4" />
             </span>
             <div>
-              <h3 className="text-sm font-bold text-white tracking-tight">
+              <h3 className="text-sm font-semibold text-[#ececec] tracking-tight">
                 Funil de Conversão Auto-DM & Trava de Seguidor
               </h3>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-[#7a7a7a]">
                 Acompanhamento em tempo real da jornada do usuário: do comentário ao clique final
               </p>
             </div>
           </div>
 
-          <span className="text-[11px] font-mono text-zinc-500 hidden sm:inline">
-            Status: Automação 100% ativa
+          <span className="text-[11px] font-mono text-[#7ae6a0] hidden sm:inline px-2.5 py-0.5 rounded-full bg-[#212121] border border-[#2c2c2c]">
+            Automação 100% ativa
           </span>
         </div>
 
         {/* 4 Steps Horizontal Tracker */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
           {/* Step 1 */}
-          <div className="p-4 rounded-xl bg-[#0a0a0c] border border-zinc-800/80 flex flex-col gap-2">
-            <div className="flex items-center justify-between text-xs text-zinc-400 font-mono">
-              <span className="font-semibold text-white">1. Comentários</span>
-              <MessageCircle className="size-3.5 text-zinc-400" />
+          <div className="p-4 rounded-[18px] bg-[#161616] border border-[#222222] flex flex-col gap-2">
+            <div className="flex items-center justify-between text-xs text-[#9a9a9a] font-mono">
+              <span className="font-semibold text-[#ececec]">1. Comentários</span>
+              <MessageCircle className="size-3.5 text-[#8a8a8a]" />
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold font-mono text-white">
+              <span className="text-2xl font-bold font-mono text-[#ececec]">
                 {data?.funnel.commentsDetected ?? 1}
               </span>
-              <span className="text-[11px] font-mono text-zinc-500">gatilhos</span>
+              <span className="text-[11px] font-mono text-[#6f6f6f]">gatilhos</span>
             </div>
-            <p className="text-[11px] text-zinc-400 leading-snug">
-              Usuários que comentaram palavras-chave ativas (ex: <code className="text-pink-400 font-mono">#REA</code>).
+            <p className="text-[11px] text-[#8a8a8a] leading-snug">
+              Usuários que comentaram palavras-chave ativas (ex: <code className="text-[#ececec] font-mono">#REA</code>).
             </p>
           </div>
 
           {/* Step 2 */}
-          <div className="p-4 rounded-xl bg-[#0a0a0c] border border-zinc-800/80 flex flex-col gap-2">
-            <div className="flex items-center justify-between text-xs text-zinc-400 font-mono">
-              <span className="font-semibold text-emerald-400">2. DMs Disparadas</span>
-              <Send className="size-3.5 text-emerald-400" />
+          <div className="p-4 rounded-[18px] bg-[#161616] border border-[#222222] flex flex-col gap-2">
+            <div className="flex items-center justify-between text-xs font-mono">
+              <span className="font-semibold text-[#7ae6a0]">2. DMs Disparadas</span>
+              <Send className="size-3.5 text-[#7ae6a0]" />
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold font-mono text-emerald-400">
+              <span className="text-2xl font-bold font-mono text-[#7ae6a0]">
                 {data?.funnel.dmsSent ?? 1}
               </span>
-              <span className="text-[11px] font-mono text-emerald-500/80">100% sucesso</span>
+              <span className="text-[11px] font-mono text-[#7ae6a0]/80">100% sucesso</span>
             </div>
-            <p className="text-[11px] text-zinc-400 leading-snug">
+            <p className="text-[11px] text-[#8a8a8a] leading-snug">
               Mensagens diretas privadas entregues instantaneamente via Meta Webhook.
             </p>
           </div>
 
           {/* Step 3 */}
-          <div className="p-4 rounded-xl bg-[#0a0a0c] border border-zinc-800/80 flex flex-col gap-2">
-            <div className="flex items-center justify-between text-xs text-zinc-400 font-mono">
-              <span className="font-semibold text-violet-300">3. Trava de Seguidor</span>
-              <ShieldCheck className="size-3.5 text-violet-400" />
+          <div className="p-4 rounded-[18px] bg-[#161616] border border-[#222222] flex flex-col gap-2">
+            <div className="flex items-center justify-between text-xs font-mono">
+              <span className="font-semibold text-[#ececec]">3. Trava de Seguidor</span>
+              <ShieldCheck className="size-3.5 text-[#0c8ce9]" />
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold font-mono text-violet-300">
+              <span className="text-2xl font-bold font-mono text-[#ececec]">
                 {data?.funnel.followGateConverted ?? 1}
               </span>
-              <span className="text-[11px] font-mono text-violet-400">convertidos</span>
+              <span className="text-[11px] font-mono text-[#0c8ce9]">convertidos</span>
             </div>
-            <p className="text-[11px] text-zinc-400 leading-snug">
+            <p className="text-[11px] text-[#8a8a8a] leading-snug">
               Verificação em tempo real se a pessoa já segue seu perfil antes de liberar o link.
             </p>
           </div>
 
           {/* Step 4 */}
-          <div className="p-4 rounded-xl bg-[#0a0a0c] border border-zinc-800/80 flex flex-col gap-2">
-            <div className="flex items-center justify-between text-xs text-zinc-400 font-mono">
-              <span className="font-semibold text-indigo-300">4. Cliques & Conversão</span>
-              <ExternalLink className="size-3.5 text-indigo-400" />
+          <div className="p-4 rounded-[18px] bg-[#161616] border border-[#222222] flex flex-col gap-2">
+            <div className="flex items-center justify-between text-xs font-mono">
+              <span className="font-semibold text-[#ececec]">4. Cliques & Conversão</span>
+              <ExternalLink className="size-3.5 text-[#8a8a8a]" />
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold font-mono text-indigo-300">
+              <span className="text-2xl font-bold font-mono text-[#ececec]">
                 {data?.funnel.linkClicks ?? 0}
               </span>
-              <span className="text-[11px] font-mono text-zinc-500">cliques rastreados</span>
+              <span className="text-[11px] font-mono text-[#6f6f6f]">cliques rastreados</span>
             </div>
-            <p className="text-[11px] text-zinc-400 leading-snug">
+            <p className="text-[11px] text-[#8a8a8a] leading-snug">
               Cliques no botão do repositório ou página de vendas configurada.
             </p>
           </div>
@@ -434,15 +434,15 @@ export function InstagramAnalyticsView({
 
       {/* Daily Reach Trend (Visual Activity Bar) */}
       {data?.dailyReach && data.dailyReach.length > 0 && (
-        <div className="p-5 rounded-2xl bg-[#111114] border border-zinc-800/80">
+        <div className="p-5 sm:p-6 rounded-[22px] bg-[#141414] border border-[#242424]">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <TrendingUp className="size-4 text-emerald-400" />
-              <h4 className="text-sm font-bold text-white tracking-tight">
+              <TrendingUp className="size-4 text-[#7ae6a0]" />
+              <h4 className="text-sm font-semibold text-[#ececec] tracking-tight">
                 Evolução Diária de Alcance (Contas Únicas)
               </h4>
             </div>
-            <span className="text-xs font-mono text-zinc-500">Últimos dias registrados</span>
+            <span className="text-xs font-mono text-[#6f6f6f]">Últimos dias registrados</span>
           </div>
 
           <div className="flex items-end gap-3 pt-4 pb-2 h-36">
@@ -452,15 +452,15 @@ export function InstagramAnalyticsView({
 
               return (
                 <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-                  <span className="text-[11px] font-mono text-white/80 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="text-[11px] font-mono text-[#ececec] opacity-0 group-hover:opacity-100 transition-opacity">
                     {d.value}
                   </span>
                   <div
-                    className="w-full rounded-t-lg bg-gradient-to-t from-pink-600/40 to-pink-500 border-t border-x border-pink-400/50 hover:to-pink-400 transition-all cursor-pointer"
+                    className="w-full rounded-t-[6px] bg-[#e0e0e0]/75 hover:bg-[#f2f2f2] border-t border-x border-[#f2f2f2]/30 transition-all cursor-pointer"
                     style={{ height: `${heightPercent}%` }}
                     title={`${d.date}: ${d.value} contas alcançadas`}
                   />
-                  <span className="text-[10px] font-mono text-zinc-500 truncate w-full text-center">
+                  <span className="text-[10px] font-mono text-[#6f6f6f] truncate w-full text-center">
                     {d.date.split('-').slice(1).join('/')}
                   </span>
                 </div>
@@ -474,13 +474,13 @@ export function InstagramAnalyticsView({
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+            <h3 className="text-base font-semibold text-[#ececec] tracking-tight flex items-center gap-2">
               <span>Desempenho de Mídias & Reels</span>
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-mono bg-zinc-800 text-zinc-400">
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-[#212121] border border-[#2c2c2c] text-[#9a9a9a]">
                 {filteredMedia.length}
               </span>
             </h3>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-[#7a7a7a]">
               Métricas detalhadas puxadas da Meta Graph API e cruzadas com suas regras de Auto-DM
             </p>
           </div>
@@ -489,25 +489,25 @@ export function InstagramAnalyticsView({
           <div className="flex items-center gap-2.5 flex-wrap">
             {/* Search Input */}
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-zinc-500" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-3.5 text-[#6f6f6f]" />
               <input
                 type="text"
                 placeholder="Buscar por legenda..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 pr-3 py-1.5 text-xs bg-[#0a0a0c] border border-zinc-800/80 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 font-mono w-48 sm:w-56"
+                className="pl-9 pr-3.5 py-1.5 text-xs bg-[#1c1c1c] border border-[#2a2a2a] rounded-full text-[#ececec] placeholder-[#6f6f6f] focus:outline-none focus:border-[#4a4a4a] font-mono w-48 sm:w-56 transition-colors"
               />
             </div>
 
             {/* Media Type Filter */}
-            <div className="flex items-center p-1 rounded-xl bg-[#0a0a0c] border border-zinc-800/80">
+            <div className="flex items-center p-1 rounded-full bg-[#141414] border border-[#242424]">
               <button
                 type="button"
                 onClick={() => setMediaFilter('ALL')}
-                className={`px-2.5 py-1 text-xs font-mono rounded-lg transition-all ${
+                className={`px-3 py-1 text-xs font-mono rounded-full transition-all cursor-pointer ${
                   mediaFilter === 'ALL'
-                    ? 'bg-zinc-800 text-white font-medium'
-                    : 'text-zinc-500 hover:text-zinc-300'
+                    ? 'bg-[#212121] text-[#ececec] font-medium'
+                    : 'text-[#7a7a7a] hover:text-[#ececec]'
                 }`}
               >
                 Todos
@@ -515,10 +515,10 @@ export function InstagramAnalyticsView({
               <button
                 type="button"
                 onClick={() => setMediaFilter('VIDEO')}
-                className={`px-2.5 py-1 text-xs font-mono rounded-lg transition-all ${
+                className={`px-3 py-1 text-xs font-mono rounded-full transition-all cursor-pointer ${
                   mediaFilter === 'VIDEO'
-                    ? 'bg-zinc-800 text-white font-medium'
-                    : 'text-zinc-500 hover:text-zinc-300'
+                    ? 'bg-[#212121] text-[#ececec] font-medium'
+                    : 'text-[#7a7a7a] hover:text-[#ececec]'
                 }`}
               >
                 Reels
@@ -526,10 +526,10 @@ export function InstagramAnalyticsView({
               <button
                 type="button"
                 onClick={() => setMediaFilter('IMAGE')}
-                className={`px-2.5 py-1 text-xs font-mono rounded-lg transition-all ${
+                className={`px-3 py-1 text-xs font-mono rounded-full transition-all cursor-pointer ${
                   mediaFilter === 'IMAGE'
-                    ? 'bg-zinc-800 text-white font-medium'
-                    : 'text-zinc-500 hover:text-zinc-300'
+                    ? 'bg-[#212121] text-[#ececec] font-medium'
+                    : 'text-[#7a7a7a] hover:text-[#ececec]'
                 }`}
               >
                 Fotos
@@ -538,25 +538,25 @@ export function InstagramAnalyticsView({
           </div>
         </div>
 
-        {/* 3-Column Responsive Grid (Adheres to DESIGN.md Standards) */}
+        {/* 3-Column Responsive Grid */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="p-4 rounded-xl bg-[#111114] border border-zinc-800/80 flex flex-col gap-3 animate-pulse"
+                className="p-5 rounded-[20px] bg-[#161616] border border-[#222222] flex flex-col gap-3 animate-pulse"
               >
-                <div className="h-44 bg-zinc-800/50 rounded-lg w-full" />
-                <div className="h-4 bg-zinc-800/50 rounded w-3/4" />
-                <div className="h-8 bg-zinc-800/40 rounded w-full" />
+                <div className="h-44 bg-[#212121] rounded-[14px] w-full" />
+                <div className="h-4 bg-[#212121] rounded-lg w-3/4" />
+                <div className="h-8 bg-[#1c1c1c] rounded-lg w-full" />
               </div>
             ))}
           </div>
         ) : filteredMedia.length === 0 ? (
-          <div className="p-12 rounded-2xl bg-[#111114] border border-zinc-800/80 text-center flex flex-col items-center justify-center gap-3">
-            <Play className="size-8 text-zinc-600" />
-            <span className="text-sm font-semibold text-white">Nenhum post ou reel encontrado</span>
-            <p className="text-xs text-zinc-500 max-w-sm">
+          <div className="p-12 rounded-[22px] bg-[#141414] border border-[#242424] text-center flex flex-col items-center justify-center gap-3">
+            <Play className="size-8 text-[#6f6f6f]" />
+            <span className="text-sm font-semibold text-[#ececec]">Nenhum post ou reel encontrado</span>
+            <p className="text-xs text-[#7a7a7a] max-w-sm">
               Não encontramos mídias correspondentes aos filtros selecionados.
             </p>
           </div>
@@ -575,10 +575,10 @@ export function InstagramAnalyticsView({
               return (
                 <div
                   key={media.id}
-                  className="rounded-xl bg-[#111114] border border-zinc-800/80 hover:border-zinc-700 transition-all flex flex-col overflow-hidden group shadow-lg"
+                  className="rounded-[20px] bg-[#161616] border border-[#222222] hover:border-[#343434] transition-all flex flex-col overflow-hidden group"
                 >
                   {/* Thumbnail Banner with Overlay */}
-                  <div className="relative aspect-video bg-black overflow-hidden flex items-center justify-center">
+                  <div className="relative aspect-video bg-[#0a0a0a] overflow-hidden flex items-center justify-center">
                     {media.thumbnailUrl || media.mediaUrl ? (
                       <img
                         src={media.thumbnailUrl || media.mediaUrl}
@@ -587,16 +587,16 @@ export function InstagramAnalyticsView({
                         loading="lazy"
                       />
                     ) : (
-                      <div className="size-full flex items-center justify-center bg-zinc-900 text-zinc-600">
+                      <div className="size-full flex items-center justify-center bg-[#1c1c1c] text-[#6f6f6f]">
                         <Play className="size-8" />
                       </div>
                     )}
 
                     {/* Media Type Badge */}
-                    <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md border border-white/10 text-[10px] font-mono text-white flex items-center gap-1">
+                    <div className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full bg-[#111111]/85 backdrop-blur-md border border-[#2c2c2c] text-[10px] font-mono text-[#ececec] flex items-center gap-1">
                       {media.mediaType === 'VIDEO' ? (
                         <>
-                          <Play className="size-3 text-pink-400 fill-pink-400" />
+                          <Play className="size-3 text-[#ececec]" />
                           <span>Reels</span>
                         </>
                       ) : (
@@ -606,12 +606,12 @@ export function InstagramAnalyticsView({
 
                     {/* Auto-DM Active Badge */}
                     {media.campaignName ? (
-                      <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-emerald-500/20 backdrop-blur-md border border-emerald-500/30 text-[10px] font-mono text-emerald-300 flex items-center gap-1">
-                        <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <div className="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-[#111111]/85 backdrop-blur-md border border-[#7ae6a0]/35 text-[10px] font-mono text-[#7ae6a0] flex items-center gap-1.5">
+                        <span className="size-1.5 rounded-full bg-[#7ae6a0] animate-pulse" />
                         <span>Auto-DM: {media.campaignName}</span>
                       </div>
                     ) : (
-                      <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-mono text-zinc-400">
+                      <div className="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-[#111111]/80 backdrop-blur-md border border-[#2c2c2c] text-[10px] font-mono text-[#8a8a8a]">
                         Global #REA
                       </div>
                     )}
@@ -622,7 +622,7 @@ export function InstagramAnalyticsView({
                         href={media.permalink}
                         target="_blank"
                         rel="noreferrer"
-                        className="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-black/75 hover:bg-black text-white/80 hover:text-white transition-all border border-white/15"
+                        className="absolute bottom-2.5 right-2.5 p-1.5 rounded-full bg-[#111111]/85 hover:bg-[#212121] text-[#ececec] transition-all border border-[#2c2c2c]"
                         title="Ver no Instagram"
                       >
                         <ArrowUpRight className="size-3.5" />
@@ -633,60 +633,60 @@ export function InstagramAnalyticsView({
                   {/* Body Content */}
                   <div className="p-4 flex flex-col flex-1 justify-between gap-3">
                     <div className="flex flex-col gap-1.5">
-                      <div className="flex items-center justify-between text-[11px] font-mono text-zinc-500">
+                      <div className="flex items-center justify-between text-[11px] font-mono text-[#6f6f6f]">
                         <span>{formattedDate}</span>
                         {media.dmsSentCount > 0 && (
-                          <span className="text-emerald-400 font-semibold">
+                          <span className="text-[#7ae6a0] font-semibold">
                             {media.dmsSentCount} DM{media.dmsSentCount > 1 ? 's' : ''} disparada{media.dmsSentCount > 1 ? 's' : ''}
                           </span>
                         )}
                       </div>
 
-                      <p className="text-xs text-zinc-300 line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-[#d0d0d0] line-clamp-2 leading-relaxed">
                         {media.caption || 'Sem legenda'}
                       </p>
                     </div>
 
                     {/* Metrics Grid */}
-                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-zinc-800/60 text-center">
-                      <div className="p-1.5 rounded-lg bg-[#0a0a0c] border border-zinc-800/40">
-                        <span className="text-[10px] font-mono text-zinc-500 block">VIEWS</span>
-                        <span className="text-xs font-bold font-mono text-pink-300">
+                    <div className="grid grid-cols-3 gap-2 pt-2.5 border-t border-[#222222] text-center">
+                      <div className="p-2 rounded-[12px] bg-[#1c1c1c] border border-[#262626]">
+                        <span className="text-[10px] font-mono text-[#6f6f6f] block">VIEWS</span>
+                        <span className="text-xs font-bold font-mono text-[#ececec]">
                           {media.views > 0 ? media.views.toLocaleString() : (media.views || 0)}
                         </span>
                       </div>
 
-                      <div className="p-1.5 rounded-lg bg-[#0a0a0c] border border-zinc-800/40">
-                        <span className="text-[10px] font-mono text-zinc-500 block">ALCANCE</span>
-                        <span className="text-xs font-bold font-mono text-white">
+                      <div className="p-2 rounded-[12px] bg-[#1c1c1c] border border-[#262626]">
+                        <span className="text-[10px] font-mono text-[#6f6f6f] block">ALCANCE</span>
+                        <span className="text-xs font-bold font-mono text-[#ececec]">
                           {media.reach > 0 ? media.reach.toLocaleString() : '-'}
                         </span>
                       </div>
 
-                      <div className="p-1.5 rounded-lg bg-[#0a0a0c] border border-zinc-800/40">
-                        <span className="text-[10px] font-mono text-zinc-500 block">CURTIDAS</span>
-                        <span className="text-xs font-bold font-mono text-rose-300">
+                      <div className="p-2 rounded-[12px] bg-[#1c1c1c] border border-[#262626]">
+                        <span className="text-[10px] font-mono text-[#6f6f6f] block">CURTIDAS</span>
+                        <span className="text-xs font-bold font-mono text-[#ececec]">
                           {media.likeCount}
                         </span>
                       </div>
 
-                      <div className="p-1.5 rounded-lg bg-[#0a0a0c] border border-zinc-800/40">
-                        <span className="text-[10px] font-mono text-zinc-500 block">COMENTÁRIOS</span>
-                        <span className="text-xs font-bold font-mono text-amber-300">
+                      <div className="p-2 rounded-[12px] bg-[#1c1c1c] border border-[#262626]">
+                        <span className="text-[10px] font-mono text-[#6f6f6f] block">COMENTÁRIOS</span>
+                        <span className="text-xs font-bold font-mono text-[#ececec]">
                           {media.commentsCount}
                         </span>
                       </div>
 
-                      <div className="p-1.5 rounded-lg bg-[#0a0a0c] border border-zinc-800/40">
-                        <span className="text-[10px] font-mono text-zinc-500 block">SHARES</span>
-                        <span className="text-xs font-bold font-mono text-indigo-300">
+                      <div className="p-2 rounded-[12px] bg-[#1c1c1c] border border-[#262626]">
+                        <span className="text-[10px] font-mono text-[#6f6f6f] block">SHARES</span>
+                        <span className="text-xs font-bold font-mono text-[#ececec]">
                           {media.shares || 0}
                         </span>
                       </div>
 
-                      <div className="p-1.5 rounded-lg bg-[#0a0a0c] border border-zinc-800/40">
-                        <span className="text-[10px] font-mono text-zinc-500 block">SALVOS</span>
-                        <span className="text-xs font-bold font-mono text-teal-300">
+                      <div className="p-2 rounded-[12px] bg-[#1c1c1c] border border-[#262626]">
+                        <span className="text-[10px] font-mono text-[#6f6f6f] block">SALVOS</span>
+                        <span className="text-xs font-bold font-mono text-[#7ae6a0]">
                           {media.saved || 0}
                         </span>
                       </div>
@@ -698,7 +698,7 @@ export function InstagramAnalyticsView({
                         href={media.permalink}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-zinc-400 hover:text-white transition-colors flex items-center gap-1 text-[11px]"
+                        className="text-[#8a8a8a] hover:text-[#ececec] transition-colors flex items-center gap-1 text-[11px]"
                       >
                         Abrir Reel no App <ArrowUpRight className="size-3" />
                       </a>
@@ -706,7 +706,7 @@ export function InstagramAnalyticsView({
                       <button
                         type="button"
                         onClick={() => onOpenCampaignModal?.(media.id)}
-                        className="px-2.5 py-1 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-200 text-[11px] font-mono transition-all"
+                        className="px-3 py-1 rounded-full bg-[#212121] hover:bg-[#2a2a2a] text-[#ececec] border border-[#2e2e2e] text-[11px] font-mono transition-all cursor-pointer active:scale-[0.97]"
                       >
                         Configurar DM
                       </button>

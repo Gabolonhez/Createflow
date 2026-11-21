@@ -45,38 +45,38 @@ export function PerformanceView({
   return (
     <div className="flex flex-col gap-6">
       {/* Top Tab Bar Navigation */}
-      <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
-        <div className="flex items-center gap-2 p-1 rounded-xl bg-[#111114] border border-zinc-800/80">
+      <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-3 flex-wrap gap-3">
+        <div className="flex items-center gap-1 p-1 rounded-full bg-[#141414] border border-[#242424]">
           <button
             type="button"
             onClick={() => setActiveTab('instagram')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium transition-all ${
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
               activeTab === 'instagram'
-                ? 'bg-zinc-800 text-white shadow-sm'
-                : 'text-zinc-500 hover:text-zinc-300'
+                ? 'bg-[#212121] text-[#ececec]'
+                : 'text-[#8a8a8a] hover:text-[#ececec]'
             }`}
           >
-            <InstagramLogo className="size-3.5 text-pink-400" />
+            <InstagramLogo className="size-3.5" />
             <span>Instagram & Auto-DM</span>
-            <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse ml-0.5" />
+            <span className="size-1.5 rounded-full bg-[#7ae6a0]" />
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('posts')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium transition-all ${
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
               activeTab === 'posts'
-                ? 'bg-zinc-800 text-white shadow-sm'
-                : 'text-zinc-500 hover:text-zinc-300'
+                ? 'bg-[#212121] text-[#ececec]'
+                : 'text-[#8a8a8a] hover:text-[#ececec]'
             }`}
           >
-            <Layers className="size-3.5 text-zinc-400" />
+            <Layers className="size-3.5 text-[#a0a0a0]" />
             <span>Fila & Posts Autorais</span>
-            <span className="text-[10px] text-zinc-500 font-mono">({publishedPosts.length})</span>
+            <span className="text-[10px] text-[#7a7a7a] font-mono">({publishedPosts.length})</span>
           </button>
         </div>
 
-        <span className="text-xs font-mono text-zinc-500 hidden md:inline">
+        <span className="text-xs font-mono text-[#6f6f6f] hidden md:inline">
           {activeTab === 'instagram'
             ? 'Dados em tempo real via Meta Graph API v25.0'
             : 'Métricas de aprovação e calibração de voz'}
@@ -95,65 +95,65 @@ export function PerformanceView({
           {/* KPI Cards Row */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {/* KPI 1 */}
-            <div className="p-4 rounded-xl bg-[#111114] border border-zinc-800/80 flex flex-col gap-1">
-              <span className="text-[11px] font-mono text-zinc-500 uppercase">POSTS PUBLICADOS</span>
+            <div className="p-5 rounded-[20px] bg-[#161616] border border-[#222222] flex flex-col gap-1">
+              <span className="text-[11px] font-mono text-[#7a7a7a] uppercase">POSTS PUBLICADOS</span>
               <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-2xl font-bold font-mono text-white">{publishedPosts.length}</span>
-                <span className="text-xs text-emerald-400 font-mono">100% no ar</span>
+                <span className="text-2xl font-bold font-mono text-[#ececec]">{publishedPosts.length}</span>
+                <span className="text-xs text-[#7ae6a0] font-mono">100% no ar</span>
               </div>
-              <span className="text-[11px] text-zinc-500 mt-1">Total acumulado</span>
+              <span className="text-[11px] text-[#6f6f6f] mt-1">Total acumulado</span>
             </div>
 
             {/* KPI 2 */}
-            <div className="p-4 rounded-xl bg-[#111114] border border-zinc-800/80 flex flex-col gap-1">
-              <span className="text-[11px] font-mono text-zinc-500 uppercase">AGENDADOS NA FILA</span>
+            <div className="p-5 rounded-[20px] bg-[#161616] border border-[#222222] flex flex-col gap-1">
+              <span className="text-[11px] font-mono text-[#7a7a7a] uppercase">AGENDADOS NA FILA</span>
               <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-2xl font-bold font-mono text-violet-300">{scheduledPosts.length}</span>
-                <span className="text-xs text-zinc-500 font-mono">próximos dias</span>
+                <span className="text-2xl font-bold font-mono text-[#ececec]">{scheduledPosts.length}</span>
+                <span className="text-xs text-[#7a7a7a] font-mono">próximos dias</span>
               </div>
-              <span className="text-[11px] text-zinc-500 mt-1">Prontos para publicação</span>
+              <span className="text-[11px] text-[#6f6f6f] mt-1">Prontos para publicação</span>
             </div>
 
             {/* KPI 3 */}
-            <div className="p-4 rounded-xl bg-[#111114] border border-zinc-800/80 flex flex-col gap-1">
-              <span className="text-[11px] font-mono text-zinc-500 uppercase">AGUARDANDO VOCÊ</span>
+            <div className="p-5 rounded-[20px] bg-[#161616] border border-[#222222] flex flex-col gap-1">
+              <span className="text-[11px] font-mono text-[#7a7a7a] uppercase">AGUARDANDO VOCÊ</span>
               <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-2xl font-bold font-mono text-amber-300">{awaitingPosts.length}</span>
-                <span className="text-xs text-amber-400 font-mono">precisam de revisão</span>
+                <span className="text-2xl font-bold font-mono text-[#ffbd2e]">{awaitingPosts.length}</span>
+                <span className="text-xs text-[#ffbd2e] font-mono">precisam de revisão</span>
               </div>
-              <span className="text-[11px] text-zinc-500 mt-1">Gerados pela IA</span>
+              <span className="text-[11px] text-[#6f6f6f] mt-1">Gerados pela IA</span>
             </div>
 
             {/* KPI 4 */}
-            <div className="p-4 rounded-xl bg-[#111114] border border-zinc-800/80 flex flex-col gap-1">
-              <span className="text-[11px] font-mono text-zinc-500 uppercase">TAXA DE APROVAÇÃO</span>
+            <div className="p-5 rounded-[20px] bg-[#161616] border border-[#222222] flex flex-col gap-1">
+              <span className="text-[11px] font-mono text-[#7a7a7a] uppercase">TAXA DE APROVAÇÃO</span>
               <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-2xl font-bold font-mono text-emerald-400">{approvalRate}%</span>
-                <span className="text-xs text-emerald-400/80 font-mono">calibração alta</span>
+                <span className="text-2xl font-bold font-mono text-[#7ae6a0]">{approvalRate}%</span>
+                <span className="text-xs text-[#7ae6a0]/80 font-mono">calibração alta</span>
               </div>
-              <span className="text-[11px] text-zinc-500 mt-1">Alinhamento com seu tom</span>
+              <span className="text-[11px] text-[#6f6f6f] mt-1">Alinhamento com seu tom</span>
             </div>
           </div>
 
           {/* Network Distribution Breakdown */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* X Distribution Card */}
-            <div className="p-5 rounded-xl bg-[#111114] border border-zinc-800/80 flex flex-col gap-3">
+            <div className="p-5 rounded-[20px] bg-[#161616] border border-[#222222] flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="p-1.5 rounded-lg bg-black border border-white/[0.1] text-white">
-                    <XLogo className="size-4" />
+                <div className="flex items-center gap-2.5">
+                  <span className="size-8 rounded-full bg-[#212121] border border-[#2c2c2c] text-[#ececec] flex items-center justify-center">
+                    <XLogo className="size-3.5" />
                   </span>
-                  <span className="text-sm font-semibold text-white">X (Twitter)</span>
+                  <span className="text-sm font-semibold text-[#ececec]">X (Twitter)</span>
                 </div>
-                <span className="text-xs font-mono text-zinc-400">{xPublishedCount} publicados</span>
+                <span className="text-xs font-mono text-[#8a8a8a]">{xPublishedCount} publicados</span>
               </div>
 
-              <p className="text-xs text-zinc-400 leading-relaxed">
+              <p className="text-xs text-[#8a8a8a] leading-relaxed">
                 Foco em opiniões afiadas, ganchos imediatos, tópicos de arquitetura e fios de bastidores.
               </p>
 
-              <div className="flex items-center gap-2 pt-2 border-t border-zinc-800/60 text-[11px] font-mono text-zinc-500">
+              <div className="flex items-center gap-2 pt-3 border-t border-[#222222] text-[11px] font-mono text-[#6f6f6f]">
                 <span>Limite de 280 caracteres respeitado</span>
                 <span>·</span>
                 <span>Suporte a Fio / Thread ativo</span>
@@ -161,22 +161,22 @@ export function PerformanceView({
             </div>
 
             {/* LinkedIn Distribution Card */}
-            <div className="p-5 rounded-xl bg-[#111114] border border-zinc-800/80 flex flex-col gap-3">
+            <div className="p-5 rounded-[20px] bg-[#161616] border border-[#222222] flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="p-1.5 rounded-lg bg-[#0A66C2]/20 border border-[#0A66C2]/40 text-[#70b5f9]">
-                    <LinkedInLogo className="size-4 text-[#0A66C2]" />
+                <div className="flex items-center gap-2.5">
+                  <span className="size-8 rounded-full bg-[#212121] border border-[#2c2c2c] flex items-center justify-center">
+                    <LinkedInLogo className="size-3.5 text-[#0A66C2]" />
                   </span>
-                  <span className="text-sm font-semibold text-white">LinkedIn</span>
+                  <span className="text-sm font-semibold text-[#ececec]">LinkedIn</span>
                 </div>
-                <span className="text-xs font-mono text-zinc-400">{linkedinPublishedCount} publicados</span>
+                <span className="text-xs font-mono text-[#8a8a8a]">{linkedinPublishedCount} publicados</span>
               </div>
 
-              <p className="text-xs text-zinc-400 leading-relaxed">
+              <p className="text-xs text-[#8a8a8a] leading-relaxed">
                 Foco em liderança de pensamento, lições de engenharia, tomadas de decisão e cultura de desenvolvimento.
               </p>
 
-              <div className="flex items-center gap-2 pt-2 border-t border-zinc-800/60 text-[11px] font-mono text-zinc-500">
+              <div className="flex items-center gap-2 pt-3 border-t border-[#222222] text-[11px] font-mono text-[#6f6f6f]">
                 <span>Ganchos pré-ver mais</span>
                 <span>·</span>
                 <span>Artigos e feed B2B</span>

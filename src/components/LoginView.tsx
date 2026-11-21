@@ -53,7 +53,6 @@ export default function LoginView({ onSuccess }: LoginViewProps) {
           onSuccess(data.user.email || email);
         }
       } else {
-        // Modo Criação de Conta
         const { data, error } = await supabaseClient.auth.signUp({
           email: email.trim(),
           password,
@@ -63,7 +62,6 @@ export default function LoginView({ onSuccess }: LoginViewProps) {
           throw error;
         }
 
-        // Se o Supabase confirmou direto ou gerou sessão
         if (data.session && data.user) {
           onSuccess(data.user.email || email);
         } else if (data.user && !data.session) {
@@ -80,11 +78,11 @@ export default function LoginView({ onSuccess }: LoginViewProps) {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#07070a] text-white p-4 relative overflow-hidden select-none">
-      <div className="relative w-full max-w-[420px] rounded-2xl bg-[#0f0f15] border border-zinc-800/80 shadow-2xl p-7 md:p-8 flex flex-col gap-6">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#0a0a0a] text-[#ececec] p-4 relative overflow-hidden select-none">
+      <div className="relative w-full max-w-[420px] rounded-[26px] bg-[#161616] border border-[#242424] shadow-[0_24px_80px_rgba(0,0,0,0.85)] p-7 md:p-8 flex flex-col gap-6">
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center gap-3">
-          <div className="relative size-14 rounded-2xl p-1 bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shadow-lg">
+          <div className="relative size-14 rounded-2xl p-1 bg-[#212121] border border-[#2c2c2c] flex items-center justify-center overflow-hidden shadow-lg">
             <Image
               src="/createflow-logo.png"
               alt="CreateFlow Logo"
@@ -97,35 +95,35 @@ export default function LoginView({ onSuccess }: LoginViewProps) {
 
           <div className="flex flex-col gap-1">
             <div className="flex items-center justify-center gap-2">
-              <h1 className="text-xl font-bold tracking-tight text-white">CreateFlow</h1>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/80">
+              <h1 className="text-xl font-medium tracking-[-0.03em] text-white">CreateFlow</h1>
+              <span className="px-1.5 py-0.5 rounded-[5px] text-[10px] font-mono font-medium bg-[#262626] text-[#a0a0a0]">
                 AI OS
               </span>
             </div>
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-[#9a9a9a]">
               Segundo Cérebro &amp; Automação de Conteúdo
             </p>
           </div>
         </div>
 
         {/* Security Badge */}
-        <div className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-full bg-white/[0.03] border border-white/[0.06] text-[11px] font-mono text-white/60 mx-auto">
-          <ShieldCheck size={13} className="text-emerald-400" />
+        <div className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-full bg-[#111111] border border-[#242424] text-[11px] font-mono text-[#9a9a9a] mx-auto">
+          <ShieldCheck size={13} className="text-[#7ae6a0]" />
           <span>Área Restrita do Criador</span>
         </div>
 
-        {/* Form Mode Toggle */}
-        <div className="grid grid-cols-2 p-1 rounded-xl bg-black/40 border border-white/[0.06] text-xs font-medium">
+        {/* Form Mode Toggle (Pluy Segmented Pill) */}
+        <div className="grid grid-cols-2 p-1 rounded-full bg-[#111111] border border-[#242424] text-xs font-medium">
           <button
             type="button"
             onClick={() => {
               setMode('signin');
               setErrorMsg(null);
             }}
-            className={`py-2 rounded-lg transition-all ${
+            className={`py-2 rounded-full transition-all active:scale-[0.97] ${
               mode === 'signin'
-                ? 'bg-white/[0.12] text-white font-semibold shadow-sm'
-                : 'text-white/50 hover:text-white/80'
+                ? 'bg-[#262626] text-white shadow-sm'
+                : 'text-[#8a8a8a] hover:text-[#ececec]'
             }`}
           >
             Entrar
@@ -136,10 +134,10 @@ export default function LoginView({ onSuccess }: LoginViewProps) {
               setMode('signup');
               setErrorMsg(null);
             }}
-            className={`py-2 rounded-lg transition-all ${
+            className={`py-2 rounded-full transition-all active:scale-[0.97] ${
               mode === 'signup'
-                ? 'bg-white/[0.12] text-white font-semibold shadow-sm'
-                : 'text-white/50 hover:text-white/80'
+                ? 'bg-[#262626] text-white shadow-sm'
+                : 'text-[#8a8a8a] hover:text-[#ececec]'
             }`}
           >
             Criar Conta
@@ -148,15 +146,15 @@ export default function LoginView({ onSuccess }: LoginViewProps) {
 
         {/* Alerts */}
         {errorMsg && (
-          <div className="flex items-start gap-2.5 p-3 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-300 text-xs leading-relaxed animate-in fade-in duration-200">
-            <AlertCircle size={15} className="shrink-0 text-rose-400 mt-0.5" />
+          <div className="flex items-start gap-2.5 p-3 rounded-2xl bg-[#ff5f56]/10 border border-[#ff5f56]/25 text-[#ff8a84] text-xs leading-relaxed animate-in fade-in duration-200">
+            <AlertCircle size={15} className="shrink-0 text-[#ff5f56] mt-0.5" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="flex items-start gap-2.5 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-xs leading-relaxed animate-in fade-in duration-200">
-            <Sparkles size={15} className="shrink-0 text-emerald-400 mt-0.5" />
+          <div className="flex items-start gap-2.5 p-3 rounded-2xl bg-[#7ae6a0]/10 border border-[#7ae6a0]/25 text-[#7ae6a0] text-xs leading-relaxed animate-in fade-in duration-200">
+            <Sparkles size={15} className="shrink-0 text-[#7ae6a0] mt-0.5" />
             <span>{successMsg}</span>
           </div>
         )}
@@ -164,7 +162,7 @@ export default function LoginView({ onSuccess }: LoginViewProps) {
         {/* Auth Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-mono text-white/50 flex items-center gap-1.5">
+            <label className="text-[11px] font-mono text-[#9a9a9a] flex items-center gap-1.5">
               <Mail size={12} />
               E-mail
             </label>
@@ -175,17 +173,17 @@ export default function LoginView({ onSuccess }: LoginViewProps) {
               placeholder="seu-email@exemplo.com"
               required
               autoFocus
-              className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/[0.08] text-white text-xs placeholder:text-white/20 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30 transition-all font-sans"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] text-xs placeholder:text-[#6f6f6f] focus:outline-none focus:border-[#4e4e4e] transition-all font-sans"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-mono text-white/50 flex items-center justify-between">
+            <label className="text-[11px] font-mono text-[#9a9a9a] flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <Lock size={12} />
                 Senha
               </span>
-              <span className="text-[10px] text-white/30">Mínimo 6 caracteres</span>
+              <span className="text-[10px] text-[#6f6f6f]">Mínimo 6 caracteres</span>
             </label>
             <div className="relative">
               <input
@@ -194,12 +192,12 @@ export default function LoginView({ onSuccess }: LoginViewProps) {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
                 required
-                className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-black/50 border border-white/[0.08] text-white text-xs placeholder:text-white/20 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30 transition-all font-sans"
+                className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] text-xs placeholder:text-[#6f6f6f] focus:outline-none focus:border-[#4e4e4e] transition-all font-sans"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6f6f6f] hover:text-[#ececec] transition-colors"
               >
                 {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
               </button>
@@ -209,10 +207,10 @@ export default function LoginView({ onSuccess }: LoginViewProps) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold text-xs shadow-lg shadow-violet-600/30 transition-all active:scale-[0.98] disabled:opacity-50 mt-2"
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-full bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] font-medium text-xs shadow-sm transition-all active:scale-[0.97] disabled:opacity-50 mt-2"
           >
             {loading ? (
-              <span className="inline-block size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="inline-block size-4 border-2 border-[#0a0a0a]/30 border-t-[#0a0a0a] rounded-full animate-spin" />
             ) : (
               <>
                 <span>{mode === 'signin' ? 'Acessar CreateFlow' : 'Criar Conta de Acesso'}</span>
@@ -223,8 +221,8 @@ export default function LoginView({ onSuccess }: LoginViewProps) {
         </form>
 
         {/* Footer info */}
-        <div className="text-center pt-2 border-t border-white/[0.04]">
-          <p className="text-[11px] text-white/35 font-mono">
+        <div className="text-center pt-3 border-t border-[#222222]">
+          <p className="text-[11px] text-[#6f6f6f] font-mono">
             Protegido por Supabase Auth &amp; Criptografia ponta a ponta
           </p>
         </div>

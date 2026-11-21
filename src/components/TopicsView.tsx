@@ -32,24 +32,28 @@ export function TopicsView({
   return (
     <div className="flex flex-col gap-6">
       {/* Header Banner */}
-      <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-violet-900/20 via-indigo-900/15 to-transparent border border-violet-500/20 flex-wrap gap-3">
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-            <Flame size={16} className="text-amber-400" />
-            <h3 className="text-sm font-semibold text-white">Pautas & Ângulos Estratégicos</h3>
+      <div className="flex items-center justify-between p-5 rounded-[22px] bg-[#141414] border border-[#242424] flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <div className="size-9 rounded-full bg-[#212121] border border-[#2c2c2c] flex items-center justify-center text-[#ececec] shrink-0">
+            <Flame size={16} />
           </div>
-          <p className="text-xs text-white/50 mt-0.5">
-            Ideias de alto engajamento sugeridas pela IA com base no seu nicho, pilares e tendências de tecnologia.
-          </p>
+          <div className="flex flex-col">
+            <h3 className="text-[13px] font-semibold tracking-tight text-[#ececec]">
+              Pautas & Ângulos Estratégicos
+            </h3>
+            <p className="text-xs text-[#7a7a7a] mt-0.5">
+              Ideias de alto engajamento sugeridas pela IA com base no seu nicho, pilares e tendências de tecnologia.
+            </p>
+          </div>
         </div>
 
         <button
           type="button"
           disabled={isGenerating}
           onClick={handleGenerateTopics}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-violet-600 hover:bg-violet-500 text-white shadow-md shadow-violet-600/20 transition-all disabled:opacity-50 cursor-pointer active:scale-[0.98]"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] transition-all disabled:opacity-50 cursor-pointer active:scale-[0.97]"
         >
-          <Sparkles size={14} className={isGenerating ? 'animate-spin' : ''} />
+          <Sparkles size={13} className={isGenerating ? 'animate-spin' : ''} />
           <span>{isGenerating ? 'Sugerindo pautas…' : 'Sugerir 5 pautas com IA'}</span>
         </button>
       </div>
@@ -59,47 +63,47 @@ export function TopicsView({
         {topics.map((topic) => (
           <div
             key={topic.id}
-            className="flex flex-col justify-between p-4 rounded-xl bg-[#0f0f15] border border-white/[0.08] hover:border-violet-500/30 transition-all group"
+            className="flex flex-col justify-between p-5 rounded-[20px] bg-[#161616] border border-[#222222] hover:border-[#323232] transition-all group"
           >
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-violet-500/10 text-violet-300 border border-violet-500/20">
+                <span className="text-[10px] font-mono font-medium px-2.5 py-0.5 rounded-full bg-[#212121] text-[#a0a0a0] border border-[#2c2c2c]">
                   {topic.pillar}
                 </span>
 
-                <div className="flex items-center gap-1">
-                  {topic.platforms.includes('x') && <XLogo className="size-3 text-white/70" />}
+                <div className="flex items-center gap-1.5">
+                  {topic.platforms.includes('x') && <XLogo className="size-3 text-[#ececec]" />}
                   {topic.platforms.includes('linkedin') && (
                     <LinkedInLogo className="size-3 text-[#0A66C2]" />
                   )}
                 </div>
               </div>
 
-              <h4 className="text-sm font-semibold text-white/90 leading-snug">
+              <h4 className="text-sm font-semibold text-[#ececec] leading-snug">
                 {topic.title}
               </h4>
 
-              <div className="p-2.5 rounded-lg bg-black/40 border border-white/[0.05] text-xs text-white/60 leading-relaxed">
-                <strong className="text-white/80 font-medium">Ângulo provocativo: </strong>
+              <div className="p-3 rounded-[14px] bg-[#1c1c1c] border border-[#262626] text-xs text-[#8a8a8a] leading-relaxed">
+                <strong className="text-[#ececec] font-medium">Ângulo provocativo: </strong>
                 {topic.hook_angle}
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-3 mt-3 border-t border-white/[0.05]">
+            <div className="flex items-center justify-between pt-3.5 mt-4 border-t border-[#222222]">
               <button
                 type="button"
                 onClick={() => onGenerateFromTopic(topic)}
-                className="flex items-center gap-1.5 text-xs font-semibold text-violet-300 hover:text-violet-200 transition-colors"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium bg-[#212121] hover:bg-[#2a2a2a] text-[#ececec] border border-[#2e2e2e] transition-all active:scale-[0.97] cursor-pointer"
               >
-                <Sparkles size={13} className="text-violet-400" />
+                <Sparkles size={12} className="text-[#a0a0a0]" />
                 <span>Gerar post desta pauta</span>
-                <ArrowRight size={12} />
+                <ArrowRight size={11} />
               </button>
 
               <button
                 type="button"
                 onClick={() => onDeleteTopic(topic.id)}
-                className="p-1 rounded text-white/30 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                className="p-1.5 rounded-full text-[#7a7a7a] hover:text-[#ff5f56] hover:bg-[#ff5f56]/10 transition-colors cursor-pointer"
               >
                 <Trash2 size={13} />
               </button>

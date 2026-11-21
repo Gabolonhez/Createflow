@@ -78,7 +78,7 @@ export function XSectionBar({
     <div className="flex flex-col gap-3 min-w-0">
       {/* Main Groups Tablist */}
       <div
-        className="flex gap-1 shrink-0 overflow-x-auto bg-white/[0.03] border border-white/[0.07] rounded-lg p-1 w-fit max-w-full"
+        className="flex gap-1 shrink-0 overflow-x-auto bg-[#141414] border border-[#242424] rounded-full p-1 w-fit max-w-full"
         role="tablist"
       >
         {SECTION_CONFIG.map((group) => {
@@ -93,10 +93,10 @@ export function XSectionBar({
                 onSelectSection(group.id);
                 onSelectSubView(group.subViews[0].id);
               }}
-              className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
                 isSelected
-                  ? 'bg-white/[0.10] text-white shadow-sm font-semibold'
-                  : 'text-white/50 hover:text-white/80'
+                  ? 'bg-[#212121] text-[#ececec]'
+                  : 'text-[#8a8a8a] hover:text-[#ececec]'
               }`}
             >
               {group.label}
@@ -107,7 +107,7 @@ export function XSectionBar({
 
       {/* Sub-views Segmented Control */}
       {activeGroup.subViews.length > 1 && (
-        <div className="flex items-center gap-1 overflow-x-auto py-0.5">
+        <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
           {activeGroup.subViews.map((sub) => {
             const isSubSelected = currentSubView === sub.id;
             return (
@@ -115,10 +115,10 @@ export function XSectionBar({
                 key={sub.id}
                 type="button"
                 onClick={() => onSelectSubView(sub.id)}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                className={`px-3.5 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
                   isSubSelected
-                    ? 'bg-violet-500/15 text-violet-300 border border-violet-500/30'
-                    : 'bg-white/[0.02] text-white/50 border border-white/[0.05] hover:text-white hover:bg-white/[0.05]'
+                    ? 'bg-[#212121] text-[#ececec] border border-[#3a3a3a]'
+                    : 'bg-[#141414] text-[#8a8a8a] border border-[#242424] hover:text-[#ececec] hover:bg-[#1c1c1c]'
                 }`}
               >
                 {sub.label}

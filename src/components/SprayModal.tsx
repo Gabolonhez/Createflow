@@ -173,24 +173,29 @@ export function SprayModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-5 bg-black/85 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-6xl my-auto rounded-2xl bg-[#0d0d12] border border-white/[0.08] shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[92vh] overflow-hidden text-white font-sans animate-in fade-in zoom-in-95 duration-150">
+      <div className="relative w-full max-w-6xl my-auto rounded-[24px] bg-[#141414] border border-[#262626] shadow-[0_24px_80px_rgba(0,0,0,0.85)] flex flex-col max-h-[92dvh] sm:max-h-[92vh] overflow-hidden text-[#ececec] font-sans animate-in fade-in zoom-in-95 duration-150">
         
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-white/[0.07] bg-white/[0.02]">
+        {/* Header (macOS Window Chrome) */}
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-[#1f1f1f] bg-[#111111]">
           <div className="flex items-center gap-2.5 sm:gap-3">
-            <div className="size-8 sm:size-9 rounded-xl bg-gradient-to-tr from-amber-500/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-inner shrink-0">
-              <Zap size={18} />
+            <div className="hidden sm:flex items-center gap-1.5 mr-1 shrink-0">
+              <span className="size-2.5 rounded-full bg-[#ff5f56]" />
+              <span className="size-2.5 rounded-full bg-[#ffbd2e]" />
+              <span className="size-2.5 rounded-full bg-[#27c93f]" />
+            </div>
+            <div className="size-8 sm:size-9 rounded-xl bg-[#212121] border border-[#2c2c2c] flex items-center justify-center text-[#ffbd2e] shrink-0">
+              <Zap size={17} />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-sm sm:text-base font-bold text-white tracking-tight">
+                <h2 className="text-sm sm:text-base font-medium text-[#ececec] tracking-[-0.02em]">
                   Atomizador de Ideias
                 </h2>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20 uppercase tracking-wider font-semibold">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-[5px] bg-[#262626] text-[#a0a0a0] uppercase tracking-wider">
                   1 Ideia → 3 Formatos
                 </span>
               </div>
-              <p className="text-[11px] sm:text-xs text-zinc-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
+              <p className="text-[11px] sm:text-xs text-[#8a8a8a] mt-0.5 line-clamp-1 sm:line-clamp-none">
                 Transforme um insight único em 3 publicações autorais complementares para X e LinkedIn.
               </p>
             </div>
@@ -198,26 +203,26 @@ export function SprayModal({
           <button
             type="button"
             onClick={onClose}
-            className="size-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-colors shrink-0"
+            className="size-8 rounded-full flex items-center justify-center text-[#6f6f6f] hover:text-[#ececec] hover:bg-[#212121] transition-colors shrink-0"
           >
             <X size={16} />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 custom-scrollbar">
           {error && (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs">
+            <div className="flex items-center gap-2 p-3 rounded-2xl bg-[#ff5f56]/10 border border-[#ff5f56]/25 text-[#ff8a84] text-xs">
               <AlertCircle size={15} className="shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {/* Input Controls */}
-          <div className="p-4 rounded-xl bg-black/40 border border-white/[0.06] space-y-3">
+          <div className="p-4 rounded-[20px] bg-[#161616] border border-[#242424] space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="md:col-span-2 space-y-1.5">
-                <label className="text-[11px] font-mono font-medium text-zinc-400 uppercase tracking-wider">
+                <label className="text-[11px] font-mono text-[#8a8a8a] uppercase tracking-wider">
                   Pauta / Tese Central
                 </label>
                 <input
@@ -225,13 +230,13 @@ export function SprayModal({
                   value={theme}
                   onChange={(e) => setTheme(e.target.value)}
                   placeholder="Ex: Por que micro-serviços quebram founders antes da escala real"
-                  className="w-full px-3.5 py-2 rounded-lg bg-zinc-900/80 border border-white/[0.08] text-white text-xs placeholder:text-zinc-600 focus:outline-none focus:border-amber-500/50"
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] text-xs placeholder:text-[#6f6f6f] focus:outline-none focus:border-[#4e4e4e]"
                   disabled={isGenerating}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono font-medium text-zinc-400 uppercase tracking-wider">
+                <label className="text-[11px] font-mono text-[#8a8a8a] uppercase tracking-wider">
                   Bastidores / Anotação Crua (Opcional)
                 </label>
                 <input
@@ -239,15 +244,15 @@ export function SprayModal({
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   placeholder="Ex: Tivemos 3 outages mês passado por latência de rede entre 12 lambdas..."
-                  className="w-full px-3.5 py-2 rounded-lg bg-zinc-900/80 border border-white/[0.08] text-white text-xs placeholder:text-zinc-600 focus:outline-none focus:border-amber-500/50"
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] text-xs placeholder:text-[#6f6f6f] focus:outline-none focus:border-[#4e4e4e]"
                   disabled={isGenerating}
                 />
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
-              <div className="flex items-center gap-2 text-[11px] font-mono text-zinc-500">
-                <Clock size={13} className="text-zinc-400 shrink-0" />
+              <div className="flex items-center gap-2 text-[11px] font-mono text-[#6f6f6f]">
+                <Clock size={13} className="text-[#8a8a8a] shrink-0" />
                 <span>Distribui os posts automaticamente nos próximos horários nobres de Brasília (09:00, 14:30, 18:30)</span>
               </div>
 
@@ -255,7 +260,7 @@ export function SprayModal({
                 type="button"
                 onClick={handleGenerate}
                 disabled={isGenerating || !theme.trim()}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black shadow-lg shadow-amber-500/20 active:scale-[0.98] disabled:opacity-50 transition-all cursor-pointer shrink-0"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2 rounded-full text-xs font-medium bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] shadow-sm active:scale-[0.97] disabled:opacity-40 transition-all cursor-pointer shrink-0"
               >
                 <Sparkles size={14} className={isGenerating ? 'animate-spin' : ''} />
                 <span>{isGenerating ? 'Atomizando conteúdo com IA…' : 'Atomizar em 3 Formatos'}</span>
@@ -266,19 +271,19 @@ export function SprayModal({
           {/* 3-Column Generated Variants Area */}
           {isGenerating ? (
             <div className="py-20 flex flex-col items-center justify-center text-center space-y-3">
-              <div className="size-10 rounded-full border-2 border-amber-500/20 border-t-amber-400 animate-spin" />
-              <p className="text-xs font-mono text-zinc-400">
+              <div className="size-10 rounded-full border-2 border-[#2a2a2a] border-t-[#ececec] animate-spin" />
+              <p className="text-xs font-mono text-[#8a8a8a]">
                 Calibrando voz de operador, extraindo fatos reais e gerando 3 formatos complementares...
               </p>
             </div>
           ) : sprayResult ? (
             <div className="space-y-3">
               <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-2 text-xs font-semibold text-zinc-300">
-                  <Layers size={14} className="text-amber-400" />
+                <div className="flex items-center gap-2 text-xs font-medium text-[#ececec]">
+                  <Layers size={14} className="text-[#9a9a9a]" />
                   <span>Resultado da Atomização: 3 Formatos Estratégicos</span>
                 </div>
-                <span className="text-[11px] font-mono text-zinc-500">
+                <span className="text-[11px] font-mono text-[#6f6f6f]">
                   Edite qualquer texto antes de aprovar
                 </span>
               </div>
@@ -286,26 +291,26 @@ export function SprayModal({
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 
                 {/* 1. X Contrarian Card */}
-                <div className="flex flex-col rounded-xl bg-zinc-950/80 border border-zinc-800/80 p-4 space-y-3">
+                <div className="flex flex-col rounded-[20px] bg-[#161616] border border-[#242424] p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="size-6 rounded-md bg-white/[0.08] flex items-center justify-center text-white">
+                      <div className="size-6 rounded-md bg-[#212121] border border-[#2c2c2c] flex items-center justify-center text-white">
                         <XLogo className="size-3.5" />
                       </div>
-                      <span className="text-xs font-semibold text-zinc-200">X • Hot Take Contrarian</span>
+                      <span className="text-xs font-medium text-[#ececec]">X • Hot Take Contrarian</span>
                     </div>
                     <span
-                      className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
+                      className={`text-[10px] font-mono px-2 py-0.5 rounded-[5px] ${
                         contrarianText.length > 280
-                          ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                          : 'bg-zinc-800/80 text-zinc-400 border border-zinc-700/60'
+                          ? 'bg-[#ff5f56]/15 text-[#ff8a84]'
+                          : 'bg-[#212121] text-[#8a8a8a]'
                       }`}
                     >
                       {contrarianText.length}/280 chars
                     </span>
                   </div>
 
-                  <p className="text-[11px] text-zinc-500 italic">
+                  <p className="text-[11px] text-[#6f6f6f] italic">
                     Gancho rápido e opinativo que ataca o senso comum e gera réplicas imediatas.
                   </p>
 
@@ -313,50 +318,50 @@ export function SprayModal({
                     rows={8}
                     value={contrarianText}
                     onChange={(e) => setContrarianText(e.target.value)}
-                    className="flex-1 w-full p-3 rounded-lg bg-black/60 border border-white/[0.06] text-xs text-white leading-relaxed focus:outline-none focus:border-amber-500/40 resize-none font-sans"
+                    className="flex-1 w-full p-3 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-xs text-[#ececec] leading-relaxed focus:outline-none focus:border-[#4e4e4e] resize-none font-sans"
                     placeholder="Tweet curto e provocativo..."
                   />
                 </div>
 
                 {/* 2. X Thread Card */}
-                <div className="flex flex-col rounded-xl bg-zinc-950/80 border border-zinc-800/80 p-4 space-y-3">
+                <div className="flex flex-col rounded-[20px] bg-[#161616] border border-[#242424] p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="size-6 rounded-md bg-white/[0.08] flex items-center justify-center text-white">
+                      <div className="size-6 rounded-md bg-[#212121] border border-[#2c2c2c] flex items-center justify-center text-white">
                         <XLogo className="size-3.5" />
                       </div>
-                      <span className="text-xs font-semibold text-zinc-200">
+                      <span className="text-xs font-medium text-[#ececec]">
                         X • Fio Técnico ({threadTweets.length} tweets)
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={addThreadTweet}
-                      className="size-6 rounded-md bg-white/[0.05] hover:bg-white/[0.1] text-zinc-300 flex items-center justify-center transition-colors"
+                      className="size-6 rounded-full bg-[#212121] hover:bg-[#2a2a2a] text-[#ececec] flex items-center justify-center transition-colors"
                       title="Adicionar tweet ao fio"
                     >
                       <Plus size={13} />
                     </button>
                   </div>
 
-                  <p className="text-[11px] text-zinc-500 italic">
+                  <p className="text-[11px] text-[#6f6f6f] italic">
                     Passo a passo com bastidores práticos e lições técnicas desmembradas.
                   </p>
 
-                  <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+                  <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1 custom-scrollbar">
                     {threadTweets.map((t, idx) => (
                       <div key={idx} className="space-y-1 relative group">
-                        <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 px-1">
+                        <div className="flex items-center justify-between text-[10px] font-mono text-[#6f6f6f] px-1">
                           <span>Tweet {idx + 1}/{threadTweets.length} {idx === 0 ? '(Gancho)' : ''}</span>
                           <div className="flex items-center gap-2">
-                            <span className={t.length > 280 ? 'text-rose-400' : 'text-zinc-500'}>
+                            <span className={t.length > 280 ? 'text-[#ff5f56]' : 'text-[#6f6f6f]'}>
                               {t.length}/280
                             </span>
                             {threadTweets.length > 1 && (
                               <button
                                 type="button"
                                 onClick={() => removeThreadTweet(idx)}
-                                className="text-zinc-600 hover:text-rose-400 transition-colors"
+                                className="text-[#6f6f6f] hover:text-[#ff5f56] transition-colors"
                               >
                                 <Trash2 size={11} />
                               </button>
@@ -367,7 +372,7 @@ export function SprayModal({
                           rows={3}
                           value={t}
                           onChange={(e) => updateThreadTweet(idx, e.target.value)}
-                          className="w-full p-2.5 rounded-lg bg-black/60 border border-white/[0.06] text-xs text-white leading-relaxed focus:outline-none focus:border-amber-500/40 resize-none font-sans"
+                          className="w-full p-2.5 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-xs text-[#ececec] leading-relaxed focus:outline-none focus:border-[#4e4e4e] resize-none font-sans"
                           placeholder={`Tweet ${idx + 1}...`}
                         />
                       </div>
@@ -376,20 +381,20 @@ export function SprayModal({
                 </div>
 
                 {/* 3. LinkedIn Deep Dive Card */}
-                <div className="flex flex-col rounded-xl bg-zinc-950/80 border border-zinc-800/80 p-4 space-y-3">
+                <div className="flex flex-col rounded-[20px] bg-[#161616] border border-[#242424] p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="size-6 rounded-md bg-[#0A66C2]/20 flex items-center justify-center text-[#0A66C2]">
+                      <div className="size-6 rounded-md bg-[#212121] border border-[#2c2c2c] flex items-center justify-center text-[#0A66C2]">
                         <LinkedInLogo className="size-3.5" />
                       </div>
-                      <span className="text-xs font-semibold text-zinc-200">LinkedIn • Deep Dive</span>
+                      <span className="text-xs font-medium text-[#ececec]">LinkedIn • Deep Dive</span>
                     </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-[5px] bg-[#212121] text-[#9a9a9a]">
                       {linkedInText.length} chars
                     </span>
                   </div>
 
-                  <p className="text-[11px] text-zinc-500 italic">
+                  <p className="text-[11px] text-[#6f6f6f] italic">
                     Gancho de 2 linhas (...ver mais), parágrafos espaçados e marcadores limpos.
                   </p>
 
@@ -397,7 +402,7 @@ export function SprayModal({
                     rows={8}
                     value={linkedInText}
                     onChange={(e) => setLinkedInText(e.target.value)}
-                    className="flex-1 w-full p-3 rounded-lg bg-black/60 border border-white/[0.06] text-xs text-white leading-relaxed focus:outline-none focus:border-blue-500/40 resize-none font-sans"
+                    className="flex-1 w-full p-3 rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] text-xs text-[#ececec] leading-relaxed focus:outline-none focus:border-[#4e4e4e] resize-none font-sans"
                     placeholder="Post narrativo e estruturado do LinkedIn..."
                   />
                 </div>
@@ -405,24 +410,24 @@ export function SprayModal({
               </div>
             </div>
           ) : (
-            <div className="py-14 flex flex-col items-center justify-center text-center p-8 rounded-xl bg-white/[0.015] border border-white/[0.04]">
-              <div className="size-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mb-3">
-                <Zap size={22} />
+            <div className="py-14 flex flex-col items-center justify-center text-center p-8 rounded-[20px] bg-[#161616] border border-[#222222]">
+              <div className="size-12 rounded-2xl bg-[#212121] border border-[#2c2c2c] flex items-center justify-center text-[#ffbd2e] mb-3">
+                <Zap size={20} />
               </div>
-              <h4 className="text-sm font-semibold text-white/80 mb-1">
+              <h4 className="text-sm font-medium text-[#ececec] mb-1">
                 Pronto para atomizar seu insight
               </h4>
-              <p className="text-xs text-zinc-500 max-w-md">
-                Digite um tema ou insight no campo acima e clique em <strong>Disparar Atomizador</strong>. A inteligência criará 3 versões complementares ajustadas para cada plataforma.
+              <p className="text-xs text-[#8a8a8a] max-w-md">
+                Digite um tema ou insight no campo acima e clique em <strong>Atomizar em 3 Formatos</strong>. A inteligência criará 3 versões complementares ajustadas para cada plataforma.
               </p>
             </div>
           )}
         </div>
 
         {/* Footer Actions */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-t border-white/[0.07] bg-white/[0.02] gap-3">
-          <div className="flex items-center gap-2 text-xs text-zinc-400">
-            <CalendarCheck size={14} className="text-emerald-400 shrink-0" />
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-t border-[#1f1f1f] bg-[#111111] gap-3">
+          <div className="flex items-center gap-2 text-xs text-[#8a8a8a]">
+            <CalendarCheck size={14} className="text-[#7ae6a0] shrink-0" />
             <span className="hidden sm:inline">
               Aprovação em lote distribui as publicações em horários separados automaticamente.
             </span>
@@ -433,7 +438,7 @@ export function SprayModal({
               type="button"
               onClick={onClose}
               disabled={isSaving}
-              className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-colors text-center"
+              className="flex-1 sm:flex-none px-4 py-1.5 rounded-full text-xs font-medium bg-[#212121] hover:bg-[#2a2a2a] border border-[#2c2c2c] text-[#ececec] transition-all active:scale-[0.97] text-center"
             >
               Cancelar
             </button>
@@ -444,7 +449,7 @@ export function SprayModal({
                   type="button"
                   onClick={() => handleSaveAll(false)}
                   disabled={isSaving}
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-all cursor-pointer disabled:opacity-50"
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium bg-[#212121] hover:bg-[#2a2a2a] text-[#ececec] border border-[#2c2c2c] transition-all active:scale-[0.97] cursor-pointer disabled:opacity-50"
                 >
                   <FileText size={13} />
                   <span>Salvar Rascunhos</span>
@@ -454,10 +459,10 @@ export function SprayModal({
                   type="button"
                   onClick={() => handleSaveAll(true)}
                   disabled={isSaving}
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 transition-all cursor-pointer disabled:opacity-50"
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] shadow-sm transition-all active:scale-[0.97] cursor-pointer disabled:opacity-50"
                 >
                   <CheckCircle2 size={13} />
-                  <span>{isSaving ? 'Agendando...' : '⚡ Aprovar Fila'}</span>
+                  <span>{isSaving ? 'Agendando...' : 'Aprovar Fila'}</span>
                 </button>
               </>
             )}

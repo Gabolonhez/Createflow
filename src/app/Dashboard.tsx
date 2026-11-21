@@ -187,6 +187,11 @@ export default function Dashboard({
 
   // Fetch Dashboard Data on mount and session updates
   useEffect(() => {
+    if (!sessionUser) {
+      setDataLoading(false);
+      return;
+    }
+
     let active = true;
 
     setDataLoading(true);
@@ -728,9 +733,9 @@ export default function Dashboard({
 
   if (authLoading) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-[#07070a] text-white select-none">
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#0a0a0a] text-[#ececec] select-none">
         <div className="flex flex-col items-center gap-3 animate-pulse">
-          <div className="size-14 rounded-2xl bg-[#0f0f15] border border-white/[0.1] flex items-center justify-center p-1.5 shadow-2xl">
+          <div className="size-14 rounded-[22px] bg-[#161616] border border-[#262626] flex items-center justify-center p-1.5 shadow-2xl">
             <Image
               src="/createflow-logo.png"
               alt="CreateFlow"
@@ -740,7 +745,7 @@ export default function Dashboard({
               priority
             />
           </div>
-          <span className="text-xs font-mono text-white/40 tracking-wider">Carregando CreateFlow...</span>
+          <span className="text-xs font-mono text-[#6f6f6f] tracking-wider">Carregando CreateFlow...</span>
         </div>
       </div>
     );
@@ -751,15 +756,15 @@ export default function Dashboard({
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#050505] text-white">
-      {/* Toast Notification */}
+    <div className="flex h-screen w-screen overflow-hidden bg-[#0a0a0a] text-[#ececec]">
+      {/* Toast Notification (Pluy Floating Pill) */}
       {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 px-4 py-2.5 rounded-xl bg-violet-600 text-white font-medium text-xs shadow-2xl shadow-violet-600/40 border border-violet-400/30 animate-fade-in flex items-center gap-2">
+        <div className="fixed bottom-5 right-5 z-50 px-4 py-2 rounded-full bg-[#f2f2f2] text-[#0a0a0a] font-medium text-xs shadow-2xl border border-white/20 animate-fade-in flex items-center gap-2.5">
           <span>{toastMessage}</span>
           <button
             type="button"
             onClick={() => setToastMessage(null)}
-            className="text-white/60 hover:text-white"
+            className="text-[#6f6f6f] hover:text-[#0a0a0a] font-bold leading-none"
           >
             ×
           </button>
@@ -787,7 +792,7 @@ export default function Dashboard({
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-[#07070a]">
+      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-[#0a0a0a]">
         {/* Sticky Header */}
         <DashboardHeader
           title={headerMeta.title}

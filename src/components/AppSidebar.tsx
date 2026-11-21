@@ -82,7 +82,7 @@ export function AppSidebar({
           label: 'Fila de Posts',
           icon: <Layers size={17} />,
           badge: pendingApprovalsCount > 0 ? String(pendingApprovalsCount) : undefined,
-          badgeColor: 'bg-amber-500/15 text-amber-400 border border-amber-500/30',
+          badgeColor: 'bg-[#ffbd2e]/15 text-[#ffbd2e] border border-[#ffbd2e]/25 rounded-[5px]',
         },
         {
           id: 'calendar',
@@ -110,7 +110,7 @@ export function AppSidebar({
           label: 'Inbox Social',
           icon: <MessageSquare size={17} />,
           badge: unreadConversationsCount > 0 ? String(unreadConversationsCount) : undefined,
-          badgeColor: 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30',
+          badgeColor: 'bg-[#262626] text-[#ececec] border border-[#333333] rounded-[5px]',
         },
         {
           id: 'tracked-links',
@@ -166,7 +166,7 @@ export function AppSidebar({
           label: 'Video Crew (Pluy)',
           icon: <Bot size={17} />,
           badge: '5 BOTS',
-          badgeColor: 'bg-[#0c8ce9]/20 text-[#0c8ce9] border border-[#0c8ce9]/40',
+          badgeColor: 'bg-[#262626] text-[#ececec] border border-[#333333] rounded-[5px]',
         },
         {
           id: 'video-studio',
@@ -175,7 +175,7 @@ export function AppSidebar({
           label: 'Estúdio de Vídeo',
           icon: <Film size={17} />,
           badge: 'IA',
-          badgeColor: 'bg-violet-500/15 text-violet-400 border border-violet-500/30',
+          badgeColor: 'bg-[#262626] text-[#a0a0a0] rounded-[5px]',
         },
         {
           id: 'media-library',
@@ -215,7 +215,7 @@ export function AppSidebar({
           label: 'Analytics Instagram',
           icon: <InstagramLogo className="size-4 text-pink-400" />,
           badge: 'Live',
-          badgeColor: 'bg-pink-500/15 text-pink-400 border border-pink-500/30',
+          badgeColor: 'bg-[#7ae6a0]/15 text-[#7ae6a0] border border-[#7ae6a0]/25 rounded-[5px]',
         },
         {
           id: 'performance',
@@ -243,9 +243,9 @@ export function AppSidebar({
   const renderSidebarContent = (isMobileDrawer: boolean) => (
     <div className="flex flex-col h-full overflow-hidden select-none">
       {/* Brand Header */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-3 min-h-[60px] border-b border-white/[0.05]">
+      <div className="flex items-center justify-between px-4 pt-4 pb-3 min-h-[58px] border-b border-[#1f1f1f]">
         <div className="flex items-center gap-3">
-          <div className="size-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+          <div className="size-8 rounded-lg bg-[#212121] border border-[#2c2c2c] flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
             <Image
               src="/createflow-logo.png"
               alt="CreateFlow"
@@ -258,12 +258,12 @@ export function AppSidebar({
           {(!isCollapsed || isMobileDrawer) && (
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-semibold text-sm text-white tracking-tight">CreateFlow</span>
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/80">
+                <span className="font-medium text-sm text-[#ececec] tracking-[-0.02em]">CreateFlow</span>
+                <span className="px-1.5 py-0.5 rounded-[5px] text-[10px] font-mono font-normal bg-[#262626] text-[#a0a0a0]">
                   AI OS
                 </span>
               </div>
-              <span className="text-[11px] text-zinc-400 truncate">Growth Studio &amp; AI OS</span>
+              <span className="text-[11px] text-[#6f6f6f] truncate">Growth Studio &amp; AI OS</span>
             </div>
           )}
         </div>
@@ -272,14 +272,14 @@ export function AppSidebar({
             type="button"
             onClick={onCloseMobile}
             aria-label="Fechar menu lateral"
-            className="p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/[0.08] transition-colors"
+            className="p-1.5 rounded-full text-[#8a8a8a] hover:text-[#ececec] hover:bg-[#212121] transition-colors"
           >
             <X size={18} />
           </button>
         )}
       </div>
 
-      {/* Quick "+ Criar Post" CTA */}
+      {/* Quick "+ Criar Post" CTA (Pluy White Pill) */}
       <div className="p-3">
         <button
           type="button"
@@ -287,23 +287,23 @@ export function AppSidebar({
             onOpenComposer();
             if (isMobileDrawer) onCloseMobile?.();
           }}
-          className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700/80 hover:border-zinc-600 font-medium text-xs shadow-sm transition-all group active:scale-[0.98]"
+          className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-full bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] font-medium text-xs shadow-sm transition-all group active:scale-[0.97]"
         >
-          <Plus size={15} className="shrink-0 transition-transform group-hover:rotate-90 duration-200 text-zinc-400 group-hover:text-white" />
+          <Plus size={15} className="shrink-0 transition-transform group-hover:rotate-90 duration-200 text-[#0a0a0a]" />
           {(!isCollapsed || isMobileDrawer) && <span className="truncate">Criar novo post</span>}
         </button>
       </div>
 
       {/* Navigation List */}
-      <nav className="flex-1 overflow-y-auto px-2 space-y-4 py-2 scrollbar-none">
+      <nav className="flex-1 overflow-y-auto px-2.5 space-y-4 py-2 no-scrollbar">
         {navGroups.map((group) => (
-          <div key={group.title} className="space-y-1">
+          <div key={group.title} className="space-y-0.5">
             {(!isCollapsed || isMobileDrawer) ? (
-              <p className="px-3 pt-2 pb-1 text-[10px] font-semibold font-mono tracking-wider text-white/30 uppercase">
+              <p className="px-3 pt-2 pb-1 text-[10px] font-medium font-mono tracking-wider text-[#6f6f6f] uppercase">
                 {group.title}
               </p>
             ) : (
-              <div className="mx-2 my-1.5 h-px bg-white/[0.06]" />
+              <div className="mx-2 my-1.5 h-px bg-[#1f1f1f]" />
             )}
 
             {group.items.map((item) => {
@@ -317,25 +317,25 @@ export function AppSidebar({
                     if (isMobileDrawer) onCloseMobile?.();
                   }}
                   title={isCollapsed && !isMobileDrawer ? item.label : undefined}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                  className={`relative w-full flex items-center justify-between px-3 py-2 rounded-[12px] text-xs font-medium transition-all active:scale-[0.98] ${
                     isActive
-                      ? 'bg-white/[0.09] text-white shadow-sm'
-                      : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
+                      ? 'bg-[#212121] text-[#ececec] shadow-sm'
+                      : 'text-[#8a8a8a] hover:text-[#ececec] hover:bg-[#191919]'
                   } ${isCollapsed && !isMobileDrawer ? 'justify-center px-2' : ''}`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <span className={`shrink-0 ${isActive ? 'text-violet-400' : 'text-white/50'}`}>
+                    <span className={`shrink-0 ${isActive ? 'text-[#ececec]' : 'text-[#6f6f6f]'}`}>
                       {item.icon}
                     </span>
                     {(!isCollapsed || isMobileDrawer) && <span className="truncate">{item.label}</span>}
                   </div>
                   {(!isCollapsed || isMobileDrawer) && item.badge && (
-                    <span className={`text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded-full ${item.badgeColor}`}>
+                    <span className={`text-[10px] font-mono font-medium px-1.5 py-0.5 ${item.badgeColor}`}>
                       {item.badge}
                     </span>
                   )}
                   {isCollapsed && !isMobileDrawer && item.badge && (
-                    <span className="absolute top-1 right-1 size-2 rounded-full bg-amber-400" />
+                    <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-[#7ae6a0]" />
                   )}
                 </button>
               );
@@ -345,20 +345,20 @@ export function AppSidebar({
       </nav>
 
       {/* Sidebar Footer with Channel Status */}
-      <div className="p-3 border-t border-white/[0.06] bg-[#07070a]/60">
+      <div className="p-3 border-t border-[#1f1f1f] bg-[#0d0d0d]">
         {(!isCollapsed || isMobileDrawer) ? (
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono text-zinc-400">CANAIS ATIVOS</span>
-              <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
-                <span className="size-1.5 rounded-full bg-emerald-400" />
+              <span className="text-[11px] font-mono text-[#6f6f6f]">CANAIS ATIVOS</span>
+              <span className="text-[10px] text-[#7ae6a0] font-mono flex items-center gap-1">
+                <span className="size-1.5 rounded-full bg-[#7ae6a0]" />
                 Live
               </span>
             </div>
             <div className="grid grid-cols-2 gap-1.5">
               <div
-                className={`flex items-center justify-between px-2 py-1 rounded bg-white/[0.03] border ${
-                  xConnected ? 'border-white/[0.12] text-white' : 'border-red-500/20 text-white/40'
+                className={`flex items-center justify-between px-2.5 py-1 rounded-[10px] bg-[#161616] border ${
+                  xConnected ? 'border-[#262626] text-[#ececec]' : 'border-[#222222] text-[#6f6f6f]'
                 }`}
               >
                 <div className="flex items-center gap-1.5">
@@ -366,15 +366,15 @@ export function AppSidebar({
                   <span className="text-[10px] font-mono">X</span>
                 </div>
                 {xConnected ? (
-                  <CheckCircle2 size={10} className="text-emerald-400" />
+                  <CheckCircle2 size={10} className="text-[#7ae6a0]" />
                 ) : (
-                  <span className="text-[9px] text-amber-400">Off</span>
+                  <span className="text-[9px] text-[#6f6f6f]">Off</span>
                 )}
               </div>
 
               <div
-                className={`flex items-center justify-between px-2 py-1 rounded bg-white/[0.03] border ${
-                  linkedinConnected ? 'border-sky-500/30 text-white' : 'border-red-500/20 text-white/40'
+                className={`flex items-center justify-between px-2.5 py-1 rounded-[10px] bg-[#161616] border ${
+                  linkedinConnected ? 'border-[#262626] text-[#ececec]' : 'border-[#222222] text-[#6f6f6f]'
                 }`}
               >
                 <div className="flex items-center gap-1.5">
@@ -382,15 +382,15 @@ export function AppSidebar({
                   <span className="text-[10px] font-mono">in</span>
                 </div>
                 {linkedinConnected ? (
-                  <CheckCircle2 size={10} className="text-emerald-400" />
+                  <CheckCircle2 size={10} className="text-[#7ae6a0]" />
                 ) : (
-                  <span className="text-[9px] text-amber-400">Off</span>
+                  <span className="text-[9px] text-[#6f6f6f]">Off</span>
                 )}
               </div>
 
               <div
-                className={`flex items-center justify-between px-2 py-1 rounded bg-white/[0.03] border ${
-                  instagramConnected ? 'border-pink-500/30 text-white' : 'border-red-500/20 text-white/40'
+                className={`flex items-center justify-between px-2.5 py-1 rounded-[10px] bg-[#161616] border ${
+                  instagramConnected ? 'border-[#262626] text-[#ececec]' : 'border-[#222222] text-[#6f6f6f]'
                 }`}
               >
                 <div className="flex items-center gap-1.5">
@@ -398,31 +398,31 @@ export function AppSidebar({
                   <span className="text-[10px] font-mono">IG</span>
                 </div>
                 {instagramConnected ? (
-                  <CheckCircle2 size={10} className="text-emerald-400" />
+                  <CheckCircle2 size={10} className="text-[#7ae6a0]" />
                 ) : (
-                  <span className="text-[9px] text-amber-400">Off</span>
+                  <span className="text-[9px] text-[#6f6f6f]">Off</span>
                 )}
               </div>
             </div>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2">
-            <XLogo className={`size-3.5 ${xConnected ? 'text-white' : 'text-white/30'}`} />
-            <LinkedInLogo className={`size-3.5 ${linkedinConnected ? 'text-[#0A66C2]' : 'text-white/30'}`} />
-            <InstagramLogo className={`size-3.5 ${instagramConnected ? 'text-pink-400' : 'text-white/30'}`} />
+            <XLogo className={`size-3.5 ${xConnected ? 'text-[#ececec]' : 'text-[#4a4a4a]'}`} />
+            <LinkedInLogo className={`size-3.5 ${linkedinConnected ? 'text-[#0A66C2]' : 'text-[#4a4a4a]'}`} />
+            <InstagramLogo className={`size-3.5 ${instagramConnected ? 'text-pink-400' : 'text-[#4a4a4a]'}`} />
           </div>
         )}
 
         {/* User Account / Sign Out Strip */}
         {userEmail && (
-          <div className="pt-2.5 mt-2 border-t border-white/[0.05] flex items-center justify-between">
+          <div className="pt-2.5 mt-2 border-t border-[#1f1f1f] flex items-center justify-between">
             {(!isCollapsed || isMobileDrawer) ? (
               <>
                 <div className="flex items-center gap-2 min-w-0">
-                  <div className="size-6 rounded-full bg-violet-600/30 border border-violet-500/40 flex items-center justify-center text-[10px] font-bold text-violet-200 shrink-0 uppercase">
+                  <div className="size-6 rounded-full bg-[#262626] border border-[#333333] flex items-center justify-center text-[10px] font-medium text-[#ececec] shrink-0 uppercase">
                     {userEmail[0]}
                   </div>
-                  <span className="text-[11px] font-mono text-white/60 truncate" title={userEmail}>
+                  <span className="text-[11px] font-mono text-[#9a9a9a] truncate" title={userEmail}>
                     {userEmail}
                   </span>
                 </div>
@@ -431,7 +431,7 @@ export function AppSidebar({
                     type="button"
                     onClick={onSignOut}
                     title="Sair da conta"
-                    className="p-1 rounded text-white/40 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                    className="p-1.5 rounded-full text-[#6f6f6f] hover:text-[#ff5f56] hover:bg-[#ff5f56]/10 transition-colors"
                   >
                     <LogOut size={13} />
                   </button>
@@ -443,7 +443,7 @@ export function AppSidebar({
                   type="button"
                   onClick={onSignOut}
                   title={`Sair (${userEmail})`}
-                  className="mx-auto p-1.5 rounded text-white/40 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                  className="mx-auto p-1.5 rounded-full text-[#6f6f6f] hover:text-[#ff5f56] hover:bg-[#ff5f56]/10 transition-colors"
                 >
                   <LogOut size={14} />
                 </button>
@@ -460,7 +460,7 @@ export function AppSidebar({
       {/* Mobile Drawer Backdrop */}
       {isMobileOpen && (
         <div
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 md:hidden animate-fade-in"
+          className="fixed inset-0 bg-black/75 backdrop-blur-sm z-40 md:hidden animate-fade-in"
           onClick={onCloseMobile}
           aria-hidden="true"
         />
@@ -468,7 +468,7 @@ export function AppSidebar({
 
       {/* Mobile Slide-Out Drawer */}
       <aside
-        className={`fixed inset-y-0 left-0 w-[275px] max-w-[85vw] flex flex-col h-[100dvh] z-50 bg-[#09090d] border-r border-white/[0.1] shadow-2xl transition-transform duration-300 md:hidden select-none ${
+        className={`fixed inset-y-0 left-0 w-[275px] max-w-[85vw] flex flex-col h-[100dvh] z-50 bg-[#111111] border-r border-[#1f1f1f] shadow-2xl transition-transform duration-300 md:hidden select-none ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -477,7 +477,7 @@ export function AppSidebar({
 
       {/* Desktop Persistent Sidebar */}
       <aside
-        className="hidden md:flex relative flex-col h-screen shrink-0 z-30 transition-all duration-300 select-none bg-[#09090d] border-r border-white/[0.07]"
+        className="hidden md:flex relative flex-col h-screen shrink-0 z-30 transition-all duration-300 select-none bg-[#111111] border-r border-[#1f1f1f]"
         style={{ width: sidebarWidth, minWidth: sidebarWidth }}
       >
         {/* Collapse Toggle Button */}
@@ -485,7 +485,7 @@ export function AppSidebar({
           type="button"
           onClick={onToggleCollapse}
           aria-label={isCollapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
-          className="absolute -right-3 top-5 size-6 rounded-full bg-[#16161e] border border-white/[0.12] flex items-center justify-center text-white/60 hover:text-white hover:border-white/30 transition-all shadow-md z-40"
+          className="absolute -right-3 top-5 size-6 rounded-full bg-[#1a1a1a] border border-[#2c2c2c] flex items-center justify-center text-[#9a9a9a] hover:text-[#ececec] hover:border-[#3e3e3e] transition-all shadow-md z-40"
         >
           {isCollapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
         </button>

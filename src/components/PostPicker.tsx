@@ -129,25 +129,25 @@ export function PostPicker({ selectedPostId, onSelect }: PostPickerProps) {
         <div className="relative flex-1">
           <Search
             size={13}
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6f6f6f]"
           />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por legenda..."
-            className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-black/40 border border-white/[0.08] text-xs text-white placeholder-white/30 focus:outline-none focus:border-indigo-500/60"
+            className="w-full pl-9 pr-3.5 py-1.5 rounded-full bg-[#1c1c1c] border border-[#2a2a2a] text-xs text-[#ececec] placeholder-[#6f6f6f] focus:outline-none focus:border-[#4e4e4e]"
           />
         </div>
         <button
           type="button"
           onClick={fetchPosts}
           title="Recarregar posts"
-          className="p-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/50 hover:text-white hover:bg-white/[0.08] transition-colors"
+          className="p-2 rounded-full bg-[#212121] border border-[#2c2c2c] text-[#9a9a9a] hover:text-[#ececec] hover:bg-[#2a2a2a] transition-colors"
         >
           <RefreshCw size={13} />
         </button>
-        <span className="text-[11px] font-mono text-white/40 shrink-0">
+        <span className="text-[11px] font-mono text-[#6f6f6f] shrink-0">
           {filteredPosts.length} posts
         </span>
       </div>
@@ -173,10 +173,10 @@ export function PostPicker({ selectedPostId, onSelect }: PostPickerProps) {
               }
               onMouseEnter={() => setHoveredId(post.id)}
               onMouseLeave={() => setHoveredId(null)}
-              className={`group relative aspect-square rounded-lg overflow-hidden border-2 text-left transition-all ${
+              className={`group relative aspect-square rounded-xl overflow-hidden border-2 text-left transition-all ${
                 isSelected
-                  ? 'border-indigo-500 ring-2 ring-indigo-500/40 shadow-lg shadow-indigo-500/20'
-                  : 'border-white/[0.08] hover:border-white/30'
+                  ? 'border-[#ececec] ring-2 ring-white/20 shadow-lg'
+                  : 'border-[#262626] hover:border-[#444444]'
               }`}
             >
               {thumb ? (
@@ -187,14 +187,14 @@ export function PostPicker({ selectedPostId, onSelect }: PostPickerProps) {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                 />
               ) : (
-                <div className="w-full h-full bg-[#121217] flex items-center justify-center">
-                  <ImageIcon size={18} className="text-white/20" />
+                <div className="w-full h-full bg-[#161616] flex items-center justify-center">
+                  <ImageIcon size={18} className="text-[#6f6f6f]" />
                 </div>
               )}
 
               {/* Video/Reel Indicator */}
               {isVideo && (
-                <span className="absolute top-1.5 right-1.5 p-1 rounded-md bg-black/60 backdrop-blur-sm text-white/80">
+                <span className="absolute top-1.5 right-1.5 p-1 rounded-md bg-black/70 backdrop-blur-sm text-white/80">
                   <Video size={10} />
                 </span>
               )}
@@ -210,7 +210,7 @@ export function PostPicker({ selectedPostId, onSelect }: PostPickerProps) {
 
               {/* Selected Badge */}
               {isSelected && (
-                <div className="absolute inset-x-0 bottom-0 py-1 bg-indigo-600 text-white flex items-center justify-center gap-1 text-[10px] font-semibold">
+                <div className="absolute inset-x-0 bottom-0 py-1 bg-[#f2f2f2] text-[#0a0a0a] flex items-center justify-center gap-1 text-[10px] font-medium">
                   <Check size={11} />
                   <span>Selecionado</span>
                 </div>

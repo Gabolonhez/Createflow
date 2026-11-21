@@ -138,15 +138,16 @@ export function DmCampaignsView({
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#0a0a0c] overflow-y-auto custom-scrollbar">
+    <div className="flex-1 flex flex-col min-h-0 bg-[#0a0a0a] overflow-y-auto custom-scrollbar">
       {/* Top Action & Metrics Strip */}
-      <div className="p-3.5 sm:p-6 pb-3 sm:pb-4 border-b border-zinc-800/80 space-y-3 sm:space-y-4">
+      <div className="p-3.5 sm:p-6 pb-3 sm:pb-4 border-b border-[#1f1f1f] space-y-3 sm:space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-pink-500/15 text-pink-300 border border-pink-500/25">
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-[#1a1a1a] text-[#ececec] border border-[#262626] inline-flex items-center gap-1.5">
+              <InstagramLogo className="size-3 text-pink-400" />
               Instagram Direct
             </span>
-            <span className="text-xs text-zinc-400 font-mono">
+            <span className="text-xs text-[#9a9a9a] font-mono">
               Respostas automáticas por palavra-chave oficial da Meta
             </span>
           </div>
@@ -156,18 +157,18 @@ export function DmCampaignsView({
               <button
                 type="button"
                 onClick={onNavigateToAnalytics}
-                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-xs font-medium text-zinc-300 border border-zinc-800 hover:border-zinc-700 transition-all active:scale-[0.98] font-mono"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#212121] hover:bg-[#2a2a2a] text-xs font-medium text-[#ececec] border border-[#2c2c2c] transition-all active:scale-[0.97] font-mono"
               >
                 <InstagramLogo className="size-3.5 text-pink-400" />
                 <span>Analytics Instagram</span>
-                <span className="size-1.5 rounded-full bg-emerald-400" />
+                <span className="size-1.5 rounded-full bg-[#7ae6a0]" />
               </button>
             )}
 
             <button
               type="button"
               onClick={handleOpenCreate}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white hover:bg-zinc-200 text-xs font-semibold text-zinc-950 transition-all active:scale-[0.98] shadow-sm shrink-0"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-[#f2f2f2] hover:bg-white text-xs font-medium text-[#0a0a0a] transition-all active:scale-[0.97] shadow-sm shrink-0"
             >
               <Plus size={14} />
               <span>Nova Campanha</span>
@@ -175,60 +176,60 @@ export function DmCampaignsView({
           </div>
         </div>
 
-        {/* 4 Stat Cards Grid (Only displayed when there are campaigns) */}
+        {/* 4 Stat Cards Grid */}
         {campaigns.length > 0 && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 pt-1">
-            <div className="p-3 sm:p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
-              <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 pt-1">
+            <div className="p-3.5 sm:p-4 rounded-[20px] bg-[#161616] border border-[#222222] space-y-1">
+              <span className="text-[10px] sm:text-[11px] font-mono text-[#6f6f6f] uppercase tracking-wider">
                 Campanhas Ativas
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="text-xl sm:text-2xl font-bold text-white font-mono">
+                <span className="text-xl sm:text-2xl font-medium tracking-[-0.03em] text-[#ececec] font-mono">
                   {stats.totalActive}
                 </span>
-                <span className="text-[10px] sm:text-[11px] text-zinc-500 font-mono">/ {campaigns.length} total</span>
+                <span className="text-[10px] sm:text-[11px] text-[#6f6f6f] font-mono">/ {campaigns.length} total</span>
               </div>
             </div>
 
-            <div className="p-3 sm:p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
+            <div className="p-3.5 sm:p-4 rounded-[20px] bg-[#161616] border border-[#222222] space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+                <span className="text-[10px] sm:text-[11px] font-mono text-[#6f6f6f] uppercase tracking-wider">
                   DMs Enviadas
                 </span>
-                <span className="text-[9px] sm:text-[10px] font-mono text-zinc-500">Cap 750/h</span>
+                <span className="text-[9px] sm:text-[10px] font-mono text-[#6f6f6f]">Cap 750/h</span>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-xl sm:text-2xl font-bold text-white font-mono">
+                <span className="text-xl sm:text-2xl font-medium tracking-[-0.03em] text-[#ececec] font-mono">
                   {stats.totalDms}
                 </span>
-                <span className="text-[10px] sm:text-[11px] text-emerald-400 font-mono truncate">
+                <span className="text-[10px] sm:text-[11px] text-[#7ae6a0] font-mono truncate">
                   {stats.totalDms > 0 ? 'Entregas registradas' : 'Sem envios'}
                 </span>
               </div>
             </div>
 
-            <div className="p-3 sm:p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
-              <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+            <div className="p-3.5 sm:p-4 rounded-[20px] bg-[#161616] border border-[#222222] space-y-1">
+              <span className="text-[10px] sm:text-[11px] font-mono text-[#6f6f6f] uppercase tracking-wider">
                 Cliques nos Links
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="text-xl sm:text-2xl font-bold text-white font-mono">
+                <span className="text-xl sm:text-2xl font-medium tracking-[-0.03em] text-[#ececec] font-mono">
                   {stats.totalClicks}
                 </span>
-                <span className="text-[10px] sm:text-[11px] text-indigo-400 font-mono">rastreados</span>
+                <span className="text-[10px] sm:text-[11px] text-[#9a9a9a] font-mono">rastreados</span>
               </div>
             </div>
 
-            <div className="p-3 sm:p-3.5 rounded-xl bg-[#111115] border border-zinc-800/80 space-y-1">
-              <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+            <div className="p-3.5 sm:p-4 rounded-[20px] bg-[#161616] border border-[#222222] space-y-1">
+              <span className="text-[10px] sm:text-[11px] font-mono text-[#6f6f6f] uppercase tracking-wider">
                 CTR Médio
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="text-xl sm:text-2xl font-bold text-white font-mono">
+                <span className="text-xl sm:text-2xl font-medium tracking-[-0.03em] text-[#ececec] font-mono">
                   {stats.avgCtr}%
                 </span>
                 {Number(stats.avgCtr) >= 15 && (
-                  <span className="text-[10px] sm:text-[11px] text-amber-400 font-mono">alta conv.</span>
+                  <span className="text-[10px] sm:text-[11px] text-[#7ae6a0] font-mono">alta conv.</span>
                 )}
               </div>
             </div>
@@ -237,19 +238,19 @@ export function DmCampaignsView({
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="p-3.5 sm:p-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 border-b border-white/[0.05] bg-[#0c0c10]/40">
+      <div className="p-3.5 sm:p-6 py-3 sm:py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 border-b border-[#1f1f1f] bg-[#0e0e0e]">
         <div className="flex items-center gap-2 flex-1 max-w-md w-full">
           <div className="relative w-full">
             <Search
               size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6f6f6f]"
             />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar por nome ou palavra-chave..."
-              className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.08] text-xs text-white placeholder-white/30 focus:outline-none focus:border-indigo-500"
+              className="w-full pl-9 pr-4 py-1.5 rounded-full bg-[#161616] border border-[#262626] text-xs text-[#ececec] placeholder-[#6f6f6f] focus:outline-none focus:border-[#4e4e4e] transition-colors"
             />
           </div>
         </div>
@@ -259,7 +260,7 @@ export function DmCampaignsView({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="w-full sm:w-auto px-2.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.07] text-xs text-white/70 focus:outline-none"
+            className="w-full sm:w-auto px-3.5 py-1.5 rounded-full bg-[#161616] border border-[#262626] text-xs text-[#ececec] focus:outline-none focus:border-[#4e4e4e]"
           >
             <option value="all">Todos os Status</option>
             <option value="active">Somente Ativas</option>
@@ -268,21 +269,21 @@ export function DmCampaignsView({
         </div>
       </div>
 
-      {/* Campaigns Grid (3 Columns Desktop per DESIGN.md) */}
+      {/* Campaigns Grid */}
       <div className="p-3.5 sm:p-6">
         {filtered.length === 0 ? (
-          <div className="p-12 text-center rounded-2xl border border-white/[0.07] bg-[#101014] max-w-lg mx-auto space-y-3">
-            <div className="size-12 rounded-full bg-violet-600/20 text-violet-300 flex items-center justify-center mx-auto">
-              <Send size={20} />
+          <div className="p-12 text-center rounded-[24px] border border-[#222222] bg-[#141414] max-w-lg mx-auto space-y-3">
+            <div className="size-12 rounded-full bg-[#212121] border border-[#2c2c2c] text-[#ececec] flex items-center justify-center mx-auto">
+              <Send size={18} />
             </div>
-            <h3 className="text-sm font-semibold text-white">Nenhuma campanha encontrada</h3>
-            <p className="text-xs text-white/50">
+            <h3 className="text-sm font-medium text-[#ececec] tracking-[-0.02em]">Nenhuma campanha encontrada</h3>
+            <p className="text-xs text-[#9a9a9a]">
               Crie sua primeira regra de Auto-DM para Instagram e comece a enviar links no direct.
             </p>
             <button
               type="button"
               onClick={handleOpenCreate}
-              className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white"
+              className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#f2f2f2] hover:bg-white text-xs font-medium text-[#0a0a0a] transition-all active:scale-[0.97]"
             >
               <Plus size={14} />
               Criar Campanha
@@ -293,33 +294,33 @@ export function DmCampaignsView({
             {filtered.map((camp) => (
               <div
                 key={camp.id}
-                className="group relative rounded-2xl bg-[#111116] border border-white/[0.08] hover:border-white/[0.18] transition-all flex flex-col justify-between overflow-hidden shadow-sm"
+                className="group relative rounded-[22px] bg-[#161616] border border-[#222222] hover:border-[#333333] transition-all flex flex-col justify-between overflow-hidden"
               >
                 {/* Card Header */}
-                <div className="p-4 pb-3 border-b border-white/[0.05] flex items-center justify-between">
+                <div className="p-4 pb-3 border-b border-[#222222] flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="size-7 rounded-lg flex items-center justify-center bg-pink-500/15 text-pink-300 border border-pink-500/25">
+                    <div className="size-7 rounded-lg flex items-center justify-center bg-[#212121] text-pink-400 border border-[#2c2c2c]">
                       <InstagramLogo className="size-3.5" />
                     </div>
-                    <span className="text-[11px] font-mono text-white/60">
+                    <span className="text-[11px] font-mono text-[#9a9a9a]">
                       @{camp.accountUsername || 'gabolonhez'}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <button
                       type="button"
                       onClick={() => onToggleCampaign(camp.id, !camp.isActive)}
                       title={camp.isActive ? 'Pausar campanha' : 'Ativar campanha'}
-                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono transition-colors ${
+                      className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono transition-colors ${
                         camp.isActive
-                          ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
-                          : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+                          ? 'bg-[#7ae6a0]/12 text-[#7ae6a0] border border-[#7ae6a0]/25'
+                          : 'bg-[#212121] text-[#8a8a8a] border border-[#2c2c2c]'
                       }`}
                     >
                       <span
                         className={`size-1.5 rounded-full ${
-                          camp.isActive ? 'bg-emerald-400' : 'bg-zinc-500'
+                          camp.isActive ? 'bg-[#7ae6a0]' : 'bg-[#6f6f6f]'
                         }`}
                       />
                       {camp.isActive ? 'Ativa' : 'Pausada'}
@@ -329,7 +330,7 @@ export function DmCampaignsView({
                       type="button"
                       onClick={() => handleCloneCampaign(camp)}
                       title="Clonar esta campanha"
-                      className="p-1 rounded text-white/40 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
+                      className="p-1.5 rounded-full text-[#6f6f6f] hover:text-[#ececec] hover:bg-[#212121] transition-colors"
                     >
                       <Copy size={13} />
                     </button>
@@ -338,7 +339,7 @@ export function DmCampaignsView({
                       type="button"
                       onClick={() => handleOpenEdit(camp)}
                       title="Editar campanha"
-                      className="p-1 rounded text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
+                      className="p-1.5 rounded-full text-[#6f6f6f] hover:text-[#ececec] hover:bg-[#212121] transition-colors"
                     >
                       <Edit2 size={13} />
                     </button>
@@ -347,7 +348,7 @@ export function DmCampaignsView({
                       type="button"
                       onClick={() => onDeleteCampaign(camp.id)}
                       title="Excluir campanha"
-                      className="p-1 rounded text-white/40 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                      className="p-1.5 rounded-full text-[#6f6f6f] hover:text-[#ff5f56] hover:bg-[#ff5f56]/10 transition-colors"
                     >
                       <Trash2 size={13} />
                     </button>
@@ -357,10 +358,10 @@ export function DmCampaignsView({
                 {/* Card Body */}
                 <div className="p-4 space-y-3 flex-1">
                   <div>
-                    <h3 className="text-sm font-semibold text-white tracking-tight line-clamp-1">
+                    <h3 className="text-sm font-medium text-[#ececec] tracking-[-0.02em] line-clamp-1">
                       {camp.name}
                     </h3>
-                    <p className="text-[11px] text-white/50 line-clamp-1 mt-0.5">
+                    <p className="text-[11px] text-[#8a8a8a] line-clamp-1 mt-0.5">
                       {camp.scope === 'any'
                         ? 'Gatilho em qualquer post ou reels'
                         : camp.scope === 'next'
@@ -374,7 +375,7 @@ export function DmCampaignsView({
                     {camp.keywords.map((kw) => (
                       <span
                         key={kw}
-                        className="px-2 py-0.5 rounded bg-white/[0.05] border border-white/[0.08] text-[10px] font-mono text-indigo-300"
+                        className="px-2 py-0.5 rounded-[6px] bg-[#222222] border border-[#2c2c2c] text-[10px] font-mono text-[#ececec]"
                       >
                         #{kw}
                       </span>
@@ -384,52 +385,52 @@ export function DmCampaignsView({
                   {/* Feature Badges */}
                   <div className="flex flex-wrap items-center gap-1.5 pt-1">
                     {camp.requireFollow && (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-mono border border-emerald-500/20">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[6px] bg-[#7ae6a0]/10 text-[#7ae6a0] text-[10px] font-mono border border-[#7ae6a0]/20">
                         <ShieldCheck size={11} />
                         Follow-Gate
                       </span>
                     )}
                     {camp.linkButtonLabel && (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 text-[10px] font-mono border border-indigo-500/20">
-                        <ExternalLink size={11} />
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[6px] bg-[#212121] text-[#ececec] text-[10px] font-mono border border-[#2c2c2c]">
+                        <ExternalLink size={11} className="text-[#9a9a9a]" />
                         Card Link
                       </span>
                     )}
                     {camp.publicReplyEnabled && (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white/[0.05] text-white/60 text-[10px] font-mono border border-white/[0.08]">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[6px] bg-[#212121] text-[#9a9a9a] text-[10px] font-mono border border-[#2c2c2c]">
                         Reply Público ({camp.publicReplyMessages?.length || 1})
                       </span>
                     )}
                   </div>
 
-                  {/* Safe Backlog Comment Processing Button */}
+                  {/* Safe Backlog Comment Processing Button (Pluy Quiet Pill) */}
                   <button
                     type="button"
                     onClick={() => {
                       setBacklogCampaign(camp);
                       setBacklogResult(null);
                     }}
-                    className="mt-1 w-full py-1.5 px-2.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-indigo-300 text-[11px] font-medium transition-colors flex items-center justify-center gap-1.5"
+                    className="mt-1 w-full py-2 px-3 rounded-full bg-[#212121] hover:bg-[#2b2b2b] border border-[#2c2c2c] text-[#ececec] text-[11px] font-medium transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
                     title="Disparar com segurança para quem comentou antes com proteção anti-ban e janela de 7 dias"
                   >
-                    <History size={12} className="text-indigo-400" />
+                    <History size={12} className="text-[#9a9a9a]" />
                     <span>Responder Comentários Anteriores</span>
                   </button>
                 </div>
 
                 {/* Card Footer: Metrics Strip */}
-                <div className="px-4 py-3 border-t border-white/[0.06] bg-[#09090d]/60 flex items-center justify-between text-[11px] font-mono">
+                <div className="px-4 py-3 border-t border-[#222222] bg-[#121212] flex items-center justify-between text-[11px] font-mono">
                   <div className="flex items-center gap-3">
-                    <span className="text-white/60">
+                    <span className="text-[#8a8a8a]">
                       DMs:{' '}
-                      <strong className="text-white font-bold">{camp.dmsSentCount}</strong>
+                      <strong className="text-[#ececec] font-medium">{camp.dmsSentCount}</strong>
                     </span>
-                    <span className="text-white/60">
+                    <span className="text-[#8a8a8a]">
                       Clicks:{' '}
-                      <strong className="text-indigo-400 font-bold">{camp.clicksCount}</strong>
+                      <strong className="text-[#ececec] font-medium">{camp.clicksCount}</strong>
                     </span>
                   </div>
-                  <span className="text-emerald-400 font-bold">CTR {camp.ctr}%</span>
+                  <span className="text-[#7ae6a0] font-medium">CTR {camp.ctr}%</span>
                 </div>
               </div>
             ))}
@@ -440,17 +441,17 @@ export function DmCampaignsView({
       {/* Backlog Safe Processor Modal */}
       {backlogCampaign && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-          <div className="w-full max-w-md rounded-2xl bg-[#101015] border border-white/[0.1] shadow-2xl p-4 sm:p-5 space-y-3.5 sm:space-y-4 max-h-[92dvh] overflow-y-auto">
+          <div className="w-full max-w-md rounded-[24px] bg-[#141414] border border-[#262626] shadow-2xl p-5 sm:p-6 space-y-4 max-h-[92dvh] overflow-y-auto">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="size-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                <div className="size-8 rounded-lg bg-[#212121] border border-[#2c2c2c] text-[#ececec] flex items-center justify-center">
                   <History size={16} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-white">
+                  <h3 className="text-sm font-medium text-[#ececec] tracking-[-0.02em]">
                     Responder Comentários Anteriores
                   </h3>
-                  <p className="text-[11px] text-white/50">
+                  <p className="text-[11px] text-[#8a8a8a]">
                     Campanha: {backlogCampaign.name}
                   </p>
                 </div>
@@ -458,19 +459,19 @@ export function DmCampaignsView({
               <button
                 type="button"
                 onClick={() => setBacklogCampaign(null)}
-                className="p-1 rounded text-white/40 hover:text-white"
+                className="p-1.5 rounded-full text-[#6f6f6f] hover:text-[#ececec] hover:bg-[#212121]"
               >
                 <X size={16} />
               </button>
             </div>
 
             {/* Anti-Flood & Anti-Ban Guarantees */}
-            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-2 text-xs text-amber-200/90">
-              <div className="flex items-center gap-1.5 font-semibold text-amber-300">
+            <div className="p-3.5 rounded-2xl bg-[#ffbd2e]/10 border border-[#ffbd2e]/20 space-y-2 text-xs text-[#ffd27d]">
+              <div className="flex items-center gap-1.5 font-medium text-[#ffbd2e]">
                 <ShieldCheck size={14} />
-                <span>Proteção Ativa Anti-Ban & Anti-Flood:</span>
+                <span>Proteção Ativa Anti-Ban &amp; Anti-Flood:</span>
               </div>
-              <ul className="space-y-1 text-[11px] text-amber-100/80 list-disc list-inside">
+              <ul className="space-y-1 text-[11px] text-[#ffd27d]/80 list-disc list-inside">
                 <li>Janela de 7 Dias: descarta comentários mais antigos que a Meta bloqueia</li>
                 <li>Deduplicação: quem já recebeu direct nunca recebe repetido</li>
                 <li>Pausa Inteligente (Jitter): espera de 2.5s a 4.5s entre cada envio</li>
@@ -480,13 +481,13 @@ export function DmCampaignsView({
 
             {backlogResult && (
               <div
-                className={`p-3 rounded-xl border text-xs space-y-1 ${
+                className={`p-3 rounded-2xl border text-xs space-y-1 ${
                   backlogResult.success
-                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
-                    : 'bg-rose-500/10 border-rose-500/20 text-rose-300'
+                    ? 'bg-[#7ae6a0]/10 border-[#7ae6a0]/25 text-[#7ae6a0]'
+                    : 'bg-[#ff5f56]/10 border-[#ff5f56]/25 text-[#ff8a84]'
                 }`}
               >
-                <div className="font-semibold flex items-center gap-1.5">
+                <div className="font-medium flex items-center gap-1.5">
                   <CheckCircle2 size={13} />
                   <span>
                     {backlogResult.success ? 'Lote Processado com Sucesso' : 'Aviso ao Processar'}
@@ -496,7 +497,7 @@ export function DmCampaignsView({
                   {backlogResult.message || backlogResult.error}
                 </p>
                 {backlogResult.success && (
-                  <div className="text-[10px] text-white/70 pt-1 flex flex-wrap gap-2">
+                  <div className="text-[10px] text-[#ececec]/80 pt-1 flex flex-wrap gap-2">
                     <span>Enviados: <strong>{backlogResult.processed}</strong></span>
                     <span>Fora do prazo: <strong>{backlogResult.skippedOld}</strong></span>
                     <span>Já atendidos: <strong>{backlogResult.skippedDuplicate}</strong></span>
@@ -505,11 +506,11 @@ export function DmCampaignsView({
               </div>
             )}
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/[0.08]">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#222222]">
               <button
                 type="button"
                 onClick={() => setBacklogCampaign(null)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium text-white/60 hover:text-white"
+                className="px-4 py-1.5 rounded-full bg-[#212121] hover:bg-[#2a2a2a] text-xs font-medium text-[#ececec] border border-[#2c2c2c] transition-all active:scale-[0.97]"
               >
                 Fechar
               </button>
@@ -517,7 +518,7 @@ export function DmCampaignsView({
                 type="button"
                 onClick={handleRunBacklog}
                 disabled={isBacklogRunning}
-                className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-xs font-semibold text-white flex items-center gap-1.5 shadow-sm"
+                className="px-4 py-1.5 rounded-full bg-[#f2f2f2] hover:bg-white disabled:opacity-50 text-xs font-medium text-[#0a0a0a] flex items-center gap-1.5 shadow-sm transition-all active:scale-[0.97]"
               >
                 {isBacklogRunning ? (
                   <>

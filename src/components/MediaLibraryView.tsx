@@ -135,20 +135,22 @@ export function MediaLibraryView({
   return (
     <div className="flex flex-col gap-6">
       {/* Top Header / Upload Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-5 rounded-[22px] bg-[#141414] border border-[#242424]">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-lg bg-violet-600/15 border border-violet-500/25 text-violet-400">
-            <FolderOpen size={18} />
+          <div className="size-10 rounded-full bg-[#212121] border border-[#2c2c2c] text-[#ececec] flex items-center justify-center shrink-0">
+            <FolderOpen size={17} />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-white">Acervo de Mídia & Biblioteca</span>
-            <span className="text-xs text-white/50">
+            <span className="text-sm font-semibold tracking-tight text-[#ececec]">
+              Acervo de Mídia & Biblioteca
+            </span>
+            <span className="text-xs text-[#7a7a7a]">
               {assets.length} {assets.length === 1 ? 'arquivo salvo' : 'arquivos salvos'} • {formatFileSize(totalSize)} total
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <input
             ref={fileInputRef}
             type="file"
@@ -160,16 +162,16 @@ export function MediaLibraryView({
             type="button"
             disabled={isUploading}
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.1] text-white border border-white/[0.1] transition-all cursor-pointer disabled:opacity-50"
+            className="flex items-center justify-center gap-2 px-4 py-2 rounded-full text-xs font-medium bg-[#212121] hover:bg-[#2a2a2a] text-[#ececec] border border-[#2e2e2e] transition-all active:scale-[0.97] cursor-pointer disabled:opacity-50"
           >
             {isUploading ? (
               <>
-                <Loader2 size={14} className="animate-spin text-white" />
+                <Loader2 size={14} className="animate-spin text-[#ececec]" />
                 <span>Enviando mídia…</span>
               </>
             ) : (
               <>
-                <Upload size={14} className="text-violet-400" />
+                <Upload size={13} className="text-[#a0a0a0]" />
                 <span>Upload Arquivo</span>
               </>
             )}
@@ -178,30 +180,30 @@ export function MediaLibraryView({
           <button
             type="button"
             onClick={() => setIsAiModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white transition-all shadow-md shadow-violet-600/20 active:scale-[0.98] cursor-pointer"
+            className="flex items-center justify-center gap-2 px-4 py-2 rounded-full text-xs font-medium bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] transition-all active:scale-[0.97] cursor-pointer"
           >
-            <Sparkles size={14} className="text-violet-200" />
+            <Sparkles size={13} />
             <span>Gerar com IA</span>
           </button>
         </div>
       </div>
 
       {uploadError && (
-        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400 font-mono">
+        <div className="p-3.5 rounded-[16px] bg-[#ff5f56]/10 border border-[#ff5f56]/25 text-xs text-[#ff5f56] font-mono">
           {uploadError}
         </div>
       )}
 
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 p-1 rounded-lg bg-black/40 border border-white/[0.06] self-start">
+        <div className="flex items-center gap-1 p-1 rounded-full bg-[#141414] border border-[#242424] self-start">
           <button
             type="button"
             onClick={() => setFilter('all')}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
               filter === 'all'
-                ? 'bg-white/[0.1] text-white'
-                : 'text-white/50 hover:text-white/80'
+                ? 'bg-[#212121] text-[#ececec]'
+                : 'text-[#8a8a8a] hover:text-[#ececec]'
             }`}
           >
             Todos ({assets.length})
@@ -209,10 +211,10 @@ export function MediaLibraryView({
           <button
             type="button"
             onClick={() => setFilter('image')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
               filter === 'image'
-                ? 'bg-white/[0.1] text-white'
-                : 'text-white/50 hover:text-white/80'
+                ? 'bg-[#212121] text-[#ececec]'
+                : 'text-[#8a8a8a] hover:text-[#ececec]'
             }`}
           >
             <ImageIcon size={13} />
@@ -221,10 +223,10 @@ export function MediaLibraryView({
           <button
             type="button"
             onClick={() => setFilter('video')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
               filter === 'video'
-                ? 'bg-white/[0.1] text-white'
-                : 'text-white/50 hover:text-white/80'
+                ? 'bg-[#212121] text-[#ececec]'
+                : 'text-[#8a8a8a] hover:text-[#ececec]'
             }`}
           >
             <Film size={13} />
@@ -233,38 +235,38 @@ export function MediaLibraryView({
         </div>
 
         <div className="relative">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+          <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6f6f6f]" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por nome do arquivo..."
-            className="w-full sm:w-64 pl-8 pr-3 py-1.5 rounded-lg bg-black/40 border border-white/[0.08] text-white text-xs focus:outline-none focus:border-violet-500/50 font-mono"
+            className="w-full sm:w-64 pl-9 pr-4 py-2 rounded-full bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] placeholder:text-[#6f6f6f] text-xs focus:outline-none focus:border-[#4a4a4a] font-mono transition-colors"
           />
         </div>
       </div>
 
       {/* Grid of Media Assets */}
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center p-16 gap-3 text-white/40">
-          <Loader2 size={24} className="animate-spin text-violet-400" />
+        <div className="flex flex-col items-center justify-center p-16 gap-3 text-[#7a7a7a]">
+          <Loader2 size={24} className="animate-spin text-[#ececec]" />
           <span className="text-xs font-mono">Carregando acervo de mídia…</span>
         </div>
       ) : filteredAssets.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-16 rounded-xl bg-white/[0.015] border border-dashed border-white/[0.08] gap-3 text-center">
-          <div className="p-3 rounded-full bg-white/[0.03] text-white/40">
-            <ImageIcon size={28} />
+        <div className="flex flex-col items-center justify-center p-16 rounded-[22px] bg-[#141414] border border-dashed border-[#2c2c2c] gap-3 text-center">
+          <div className="size-12 rounded-full bg-[#212121] border border-[#2c2c2c] flex items-center justify-center text-[#8a8a8a]">
+            <ImageIcon size={22} />
           </div>
-          <span className="text-sm font-semibold text-white/80">
+          <span className="text-sm font-semibold text-[#ececec]">
             {searchQuery ? 'Nenhuma mídia encontrada para sua busca.' : 'Seu acervo de mídia está vazio.'}
           </span>
-          <span className="text-xs text-white/45 max-w-sm">
+          <span className="text-xs text-[#7a7a7a] max-w-sm">
             Faça upload de fotos profissionais, capturas de tela de código, gráficos e vídeos para reutilizar em qualquer publicação.
           </span>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="mt-2 flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-violet-600 hover:bg-violet-500 text-white transition-all shadow-md active:scale-[0.98] cursor-pointer"
+            className="mt-2 flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] transition-all active:scale-[0.97] cursor-pointer"
           >
             <Upload size={13} />
             <span>Enviar Primeiro Arquivo</span>
@@ -284,12 +286,12 @@ export function MediaLibraryView({
                     onSelectMedia(asset.url);
                   }
                 }}
-                className={`group relative flex flex-col rounded-xl bg-[#0f0f15] border border-white/[0.08] hover:border-violet-500/50 transition-all overflow-hidden shadow-sm ${
-                  onSelectMedia ? 'cursor-pointer hover:scale-[1.02]' : ''
+                className={`group relative flex flex-col rounded-[20px] bg-[#161616] border border-[#222222] hover:border-[#363636] transition-all overflow-hidden ${
+                  onSelectMedia ? 'cursor-pointer hover:scale-[1.01]' : ''
                 }`}
               >
                 {/* Media Preview Box */}
-                <div className="relative w-full h-36 bg-black/60 overflow-hidden flex items-center justify-center">
+                <div className="relative w-full h-36 bg-[#0a0a0a] overflow-hidden flex items-center justify-center">
                   {isVideo ? (
                     <>
                       <video
@@ -299,8 +301,8 @@ export function MediaLibraryView({
                         muted
                       />
                       <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/10 transition-colors">
-                        <span className="p-2 rounded-full bg-black/60 text-white backdrop-blur-sm border border-white/20">
-                          <Film size={16} />
+                        <span className="p-2 rounded-full bg-[#161616]/85 text-[#ececec] backdrop-blur-sm border border-[#2c2c2c]">
+                          <Film size={15} />
                         </span>
                       </div>
                     </>
@@ -314,32 +316,32 @@ export function MediaLibraryView({
                   )}
 
                   {/* Badge */}
-                  <span className="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[9px] font-mono font-semibold bg-black/75 border border-white/10 text-white/80 uppercase">
+                  <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full text-[9px] font-mono font-semibold bg-[#111111]/85 border border-[#2c2c2c] text-[#ececec] uppercase">
                     {isVideo ? 'VÍDEO' : 'IMG'}
                   </span>
                 </div>
 
                 {/* Info & Details */}
-                <div className="flex flex-col p-3 gap-2 bg-[#0d0d12]">
+                <div className="flex flex-col p-3.5 gap-2 bg-[#161616]">
                   <span
-                    className="text-xs font-semibold text-white/90 truncate"
+                    className="text-xs font-semibold text-[#ececec] truncate"
                     title={asset.name}
                   >
                     {cleanDisplay}
                   </span>
 
-                  <div className="flex items-center justify-between text-[10px] font-mono text-white/40">
+                  <div className="flex items-center justify-between text-[10px] font-mono text-[#6f6f6f]">
                     <span>{formatFileSize(asset.size)}</span>
                     <span>{new Date(asset.created_at).toLocaleDateString('pt-BR')}</span>
                   </div>
 
                   {/* Card Action Buttons */}
-                  <div className="flex items-center justify-between gap-1 pt-2 border-t border-white/[0.04]">
+                  <div className="flex items-center justify-between gap-1 pt-2.5 border-t border-[#222222]">
                     {onSelectMedia ? (
                       <button
                         type="button"
                         onClick={() => onSelectMedia(asset.url)}
-                        className="w-full py-1 rounded bg-violet-600/30 hover:bg-violet-600/50 text-violet-300 text-[11px] font-semibold border border-violet-500/30 transition-colors"
+                        className="w-full py-1.5 rounded-full bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] text-[11px] font-medium transition-all active:scale-[0.97] cursor-pointer"
                       >
                         Selecionar
                       </button>
@@ -349,12 +351,12 @@ export function MediaLibraryView({
                           type="button"
                           onClick={(e) => copyToClipboard(asset.url, e)}
                           title="Copiar URL pública"
-                          className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono bg-white/[0.04] hover:bg-white/[0.08] text-white/70 border border-white/[0.06] transition-colors"
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-mono bg-[#212121] hover:bg-[#2a2a2a] text-[#a0a0a0] hover:text-[#ececec] border border-[#2c2c2c] transition-colors cursor-pointer"
                         >
                           {copiedUrl === asset.url ? (
                             <>
-                              <Check size={11} className="text-emerald-400" />
-                              <span className="text-emerald-400">Copiado</span>
+                              <Check size={11} className="text-[#7ae6a0]" />
+                              <span className="text-[#7ae6a0]">Copiado</span>
                             </>
                           ) : (
                             <>
@@ -373,9 +375,9 @@ export function MediaLibraryView({
                                 onOpenVideoStudio(asset.url);
                               }}
                               title="Editar e gerar legendas com IA no Estúdio"
-                              className="p-1 rounded bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white transition-colors cursor-pointer shadow-sm"
+                              className="p-1.5 rounded-full bg-[#f2f2f2] hover:bg-white text-[#0a0a0a] transition-colors cursor-pointer"
                             >
-                              <Sparkles size={13} />
+                              <Sparkles size={12} />
                             </button>
                           )}
 
@@ -387,9 +389,9 @@ export function MediaLibraryView({
                                 onOpenComposerWithMedia(asset.url);
                               }}
                               title="Criar post com esta mídia"
-                              className="p-1 rounded bg-violet-600/20 hover:bg-violet-600/40 text-violet-300 border border-violet-500/30 transition-colors cursor-pointer"
+                              className="p-1.5 rounded-full bg-[#212121] hover:bg-[#2a2a2a] text-[#ececec] border border-[#2e2e2e] transition-colors cursor-pointer"
                             >
-                              <Plus size={13} />
+                              <Plus size={12} />
                             </button>
                           )}
 
@@ -398,12 +400,12 @@ export function MediaLibraryView({
                             disabled={deletingName === asset.name}
                             onClick={(e) => handleDelete(asset.name, e)}
                             title="Excluir arquivo"
-                            className="p-1 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-colors cursor-pointer disabled:opacity-50"
+                            className="p-1.5 rounded-full bg-[#1c1c1c] hover:bg-[#ff5f56]/15 text-[#8a8a8a] hover:text-[#ff5f56] border border-[#2a2a2a] transition-colors cursor-pointer disabled:opacity-50"
                           >
                             {deletingName === asset.name ? (
-                              <Loader2 size={13} className="animate-spin" />
+                              <Loader2 size={12} className="animate-spin" />
                             ) : (
-                              <Trash2 size={13} />
+                              <Trash2 size={12} />
                             )}
                           </button>
                         </div>
