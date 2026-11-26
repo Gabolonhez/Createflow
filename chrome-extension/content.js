@@ -5,8 +5,8 @@
     const str = String(raw).trim().toLowerCase();
     if (!str) return 0;
     let mult = 1;
-    if (/(mil\b|\bk\b)/.test(str)) mult = 1000;
-    else if (/(m\b|milh)/.test(str)) mult = 1000000;
+    if (/(?:\bmil\b|(?:\d|\s)k\b)/i.test(str)) mult = 1000;
+    else if (/(?:(?:\d|\s)m\b|\bmilh)/i.test(str)) mult = 1000000;
     const num = str.replace(/[^0-9.,]/g, '');
     if (!num) return 0;
     if (mult > 1) {
@@ -332,6 +332,149 @@
     return { source: mode, profile, posts: posts.slice(0, 30) };
   }
 
+  const X_RESERVED_ROUTES = new Set([
+    'i',
+    'home',
+    'explore',
+    'notifications',
+    'messages',
+    'search',
+    'settings',
+    'compose',
+    'intent',
+    'hashtag',
+  ]);
+
+  function readXMetric(el) {
+    if (!el) return 0;
+    const countNode = el.querySelector?.('[data-testid="app-text-transition-container"]');
+    const directText = (countNode?.innerText || el.innerText || '').trim();
+    const directVal = parseMetric(directText);
+    if (directVal > 0) return directVal;
+
+    const aria = el.getAttribute?.('aria-label') || '';
+    const m = aria.match(/([\d.,]+\s*(?:mil|k|m)?)/i);
+    return m ? parseMetric(m[1]) : 0;
+  }
+
+  function extractX(mode) {
+    const url = window.location.href;
+    const posts = [];
+    const seen = new Set();
+
+    let articles = Array.from(document.querySelectorAll('article[data-testid="tweet"]'));
+    if (articles.length === 0) {
+      articles = Array.from(document.querySelectorAll('main article'));
+    }
+
+    for (const el of articles) {
+      const statusAnchors = Array.from(el.querySelectorAll('a[href*="/status/"]'));
+      const preferredAnchor =
+        statusAnchors.find((a) => Boolean(a.querySelector('time'))) ||
+        statusAnchors.find((a) => /\/status\/\d+(?:[?#].*)?$/.test(a.href || a.getAttribute('href') || '')) ||
+        statusAnchors[0];
+
+      const rawHref = preferredAnchor?.href || preferredAnchor?.getAttribute?.('href') || '';
+      const statusMatch = rawHref.match(
+        /(?:https?:\/\/(?:[^/]+\.)?(?:x|twitter)\.com)?\/([^/?#]+)\/status\/(\d+)/i
+      );
+
+      const postUrl = statusMatch
+        ? `https://x.com/${statusMatch[1]}/status/${statusMatch[2]}`
+        : rawHref
+          ? rawHref.split('?')[0]
+          : null;
+      const externalId = statusMatch ? statusMatch[2] : null;
+
+      let authorHandle = statusMatch && !X_RESERVED_ROUTES.has(statusMatch[1].toLowerCase()) ? statusMatch[1] : null;
+      if (!authorHandle) {
+        const userAnchors = Array.from(el.querySelectorAll('[data-testid="User-Name"] a[href]'));
+        for (const ua of userAnchors) {
+          const href = ua.href || ua.getAttribute?.('href') || '';
+          const hm = href.match(/(?:https?:\/\/(?:[^/]+\.)?(?:x|twitter)\.com)?\/([^/?#]+)/i);
+          if (hm && !X_RESERVED_ROUTES.has(hm[1].toLowerCase())) {
+            authorHandle = hm[1];
+            break;
+          }
+        }
+      }
+
+      const userNameBlock = el.querySelector('[data-testid="User-Name"]');
+      const userNameLines = (userNameBlock?.innerText || '')
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0 && !line.startsWith('@') && line !== '·');
+      const authorName = userNameLines[0] || authorHandle || null;
+
+      const tweetTextNodes = Array.from(el.querySelectorAll('[data-testid="tweetText"]'));
+      const rawCaption = tweetTextNodes
+        .map((n) => (n.innerText || '').trim())
+        .filter(Boolean)
+        .join('\n')
+        .trim();
+
+      const captionText = rawCaption || (postUrl ? `Post no X (${postUrl})` : '');
+      if (!captionText && !postUrl) continue;
+
+      const dedupeKey = postUrl || captionText.slice(0, 80);
+      if (seen.has(dedupeKey)) continue;
+      seen.add(dedupeKey);
+
+      const hasVideo = Boolean(el.querySelector('[data-testid="videoPlayer"], video'));
+      const photos = Array.from(el.querySelectorAll('[data-testid="tweetPhoto"] img'));
+      const mediaType = hasVideo
+        ? 'video'
+        : photos.length > 1
+          ? 'carousel'
+          : photos.length === 1
+            ? 'image'
+            : 'text';
+      const videoPoster = el.querySelector('video')?.getAttribute?.('poster') || el.querySelector('video')?.poster || null;
+      const mediaUrl = photos[0]?.src || photos[0]?.getAttribute?.('src') || videoPoster || null;
+      const publishedAt = el.querySelector('time')?.getAttribute?.('datetime') || null;
+
+      posts.push({
+        platform: 'x',
+        postUrl,
+        externalId,
+        authorName,
+        authorHandle,
+        captionText: captionText.slice(0, 4000),
+        mediaType,
+        mediaUrl,
+        likesCount: readXMetric(el.querySelector('[data-testid="like"], [data-testid="unlike"]')),
+        commentsCount: readXMetric(el.querySelector('[data-testid="reply"]')),
+        sharesCount: readXMetric(el.querySelector('[data-testid="retweet"], [data-testid="unretweet"]')),
+        viewsCount: readXMetric(el.querySelector('a[href*="/analytics"]')),
+        publishedAt,
+      });
+    }
+
+    let profile = null;
+    if (mode === 'radar') {
+      const m = url.match(/(?:x\.com|twitter\.com)\/([^/?#]+)/i);
+      const rawHandle = m ? m[1] : '';
+      const handle = X_RESERVED_ROUTES.has(rawHandle.toLowerCase()) ? '' : rawHandle;
+      if (handle) {
+        const displayNameSpans = Array.from(document.querySelectorAll('[data-testid="UserName"] span'))
+          .map((s) => (s.innerText || '').trim())
+          .filter((t) => t.length > 0 && !t.startsWith('@'));
+        profile = {
+          platform: 'x',
+          handle,
+          displayName: displayNameSpans[0] || handle,
+          profileUrl: `https://x.com/${handle}`,
+        };
+      }
+    }
+
+    const result = { source: mode, profile, posts: posts.slice(0, 30) };
+    if (result.posts.length === 0) {
+      result.debug = `${window.location.pathname} (articles=${articles.length})`;
+    }
+    return result;
+  }
+
   window.__createflowExtractPage = (mode) => {
     const host = window.location.hostname.toLowerCase();
     if (host.includes('linkedin.com')) {
@@ -340,6 +483,9 @@
     if (host.includes('instagram.com')) {
       return extractInstagram(mode);
     }
-    return { source: mode, posts: [], error: 'Abra uma página do LinkedIn ou Instagram para capturar.' };
+    if (host === 'x.com' || host.endsWith('.x.com') || host === 'twitter.com' || host.endsWith('.twitter.com')) {
+      return extractX(mode);
+    }
+    return { source: mode, posts: [], error: 'Abra uma página do LinkedIn, Instagram ou X para capturar.' };
   };
 })();

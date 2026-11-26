@@ -255,7 +255,7 @@ export function normalizeApifyItem(
     ]) || '';
 
   const postUrl =
-    readString(raw, ['url', 'linkedinUrl', 'postUrl', 'post_url', 'permalink', 'link', 'webVideoUrl']) ||
+    readString(raw, ['url', 'twitterUrl', 'linkedinUrl', 'postUrl', 'post_url', 'permalink', 'link', 'webVideoUrl']) ||
     (readString(raw, ['shortCode']) && profile.platform === 'instagram'
       ? `https://www.instagram.com/p/${readString(raw, ['shortCode'])}/`
       : undefined);
@@ -301,7 +301,7 @@ export function normalizeApifyItem(
 
   const rawAuthorHandle =
     readString(raw, ['ownerUsername', 'authorHandle', 'username']) ||
-    (authorObj ? readString(authorObj, ['publicIdentifier', 'username', 'handle']) : undefined) ||
+    (authorObj ? readString(authorObj, ['publicIdentifier', 'userName', 'username', 'handle']) : undefined) ||
     cleanHandle;
 
   return {
@@ -445,6 +445,7 @@ export async function syncProfileViaApify(
           undefined,
         followersCount:
           readMetric(first, ['followersCount', 'ownerFollowersCount', 'authorFollowersCount']) ||
+          (firstAuthor ? readMetric(firstAuthor, ['followers', 'followersCount']) : 0) ||
           profile.followersCount,
         lastSyncedAt: new Date().toISOString(),
       }

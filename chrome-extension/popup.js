@@ -22,6 +22,8 @@ function detectContextLabel(url) {
   if (url.includes('linkedin.com')) return 'LinkedIn Web';
   if (url.includes('instagram.com') && url.includes('/saved')) return 'Instagram · Salvos';
   if (url.includes('instagram.com')) return 'Instagram Web';
+  if ((url.includes('x.com') || url.includes('twitter.com')) && url.includes('/bookmarks')) return 'X · Salvos';
+  if (url.includes('x.com') || url.includes('twitter.com')) return 'X Web';
   return 'Site não suportado';
 }
 
@@ -67,8 +69,14 @@ async function runCapture(mode) {
     return;
   }
 
-  if (!tab.url.includes('linkedin.com') && !tab.url.includes('instagram.com')) {
-    showStatus('Abra seus Salvos ou um Perfil no LinkedIn ou Instagram primeiro.', 'err');
+  const isSupportedHost =
+    tab.url.includes('linkedin.com') ||
+    tab.url.includes('instagram.com') ||
+    tab.url.includes('x.com') ||
+    tab.url.includes('twitter.com');
+
+  if (!isSupportedHost) {
+    showStatus('Abra seus Salvos/Bookmarks ou um Perfil no LinkedIn, Instagram ou X primeiro.', 'err');
     return;
   }
 
