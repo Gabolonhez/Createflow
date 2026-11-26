@@ -6,7 +6,7 @@ Extensão leve Manifest V3 para enviar **seus posts salvos** e **feeds de perfis
 
 1. No Google Chrome, acesse `chrome://extensions` e ative **Modo do desenvolvedor** (canto superior direito).
 2. Clique em **Carregar sem compactação** e selecione esta pasta (`chrome-extension/`).
-3. Abra o **CreateFlow → Radar & Salvos → Extensão & Setup**, copie a **URL** e o **Token Pessoal** e cole no popup da extensão.
+3. Abra o **CreateFlow → Radar & Salvos → Extensão & Setup**, copie a **URL** (`https://createflow.gabrielbolonhez.com` em produção ou `http://localhost:3002` local) e o **Token Pessoal** e cole no popup da extensão.
 
 ## Onde usar
 

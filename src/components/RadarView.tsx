@@ -178,7 +178,7 @@ export function RadarView({
   const [isRegeneratingToken, setIsRegeneratingToken] = useState(false);
 
   const origin =
-    typeof window !== 'undefined' ? window.location.origin : 'https://createfloww.vercel.app';
+    typeof window !== 'undefined' ? window.location.origin : 'https://createflow.gabrielbolonhez.com';
   const ingestEndpoint = `${origin}/api/radar/ingest`;
 
   const copyText = (key: string, value: string) => {

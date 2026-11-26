@@ -832,12 +832,12 @@ export function ConnectionsView({
             </span>
             <button
               type="button"
-              onClick={() => copyToClipboard('https://createfloww.vercel.app/api/radar/ingest')}
+              onClick={() => copyToClipboard('https://createflow.gabrielbolonhez.com/api/radar/ingest')}
               className="flex items-center gap-1 text-[10px] font-mono text-[#ececec] hover:underline cursor-pointer"
             >
               <Copy size={11} />
               <span>
-                {copiedUrl === 'https://createfloww.vercel.app/api/radar/ingest'
+                {copiedUrl === 'https://createflow.gabrielbolonhez.com/api/radar/ingest'
                   ? 'URL copiada!'
                   : 'Copiar URL Produção'}
               </span>

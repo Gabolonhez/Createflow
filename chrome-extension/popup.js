@@ -27,7 +27,7 @@ function detectContextLabel(url) {
 
 async function loadSavedConfig() {
   const stored = await chrome.storage.local.get(['createflowApiUrl', 'createflowToken']);
-  apiUrlInput.value = stored.createflowApiUrl || 'http://localhost:3002';
+  apiUrlInput.value = stored.createflowApiUrl || 'https://createflow.gabrielbolonhez.com';
   apiTokenInput.value = stored.createflowToken || '';
 
   const tab = await getActiveTab();
