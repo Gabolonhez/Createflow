@@ -794,57 +794,90 @@ export async function getConnectionsConfig(): Promise<ConnectionsConfig> {
   } catch (ignore) {}
 
   // 5. Fallback & persistent backup for Radar / Extension / Apify settings
-  if (!merged.radar_ingest_token && process.env.RADAR_INGEST_TOKEN) {
-    merged.radar_ingest_token = process.env.RADAR_INGEST_TOKEN;
-  }
-  if (!merged.apify_api_token && process.env.APIFY_API_TOKEN) {
-    merged.apify_api_token = process.env.APIFY_API_TOKEN;
-  }
+  let storedRadar: {
+    radar_ingest_token?: string;
+    apify_api_token?: string;
+    dm_save_capture_enabled?: boolean;
+  } | null = null;
 
   try {
-    const radarFact = await getDocById<{ id: string; detail?: string; statement?: string }>('facts', 'cfg_radar_settings');
-    const rawJson = radarFact?.detail || radarFact?.statement;
+    const { data: radarRow } = await supabase
+      .from('facts')
+      .select('id, statement')
+      .eq('id', 'cfg_radar_settings')
+      .maybeSingle();
+
+    const localRadar = getLocalStore('facts').cfg_radar_settings as
+      | { statement?: string; detail?: string }
+      | undefined;
+    const rawJson = radarRow?.statement || localRadar?.statement || localRadar?.detail;
     if (rawJson) {
-      const parsed = JSON.parse(rawJson) as {
+      storedRadar = JSON.parse(rawJson) as {
         radar_ingest_token?: string;
         apify_api_token?: string;
         dm_save_capture_enabled?: boolean;
       };
-      if (!merged.radar_ingest_token && parsed.radar_ingest_token) {
-        merged.radar_ingest_token = parsed.radar_ingest_token;
-      }
-      if (!merged.apify_api_token && parsed.apify_api_token) {
-        merged.apify_api_token = parsed.apify_api_token;
-      }
-      if (parsed.dm_save_capture_enabled !== undefined) {
-        merged.dm_save_capture_enabled = parsed.dm_save_capture_enabled;
-      }
     }
   } catch (ignore) {}
 
-  if (!merged.radar_ingest_token) {
-    const generated = `cf_radar_${crypto.randomBytes(12).toString('hex')}`;
-    merged.radar_ingest_token = generated;
+  if (storedRadar?.radar_ingest_token) {
+    merged.radar_ingest_token = storedRadar.radar_ingest_token;
+  } else if (!merged.radar_ingest_token && process.env.RADAR_INGEST_TOKEN) {
+    merged.radar_ingest_token = process.env.RADAR_INGEST_TOKEN;
+  } else if (!merged.radar_ingest_token) {
+    merged.radar_ingest_token = deriveDefaultRadarToken();
     try {
-      const serialized = JSON.stringify({
-        radar_ingest_token: generated,
-        apify_api_token: merged.apify_api_token || '',
-        dm_save_capture_enabled: merged.dm_save_capture_enabled ?? true,
-      });
-      await setDocData('facts', 'cfg_radar_settings', {
-        id: 'cfg_radar_settings',
-        subject: 'cfg_radar_settings',
-        detail: serialized,
-        category: 'system',
+      await persistRadarSettings({
+        radar_ingest_token: merged.radar_ingest_token,
+        apify_api_token: storedRadar?.apify_api_token || process.env.APIFY_API_TOKEN || '',
+        dm_save_capture_enabled:
+          storedRadar?.dm_save_capture_enabled ?? merged.dm_save_capture_enabled ?? true,
       });
     } catch (ignore) {}
   }
 
-  if (merged.dm_save_capture_enabled === undefined) {
+  if (storedRadar?.apify_api_token) {
+    merged.apify_api_token = storedRadar.apify_api_token;
+  } else if (!merged.apify_api_token && process.env.APIFY_API_TOKEN) {
+    merged.apify_api_token = process.env.APIFY_API_TOKEN;
+  }
+
+  if (storedRadar?.dm_save_capture_enabled !== undefined) {
+    merged.dm_save_capture_enabled = storedRadar.dm_save_capture_enabled;
+  } else if (merged.dm_save_capture_enabled === undefined) {
     merged.dm_save_capture_enabled = true;
   }
 
   return merged;
+}
+
+function deriveDefaultRadarToken(): string {
+  const seed =
+    process.env.RADAR_INGEST_TOKEN ||
+    process.env.CRON_SECRET ||
+    process.env.WEBHOOK_VERIFY_TOKEN ||
+    'instaflow_cron_secret_729482';
+  const digest = crypto.createHash('sha256').update(`createflow-radar:${seed}`).digest('hex');
+  return `cf_radar_${digest.slice(0, 24)}`;
+}
+
+async function persistRadarSettings(settings: {
+  radar_ingest_token: string;
+  apify_api_token: string;
+  dm_save_capture_enabled: boolean;
+}): Promise<void> {
+  const row = {
+    id: 'cfg_radar_settings',
+    statement: JSON.stringify(settings),
+    category: 'system',
+    verified: true,
+  };
+  getLocalStore('facts').cfg_radar_settings = row;
+
+  const { error } = await supabase.from('facts').upsert(row);
+  if (error) {
+    console.error('[DB] Erro ao persistir cfg_radar_settings em facts:', error.message);
+  }
 }
 
 export async function saveConnectionsConfig(cfg: Partial<ConnectionsConfig>): Promise<void> {
@@ -852,19 +885,21 @@ export async function saveConnectionsConfig(cfg: Partial<ConnectionsConfig>): Pr
   if (cfg.linkedin_client_id || cfg.linkedin_client_secret) {
     try {
       const current = await getConnectionsConfig();
-      const statement = JSON.stringify({
-        linkedin_client_id: cfg.linkedin_client_id || current.linkedin_client_id || '',
-        linkedin_client_secret: cfg.linkedin_client_secret || current.linkedin_client_secret || '',
-      });
-      await setDocData('facts', 'cfg_linkedin_credentials', {
+      const liRow = {
         id: 'cfg_linkedin_credentials',
-        statement,
+        statement: JSON.stringify({
+          linkedin_client_id: cfg.linkedin_client_id || current.linkedin_client_id || '',
+          linkedin_client_secret: cfg.linkedin_client_secret || current.linkedin_client_secret || '',
+        }),
         category: 'system',
-      });
+        verified: true,
+      };
+      getLocalStore('facts').cfg_linkedin_credentials = liRow;
+      await supabase.from('facts').upsert(liRow);
     } catch (ignore) {}
   }
 
-  // 2. Persist Radar / Extension / Apify settings safely in cfg_radar_settings
+  // 2. Persist Radar / Extension / Apify settings safely in cfg_radar_settings (real facts columns)
   if (
     cfg.radar_ingest_token !== undefined ||
     cfg.apify_api_token !== undefined ||
@@ -872,17 +907,12 @@ export async function saveConnectionsConfig(cfg: Partial<ConnectionsConfig>): Pr
   ) {
     try {
       const current = await getConnectionsConfig();
-      const serialized = JSON.stringify({
-        radar_ingest_token: cfg.radar_ingest_token ?? current.radar_ingest_token ?? '',
+      await persistRadarSettings({
+        radar_ingest_token:
+          cfg.radar_ingest_token ?? current.radar_ingest_token ?? deriveDefaultRadarToken(),
         apify_api_token: cfg.apify_api_token ?? current.apify_api_token ?? '',
         dm_save_capture_enabled:
           cfg.dm_save_capture_enabled ?? current.dm_save_capture_enabled ?? true,
-      });
-      await setDocData('facts', 'cfg_radar_settings', {
-        id: 'cfg_radar_settings',
-        subject: 'cfg_radar_settings',
-        detail: serialized,
-        category: 'system',
       });
     } catch (ignore) {}
   }
