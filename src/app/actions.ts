@@ -1,5 +1,6 @@
 'use server';
 
+import crypto from 'crypto';
 import { revalidatePath } from 'next/cache';
 import { supabase } from '@/lib/supabase';
 import {
@@ -38,6 +39,13 @@ import {
   saveTrackedLink,
   getSocialConversations,
   sendSocialMessage,
+  getMonitoredProfiles,
+  saveMonitoredProfile,
+  deleteMonitoredProfile,
+  getCapturedPosts,
+  upsertCapturedPosts,
+  updateCapturedPostStatus,
+  deleteCapturedPost,
 } from '@/lib/db';
 import {
   generateCreatorPost,
@@ -54,6 +62,7 @@ import { publishToX, publishXThread } from '@/lib/twitter';
 import { publishToLinkedIn } from '@/lib/linkedin';
 import { publishInstagramMedia } from '@/lib/instagram';
 import { processRecordedVideo } from '@/lib/video-processor';
+import { extractTextFromScreenshot, syncProfileViaApify } from '@/lib/radar-engine';
 import { nextFreeSlot, formatScheduleDatePtBr } from '@/lib/schedule';
 import { humanizeText } from '@/lib/humanizer';
 import type {
@@ -78,6 +87,10 @@ import type {
   SocialConversation,
   SocialMessage,
   VideoAnalysisResult,
+  MonitoredProfile,
+  CapturedPost,
+  CapturedMediaType,
+  CapturedPostStatus,
 } from '@/types';
 
 // ==========================================
@@ -1254,6 +1267,8 @@ export async function loadDashboardDataAction() {
       dmLogs,
       trackedLinks,
       conversations,
+      monitoredProfiles,
+      capturedPosts,
     ] = await Promise.all([
       getCreatorPosts(),
       getIdeas(),
@@ -1267,6 +1282,8 @@ export async function loadDashboardDataAction() {
       getDmLogs(),
       getTrackedLinks(),
       getSocialConversations(),
+      getMonitoredProfiles(),
+      getCapturedPosts(),
     ]);
 
     return {
@@ -1282,6 +1299,8 @@ export async function loadDashboardDataAction() {
       dmLogs,
       trackedLinks,
       conversations,
+      monitoredProfiles,
+      capturedPosts,
     };
   } catch (err: unknown) {
     console.error('Erro ao carregar dados do Dashboard:', err);
@@ -1422,6 +1441,232 @@ export async function createPostFromCrewJobAction(params: {
     return { error: err.message || 'Falha ao despachar produção com Plug Bot.' };
   }
 }
+
+// ==========================================
+// RADAR VIRAL & SAVED POSTS ACTIONS
+// ==========================================
+
+export async function saveMonitoredProfileAction(profile: {
+  id?: string;
+  platform: Platform;
+  handle: string;
+  displayName?: string | null;
+  profileUrl?: string | null;
+  nicheTag?: string | null;
+}): Promise<{ success?: boolean; profile?: MonitoredProfile; error?: string }> {
+  try {
+    const cleanHandle = profile.handle.replace(/^@/, '').trim();
+    if (!cleanHandle) {
+      return { error: 'Informe o @handle ou URL do perfil para monitorar.' };
+    }
+    const saved = await saveMonitoredProfile({
+      ...profile,
+      handle: cleanHandle,
+    });
+    revalidatePath('/');
+    return { success: true, profile: saved };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Falha ao salvar perfil monitorado.';
+    return { error: message };
+  }
+}
+
+export async function deleteMonitoredProfileAction(id: string): Promise<{ success?: boolean; error?: string }> {
+  try {
+    await deleteMonitoredProfile(id);
+    revalidatePath('/');
+    return { success: true };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Falha ao remover perfil monitorado.';
+    return { error: message };
+  }
+}
+
+export async function syncMonitoredProfilesAction(profileId?: string): Promise<{
+  success?: boolean;
+  importedCount?: number;
+  updatedCount?: number;
+  syncedProfiles?: number;
+  profiles?: MonitoredProfile[];
+  capturedPosts?: CapturedPost[];
+  error?: string;
+}> {
+  try {
+    const connections = await getConnectionsConfig();
+    const apifyToken = connections.apify_api_token || process.env.APIFY_API_TOKEN || '';
+
+    if (!apifyToken.trim()) {
+      return {
+        error:
+          'Configure seu Apify API Token (em Conexões ou Setup) para sincronizar em segundo plano, ou use a Extensão Chrome gratuitamente.',
+      };
+    }
+
+    const profiles = await getMonitoredProfiles();
+    const targets = profileId ? profiles.filter((p) => p.id === profileId) : profiles;
+
+    if (targets.length === 0) {
+      return { error: 'Nenhum perfil monitorado selecionado.' };
+    }
+
+    let importedTotal = 0;
+    let updatedTotal = 0;
+    let syncedProfiles = 0;
+    const errors: string[] = [];
+
+    for (const profile of targets) {
+      try {
+        const synced = await syncProfileViaApify(profile, apifyToken);
+        if (synced.profilePatch) {
+          await saveMonitoredProfile({ ...profile, ...synced.profilePatch });
+        }
+        const upserted = await upsertCapturedPosts(synced.posts, {
+          source: 'radar',
+          platform: profile.platform,
+          profileId: profile.id,
+          defaultAuthorHandle: profile.handle,
+        });
+        importedTotal += upserted.importedCount;
+        updatedTotal += upserted.updatedCount;
+        syncedProfiles += 1;
+      } catch (err: unknown) {
+        errors.push(err instanceof Error ? err.message : `Erro ao sincronizar @${profile.handle}`);
+      }
+    }
+
+    const [updatedProfiles, updatedPosts] = await Promise.all([
+      getMonitoredProfiles(),
+      getCapturedPosts(),
+    ]);
+
+    revalidatePath('/');
+
+    if (syncedProfiles === 0 && errors.length > 0) {
+      return { error: errors[0], profiles: updatedProfiles, capturedPosts: updatedPosts };
+    }
+
+    return {
+      success: true,
+      importedCount: importedTotal,
+      updatedCount: updatedTotal,
+      syncedProfiles,
+      profiles: updatedProfiles,
+      capturedPosts: updatedPosts,
+      error: errors.length > 0 ? errors.join(' | ') : undefined,
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Falha ao sincronizar perfis.';
+    return { error: message };
+  }
+}
+
+export async function saveManualCapturedPostAction(data: {
+  platform?: Platform;
+  postUrl?: string;
+  authorHandle?: string;
+  captionText?: string;
+  mediaType?: CapturedMediaType;
+  likesCount?: number | string;
+  commentsCount?: number | string;
+  viewsCount?: number | string;
+  screenshotDataUrl?: string;
+}): Promise<{ success?: boolean; posts?: CapturedPost[]; error?: string }> {
+  try {
+    let captionText = (data.captionText || '').trim();
+    let authorHandle = (data.authorHandle || '').replace(/^@/, '').trim();
+    let platform: Platform = data.platform || 'instagram';
+    let aiHookSummary: string | undefined;
+
+    if (data.screenshotDataUrl) {
+      const extracted = await extractTextFromScreenshot(data.screenshotDataUrl);
+      if (extracted.captionText) {
+        captionText = captionText ? `${captionText}\n\n${extracted.captionText}` : extracted.captionText;
+      }
+      if (!authorHandle && extracted.authorHandle) {
+        authorHandle = extracted.authorHandle;
+      }
+      if (extracted.platform && !data.platform) {
+        platform = extracted.platform;
+      }
+      aiHookSummary = extracted.hookSummary;
+    }
+
+    if (!captionText && !data.postUrl?.trim()) {
+      return { error: 'Informe o texto/legenda, link do post ou envie um print para análise.' };
+    }
+
+    const result = await upsertCapturedPosts(
+      [
+        {
+          platform,
+          postUrl: data.postUrl?.trim() || null,
+          authorHandle: authorHandle || null,
+          captionText: captionText || `Post salvo de ${data.postUrl?.trim() || platform}`,
+          mediaType: data.mediaType || (data.screenshotDataUrl ? 'image' : 'text'),
+          likesCount: data.likesCount ?? 0,
+          commentsCount: data.commentsCount ?? 0,
+          viewsCount: data.viewsCount ?? 0,
+          aiHookSummary: aiHookSummary || null,
+        },
+      ],
+      {
+        source: 'saved',
+        platform,
+        defaultAuthorHandle: authorHandle || null,
+      }
+    );
+
+    revalidatePath('/');
+    return { success: true, posts: result.posts };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Falha ao salvar post capturado.';
+    return { error: message };
+  }
+}
+
+export async function updateCapturedPostStatusAction(
+  id: string,
+  status: CapturedPostStatus
+): Promise<{ success?: boolean; error?: string }> {
+  try {
+    await updateCapturedPostStatus(id, status);
+    revalidatePath('/');
+    return { success: true };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Falha ao atualizar status do post.';
+    return { error: message };
+  }
+}
+
+export async function deleteCapturedPostAction(
+  id: string
+): Promise<{ success?: boolean; error?: string }> {
+  try {
+    await deleteCapturedPost(id);
+    revalidatePath('/');
+    return { success: true };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Falha ao excluir post capturado.';
+    return { error: message };
+  }
+}
+
+export async function regenerateRadarTokenAction(): Promise<{
+  success?: boolean;
+  token?: string;
+  error?: string;
+}> {
+  try {
+    const token = `cf_radar_${crypto.randomBytes(12).toString('hex')}`;
+    await saveConnectionsConfig({ radar_ingest_token: token });
+    revalidatePath('/');
+    return { success: true, token };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Falha ao gerar novo token do Radar.';
+    return { error: message };
+  }
+}
+
 
 
 

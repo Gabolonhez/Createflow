@@ -1,4 +1,10 @@
+import crypto from 'crypto';
 import { supabase } from './supabase';
+import {
+  computeEngagementScore,
+  parseCompactMetric,
+  recalculateOutlierScores,
+} from './radar-engine';
 import type {
   CreatorPost,
   PostIdea,
@@ -16,6 +22,12 @@ import type {
   TrackedLinkItem,
   SocialConversation,
   SocialMessage,
+  MonitoredProfile,
+  CapturedPost,
+  CapturedPostSource,
+  CapturedMediaType,
+  CapturedPostStatus,
+  RadarIngestPostInput,
 } from '@/types';
 
 // ARMAZENAMENTO EM MEMÓRIA LOCAL DE FALLBACK COM SEED INICIAL RICO
@@ -282,12 +294,15 @@ const inMemoryStore: Record<string, Record<string, any>> = {
       instagram_username: 'gabolonhez',
       tiktok_connected: false,
       tiktok_username: 'gabolonhez',
+      dm_save_capture_enabled: true,
     },
   },
   dm_campaigns: {},
   dm_logs: {},
   tracked_links: {},
   social_conversations: {},
+  monitored_profiles: {},
+  captured_posts: {},
 };
 
 function getLocalStore(collectionName: string) {
@@ -579,7 +594,7 @@ export async function deleteTopic(id: string): Promise<void> {
 
 export async function getFacts(): Promise<Fact[]> {
   const facts = await getCollectionData<Fact>('facts', 'created_at');
-  return facts.filter((f: any) => f.category !== 'system');
+  return facts.filter((f) => f.category !== 'system' && !f.id?.startsWith('cfg_'));
 }
 
 export async function saveFact(fact: Partial<Fact>): Promise<Fact> {
@@ -778,6 +793,57 @@ export async function getConnectionsConfig(): Promise<ConnectionsConfig> {
     }
   } catch (ignore) {}
 
+  // 5. Fallback & persistent backup for Radar / Extension / Apify settings
+  if (!merged.radar_ingest_token && process.env.RADAR_INGEST_TOKEN) {
+    merged.radar_ingest_token = process.env.RADAR_INGEST_TOKEN;
+  }
+  if (!merged.apify_api_token && process.env.APIFY_API_TOKEN) {
+    merged.apify_api_token = process.env.APIFY_API_TOKEN;
+  }
+
+  try {
+    const radarFact = await getDocById<{ id: string; detail?: string; statement?: string }>('facts', 'cfg_radar_settings');
+    const rawJson = radarFact?.detail || radarFact?.statement;
+    if (rawJson) {
+      const parsed = JSON.parse(rawJson) as {
+        radar_ingest_token?: string;
+        apify_api_token?: string;
+        dm_save_capture_enabled?: boolean;
+      };
+      if (!merged.radar_ingest_token && parsed.radar_ingest_token) {
+        merged.radar_ingest_token = parsed.radar_ingest_token;
+      }
+      if (!merged.apify_api_token && parsed.apify_api_token) {
+        merged.apify_api_token = parsed.apify_api_token;
+      }
+      if (parsed.dm_save_capture_enabled !== undefined) {
+        merged.dm_save_capture_enabled = parsed.dm_save_capture_enabled;
+      }
+    }
+  } catch (ignore) {}
+
+  if (!merged.radar_ingest_token) {
+    const generated = `cf_radar_${crypto.randomBytes(12).toString('hex')}`;
+    merged.radar_ingest_token = generated;
+    try {
+      const serialized = JSON.stringify({
+        radar_ingest_token: generated,
+        apify_api_token: merged.apify_api_token || '',
+        dm_save_capture_enabled: merged.dm_save_capture_enabled ?? true,
+      });
+      await setDocData('facts', 'cfg_radar_settings', {
+        id: 'cfg_radar_settings',
+        subject: 'cfg_radar_settings',
+        detail: serialized,
+        category: 'system',
+      });
+    } catch (ignore) {}
+  }
+
+  if (merged.dm_save_capture_enabled === undefined) {
+    merged.dm_save_capture_enabled = true;
+  }
+
   return merged;
 }
 
@@ -798,7 +864,30 @@ export async function saveConnectionsConfig(cfg: Partial<ConnectionsConfig>): Pr
     } catch (ignore) {}
   }
 
-  // 2. Update memory store
+  // 2. Persist Radar / Extension / Apify settings safely in cfg_radar_settings
+  if (
+    cfg.radar_ingest_token !== undefined ||
+    cfg.apify_api_token !== undefined ||
+    cfg.dm_save_capture_enabled !== undefined
+  ) {
+    try {
+      const current = await getConnectionsConfig();
+      const serialized = JSON.stringify({
+        radar_ingest_token: cfg.radar_ingest_token ?? current.radar_ingest_token ?? '',
+        apify_api_token: cfg.apify_api_token ?? current.apify_api_token ?? '',
+        dm_save_capture_enabled:
+          cfg.dm_save_capture_enabled ?? current.dm_save_capture_enabled ?? true,
+      });
+      await setDocData('facts', 'cfg_radar_settings', {
+        id: 'cfg_radar_settings',
+        subject: 'cfg_radar_settings',
+        detail: serialized,
+        category: 'system',
+      });
+    } catch (ignore) {}
+  }
+
+  // 3. Update memory store
   const store = inMemoryStore.connections_config;
   if (store.connections_config) {
     store.connections_config = { ...store.connections_config, ...cfg };
@@ -807,8 +896,14 @@ export async function saveConnectionsConfig(cfg: Partial<ConnectionsConfig>): Pr
     store.main_config = { ...store.main_config, ...cfg };
   }
 
-  // 3. Persist core fields to Postgres connections_config table
-  await setDocData('connections_config', 'main_config', cfg);
+  // 4. Persist core fields to Postgres connections_config table (omitting custom backup-only fields)
+  const dbCfg: Partial<ConnectionsConfig> = { ...cfg };
+  delete dbCfg.radar_ingest_token;
+  delete dbCfg.apify_api_token;
+  delete dbCfg.dm_save_capture_enabled;
+  if (Object.keys(dbCfg).length > 0) {
+    await setDocData('connections_config', 'main_config', dbCfg);
+  }
 }
 
 // ==========================================
@@ -1168,5 +1263,350 @@ export async function recordLinkClick(slug: string): Promise<string | null> {
   await setDocData('tracked_links', link.id, updated);
   return link.destinationUrl;
 }
+
+// ==========================================
+// RADAR VIRAL DE PERFIS & POSTS SALVOS ACCESSORS
+// ==========================================
+
+function toDbMonitoredProfile(p: Partial<MonitoredProfile>): Record<string, unknown> {
+  return {
+    id: p.id,
+    platform: p.platform || 'instagram',
+    handle: (p.handle || '').replace(/^@/, '').trim(),
+    display_name: p.displayName ?? null,
+    profile_url: p.profileUrl ?? null,
+    avatar_url: p.avatarUrl ?? null,
+    niche_tag: p.nicheTag ?? null,
+    followers_count: p.followersCount ?? 0,
+    avg_engagement: p.avgEngagement ?? 0,
+    posts_captured_count: p.postsCapturedCount ?? 0,
+    last_synced_at: p.lastSyncedAt ?? null,
+    created_at: p.createdAt || new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+}
+
+function fromDbMonitoredProfile(row: Record<string, unknown>): MonitoredProfile {
+  return {
+    id: String(row.id || ''),
+    platform: (row.platform as Platform) || 'instagram',
+    handle: String(row.handle || '').replace(/^@/, ''),
+    displayName: (row.display_name ?? row.displayName ?? null) as string | null,
+    profileUrl: (row.profile_url ?? row.profileUrl ?? null) as string | null,
+    avatarUrl: (row.avatar_url ?? row.avatarUrl ?? null) as string | null,
+    nicheTag: (row.niche_tag ?? row.nicheTag ?? null) as string | null,
+    followersCount: Number(row.followers_count ?? row.followersCount ?? 0),
+    avgEngagement: Number(row.avg_engagement ?? row.avgEngagement ?? 0),
+    postsCapturedCount: Number(row.posts_captured_count ?? row.postsCapturedCount ?? 0),
+    lastSyncedAt: (row.last_synced_at ?? row.lastSyncedAt ?? null) as string | null,
+    createdAt: String(row.created_at ?? row.createdAt ?? new Date().toISOString()),
+    updatedAt: String(row.updated_at ?? row.updatedAt ?? new Date().toISOString()),
+  };
+}
+
+function toDbCapturedPost(p: Partial<CapturedPost>): Record<string, unknown> {
+  return {
+    id: p.id,
+    source: p.source || 'saved',
+    profile_id: p.profileId ?? null,
+    platform: p.platform || 'instagram',
+    post_url: p.postUrl ?? null,
+    external_id: p.externalId ?? null,
+    author_name: p.authorName ?? null,
+    author_handle: p.authorHandle ?? null,
+    caption_text: p.captionText || '',
+    media_type: p.mediaType || 'text',
+    media_url: p.mediaUrl ?? null,
+    likes_count: p.likesCount ?? 0,
+    comments_count: p.commentsCount ?? 0,
+    views_count: p.viewsCount ?? 0,
+    shares_count: p.sharesCount ?? 0,
+    engagement_score: p.engagementScore ?? 0,
+    outlier_score: p.outlierScore ?? 1.0,
+    ai_hook_summary: p.aiHookSummary ?? null,
+    status: p.status || 'new',
+    published_at: p.publishedAt ?? null,
+    captured_at: p.capturedAt || new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+}
+
+function fromDbCapturedPost(row: Record<string, unknown>): CapturedPost {
+  return {
+    id: String(row.id || ''),
+    source: (row.source as CapturedPostSource) || 'saved',
+    profileId: (row.profile_id ?? row.profileId ?? null) as string | null,
+    platform: (row.platform as Platform) || 'instagram',
+    postUrl: (row.post_url ?? row.postUrl ?? null) as string | null,
+    externalId: (row.external_id ?? row.externalId ?? null) as string | null,
+    authorName: (row.author_name ?? row.authorName ?? null) as string | null,
+    authorHandle: (row.author_handle ?? row.authorHandle ?? null) as string | null,
+    captionText: String(row.caption_text ?? row.captionText ?? ''),
+    mediaType: (row.media_type ?? row.mediaType ?? 'text') as CapturedMediaType,
+    mediaUrl: (row.media_url ?? row.mediaUrl ?? null) as string | null,
+    likesCount: Number(row.likes_count ?? row.likesCount ?? 0),
+    commentsCount: Number(row.comments_count ?? row.commentsCount ?? 0),
+    viewsCount: Number(row.views_count ?? row.viewsCount ?? 0),
+    sharesCount: Number(row.shares_count ?? row.sharesCount ?? 0),
+    engagementScore: Number(row.engagement_score ?? row.engagementScore ?? 0),
+    outlierScore: Number(row.outlier_score ?? row.outlierScore ?? 1.0),
+    aiHookSummary: (row.ai_hook_summary ?? row.aiHookSummary ?? null) as string | null,
+    status: (row.status as CapturedPostStatus) || 'new',
+    publishedAt: (row.published_at ?? row.publishedAt ?? null) as string | null,
+    capturedAt: String(row.captured_at ?? row.capturedAt ?? new Date().toISOString()),
+    updatedAt: String(row.updated_at ?? row.updatedAt ?? new Date().toISOString()),
+  };
+}
+
+function buildDefaultProfileUrl(platform: Platform, handle: string): string {
+  const clean = handle.replace(/^@/, '').trim();
+  switch (platform) {
+    case 'instagram':
+      return `https://www.instagram.com/${clean}/`;
+    case 'linkedin':
+      return `https://www.linkedin.com/in/${clean}/`;
+    case 'x':
+      return `https://x.com/${clean}`;
+    case 'tiktok':
+      return `https://www.tiktok.com/@${clean}`;
+  }
+}
+
+export function normalizePostUrl(url?: string | null): string | null {
+  if (!url) return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  try {
+    const parsed = new URL(trimmed);
+    const cleanPath = parsed.pathname.replace(/\/+$/, '');
+    return `${parsed.origin}${cleanPath}`.toLowerCase();
+  } catch {
+    return trimmed.split('?')[0].replace(/\/+$/, '').toLowerCase();
+  }
+}
+
+export async function getMonitoredProfiles(): Promise<MonitoredProfile[]> {
+  const raw = await getCollectionData<Record<string, unknown>>('monitored_profiles', 'created_at');
+  return raw.map(fromDbMonitoredProfile);
+}
+
+export async function saveMonitoredProfile(
+  profile: Partial<MonitoredProfile> & { platform: Platform; handle: string }
+): Promise<MonitoredProfile> {
+  const cleanHandle = profile.handle.replace(/^@/, '').trim();
+  const existing = await getMonitoredProfiles();
+  const matched =
+    existing.find((p) => p.id === profile.id) ||
+    existing.find(
+      (p) =>
+        p.platform === profile.platform &&
+        p.handle.toLowerCase() === cleanHandle.toLowerCase()
+    );
+
+  const now = new Date().toISOString();
+  const id = matched?.id || profile.id || `prof_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+
+  const fullProfile: MonitoredProfile = {
+    id,
+    platform: profile.platform,
+    handle: cleanHandle,
+    displayName: profile.displayName ?? matched?.displayName ?? cleanHandle,
+    profileUrl:
+      profile.profileUrl ||
+      matched?.profileUrl ||
+      buildDefaultProfileUrl(profile.platform, cleanHandle),
+    avatarUrl: profile.avatarUrl ?? matched?.avatarUrl ?? null,
+    nicheTag: profile.nicheTag ?? matched?.nicheTag ?? null,
+    followersCount: profile.followersCount ?? matched?.followersCount ?? 0,
+    avgEngagement: profile.avgEngagement ?? matched?.avgEngagement ?? 0,
+    postsCapturedCount: profile.postsCapturedCount ?? matched?.postsCapturedCount ?? 0,
+    lastSyncedAt: profile.lastSyncedAt ?? matched?.lastSyncedAt ?? null,
+    createdAt: matched?.createdAt || profile.createdAt || now,
+    updatedAt: now,
+  };
+
+  const store = getLocalStore('monitored_profiles');
+  store[id] = fullProfile;
+
+  try {
+    await supabase.from('monitored_profiles').upsert(toDbMonitoredProfile(fullProfile));
+  } catch (err) {
+    console.error('[DB] Erro ao persistir monitored_profile:', err);
+  }
+
+  return fullProfile;
+}
+
+export async function deleteMonitoredProfile(id: string): Promise<void> {
+  await deleteDocData('monitored_profiles', id);
+}
+
+export async function getCapturedPosts(): Promise<CapturedPost[]> {
+  const raw = await getCollectionData<Record<string, unknown>>('captured_posts', 'captured_at');
+  return raw.map(fromDbCapturedPost);
+}
+
+export async function upsertCapturedPosts(
+  items: RadarIngestPostInput[],
+  options?: {
+    source?: CapturedPostSource;
+    platform?: Platform;
+    profileId?: string | null;
+    defaultAuthorHandle?: string | null;
+  }
+): Promise<{
+  posts: CapturedPost[];
+  importedCount: number;
+  updatedCount: number;
+}> {
+  const existingPosts = await getCapturedPosts();
+  const byNormalizedUrl = new Map<string, CapturedPost>();
+  const byExternalKey = new Map<string, CapturedPost>();
+
+  for (const post of existingPosts) {
+    const normUrl = normalizePostUrl(post.postUrl);
+    if (normUrl) byNormalizedUrl.set(normUrl, post);
+    if (post.externalId) byExternalKey.set(`${post.platform}:${post.externalId}`, post);
+  }
+
+  const now = new Date().toISOString();
+  let importedCount = 0;
+  let updatedCount = 0;
+
+  const workingMap = new Map<string, CapturedPost>(existingPosts.map((p) => [p.id, p]));
+
+  for (const rawItem of items) {
+    const captionText = (rawItem.captionText || '').trim();
+    const normUrl = normalizePostUrl(rawItem.postUrl);
+    if (!captionText && !normUrl) continue;
+
+    const platform: Platform = rawItem.platform || options?.platform || 'instagram';
+    const existing =
+      (normUrl ? byNormalizedUrl.get(normUrl) : undefined) ||
+      (rawItem.externalId ? byExternalKey.get(`${platform}:${rawItem.externalId}`) : undefined);
+
+    const likesCount = parseCompactMetric(rawItem.likesCount);
+    const commentsCount = parseCompactMetric(rawItem.commentsCount);
+    const viewsCount = parseCompactMetric(rawItem.viewsCount);
+    const sharesCount = parseCompactMetric(rawItem.sharesCount);
+    const engagementScore = computeEngagementScore({
+      likesCount,
+      commentsCount,
+      viewsCount,
+      sharesCount,
+    });
+
+    const cleanHandle = (
+      rawItem.authorHandle ||
+      options?.defaultAuthorHandle ||
+      existing?.authorHandle ||
+      ''
+    )
+      .replace(/^@/, '')
+      .trim();
+
+    const id =
+      existing?.id || `cap_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+
+    const nextPost: CapturedPost = {
+      id,
+      source: existing?.source || options?.source || 'saved',
+      profileId: options?.profileId ?? existing?.profileId ?? null,
+      platform,
+      postUrl: rawItem.postUrl?.trim() || existing?.postUrl || null,
+      externalId: rawItem.externalId || existing?.externalId || null,
+      authorName: rawItem.authorName || existing?.authorName || cleanHandle || null,
+      authorHandle: cleanHandle || null,
+      captionText: captionText || existing?.captionText || '',
+      mediaType: rawItem.mediaType || existing?.mediaType || 'text',
+      mediaUrl: rawItem.mediaUrl || existing?.mediaUrl || null,
+      likesCount: Math.max(likesCount, existing?.likesCount || 0),
+      commentsCount: Math.max(commentsCount, existing?.commentsCount || 0),
+      viewsCount: Math.max(viewsCount, existing?.viewsCount || 0),
+      sharesCount: Math.max(sharesCount, existing?.sharesCount || 0),
+      engagementScore: Math.max(engagementScore, existing?.engagementScore || 0),
+      outlierScore: existing?.outlierScore || 1.0,
+      aiHookSummary: rawItem.aiHookSummary || existing?.aiHookSummary || null,
+      status: existing?.status || 'new',
+      publishedAt: rawItem.publishedAt || existing?.publishedAt || null,
+      capturedAt: existing?.capturedAt || now,
+      updatedAt: now,
+    };
+
+    workingMap.set(id, nextPost);
+    if (normUrl) byNormalizedUrl.set(normUrl, nextPost);
+    if (nextPost.externalId) byExternalKey.set(`${platform}:${nextPost.externalId}`, nextPost);
+
+    if (existing) updatedCount += 1;
+    else importedCount += 1;
+  }
+
+  const allPosts = Array.from(workingMap.values());
+  const { posts: scoredPosts, profileBaselines } = recalculateOutlierScores(allPosts);
+
+  const store = getLocalStore('captured_posts');
+  const touchedIds = new Set<string>();
+
+  for (const post of scoredPosts) {
+    const prev = workingMap.get(post.id);
+    if (!prev || prev.outlierScore !== post.outlierScore || post.updatedAt === now) {
+      store[post.id] = post;
+      touchedIds.add(post.id);
+    }
+  }
+
+  try {
+    const rowsToPersist = scoredPosts.filter((p) => touchedIds.has(p.id)).map(toDbCapturedPost);
+    if (rowsToPersist.length > 0) {
+      await supabase.from('captured_posts').upsert(rowsToPersist);
+    }
+  } catch (err) {
+    console.error('[DB] Erro ao persistir captured_posts:', err);
+  }
+
+  // Atualizar estatísticas nos perfis monitorados relacionados
+  if (options?.profileId || Object.keys(profileBaselines).length > 0) {
+    const profiles = await getMonitoredProfiles();
+    for (const profile of profiles) {
+      const profilePosts = scoredPosts.filter(
+        (p) =>
+          p.profileId === profile.id ||
+          (p.platform === profile.platform &&
+            p.authorHandle?.toLowerCase() === profile.handle.toLowerCase())
+      );
+      if (profilePosts.length > 0 && (options?.profileId === profile.id || profilePosts.some((p) => touchedIds.has(p.id)))) {
+        const baseline = profileBaselines[profile.id] ?? profile.avgEngagement;
+        await saveMonitoredProfile({
+          ...profile,
+          avgEngagement: baseline,
+          postsCapturedCount: profilePosts.length,
+          lastSyncedAt: now,
+        });
+      }
+    }
+  }
+
+  const sorted = scoredPosts.sort((a, b) =>
+    String(b.capturedAt).localeCompare(String(a.capturedAt))
+  );
+
+  return {
+    posts: sorted,
+    importedCount,
+    updatedCount,
+  };
+}
+
+export async function updateCapturedPostStatus(
+  id: string,
+  status: CapturedPostStatus
+): Promise<void> {
+  await updateDocData('captured_posts', id, { status });
+}
+
+export async function deleteCapturedPost(id: string): Promise<void> {
+  await deleteDocData('captured_posts', id);
+}
+
 
 

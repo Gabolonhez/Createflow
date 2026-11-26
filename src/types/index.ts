@@ -171,6 +171,9 @@ export interface ConnectionsConfig {
   tiktok_access_token?: string;
   tiktok_client_key?: string;
   tiktok_client_secret?: string;
+  radar_ingest_token?: string;
+  apify_api_token?: string;
+  dm_save_capture_enabled?: boolean;
 }
 
 export interface MediaAsset {
@@ -324,7 +327,7 @@ export interface SocialConversation {
 export type MainSection = 'plan' | 'ideas' | 'automations' | 'voice' | 'results' | 'settings';
 
 export type PlanSubView = 'posts' | 'calendar';
-export type IdeasSubView = 'my-ideas' | 'topics' | 'facts' | 'references' | 'media-library' | 'video-studio' | 'video-crew';
+export type IdeasSubView = 'my-ideas' | 'topics' | 'facts' | 'references' | 'radar' | 'media-library' | 'video-studio' | 'video-crew';
 export type AutomationsSubView = 'dm-campaigns' | 'dm-inbox' | 'tracked-links' | 'dm-logs';
 export type VoiceSubView = 'manual' | 'learnings';
 export type ResultsSubView = 'performance' | 'instagram-analytics';
@@ -467,6 +470,88 @@ export interface InstagramInsightsPayload {
   dailyReach: InstagramMetricTimeSeries[];
   media: InstagramMediaItemWithInsights[];
   lastUpdated: string;
+}
+
+// ==========================================
+// RADAR VIRAL DE PERFIS & POSTS SALVOS TYPES
+// ==========================================
+
+export type CapturedPostSource = 'saved' | 'radar' | 'dm_share';
+export type CapturedMediaType = 'reel' | 'carousel' | 'image' | 'text' | 'video';
+export type CapturedPostStatus = 'new' | 'saved_idea' | 'used' | 'archived';
+
+export interface MonitoredProfile {
+  id: string;
+  platform: Platform;
+  handle: string;
+  displayName?: string | null;
+  profileUrl?: string | null;
+  avatarUrl?: string | null;
+  nicheTag?: string | null;
+  followersCount: number;
+  avgEngagement: number;
+  postsCapturedCount: number;
+  lastSyncedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CapturedPost {
+  id: string;
+  source: CapturedPostSource;
+  profileId?: string | null;
+  platform: Platform;
+  postUrl?: string | null;
+  externalId?: string | null;
+  authorName?: string | null;
+  authorHandle?: string | null;
+  captionText: string;
+  mediaType: CapturedMediaType;
+  mediaUrl?: string | null;
+  likesCount: number;
+  commentsCount: number;
+  viewsCount: number;
+  sharesCount: number;
+  engagementScore: number;
+  outlierScore: number;
+  aiHookSummary?: string | null;
+  status: CapturedPostStatus;
+  publishedAt?: string | null;
+  capturedAt: string;
+  updatedAt: string;
+}
+
+export interface RadarIngestProfileInput {
+  platform: Platform;
+  handle: string;
+  displayName?: string | null;
+  profileUrl?: string | null;
+  avatarUrl?: string | null;
+  nicheTag?: string | null;
+  followersCount?: number;
+}
+
+export interface RadarIngestPostInput {
+  postUrl?: string | null;
+  externalId?: string | null;
+  authorName?: string | null;
+  authorHandle?: string | null;
+  captionText: string;
+  mediaType?: CapturedMediaType;
+  mediaUrl?: string | null;
+  likesCount?: number | string;
+  commentsCount?: number | string;
+  viewsCount?: number | string;
+  sharesCount?: number | string;
+  publishedAt?: string | null;
+  aiHookSummary?: string | null;
+  platform?: Platform;
+}
+
+export interface RadarIngestPayload {
+  source: CapturedPostSource;
+  profile?: RadarIngestProfileInput;
+  posts: RadarIngestPostInput[];
 }
 
 // Re-export AI Video Crew types (Pluy benchmark)

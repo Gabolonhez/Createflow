@@ -27,6 +27,7 @@ import { DmCampaignsView } from '@/components/DmCampaignsView';
 import { DmLogsView } from '@/components/DmLogsView';
 import { TrackedLinksView } from '@/components/TrackedLinksView';
 import { DmInboxView } from '@/components/DmInboxView';
+import { RadarView } from '@/components/RadarView';
 
 import {
   savePostAction,
@@ -60,6 +61,13 @@ import {
   retryDmLogAction,
   saveTrackedLinkAction,
   sendSocialMessageAction,
+  saveMonitoredProfileAction,
+  deleteMonitoredProfileAction,
+  syncMonitoredProfilesAction,
+  saveManualCapturedPostAction,
+  updateCapturedPostStatusAction,
+  deleteCapturedPostAction,
+  regenerateRadarTokenAction,
 } from './actions';
 
 import type {
@@ -79,6 +87,10 @@ import type {
   DmLog,
   TrackedLinkItem,
   SocialConversation,
+  MonitoredProfile,
+  CapturedPost,
+  CapturedMediaType,
+  CapturedPostStatus,
 } from '@/types';
 
 interface DashboardProps {
@@ -159,6 +171,8 @@ export default function Dashboard({
   const [dmLogs, setDmLogs] = useState<DmLog[]>(initialDmLogs);
   const [trackedLinks, setTrackedLinks] = useState<TrackedLinkItem[]>(initialTrackedLinks);
   const [conversations, setConversations] = useState<SocialConversation[]>(initialConversations);
+  const [monitoredProfiles, setMonitoredProfiles] = useState<MonitoredProfile[]>([]);
+  const [capturedPosts, setCapturedPosts] = useState<CapturedPost[]>([]);
 
   useEffect(() => {
     let mounted = true;
@@ -210,6 +224,8 @@ export default function Dashboard({
         if (data.dmLogs) setDmLogs(data.dmLogs);
         if (data.trackedLinks) setTrackedLinks(data.trackedLinks);
         if (data.conversations) setConversations(data.conversations);
+        if (data.monitoredProfiles) setMonitoredProfiles(data.monitoredProfiles);
+        if (data.capturedPosts) setCapturedPosts(data.capturedPosts);
       })
       .catch((err) => {
         console.error('Falha ao carregar dados:', err);
@@ -232,6 +248,8 @@ export default function Dashboard({
     setFacts([]);
     setReferences([]);
     setLearnings([]);
+    setMonitoredProfiles([]);
+    setCapturedPosts([]);
     setVoiceProfile(DEFAULT_VOICE_PROFILE);
     setConnections(DEFAULT_CONNECTIONS);
   };
@@ -287,6 +305,10 @@ export default function Dashboard({
     (acc, c) => acc + (c.unreadCount || 0),
     0
   );
+
+  const newRadarPostsCount = capturedPosts.filter(
+    (p) => p.status === 'new'
+  ).length;
 
   // Handlers for Navigation
   const handleNavigate = (section: MainSection, subView: ActiveSubView) => {
@@ -653,6 +675,91 @@ export default function Dashboard({
     }
   };
 
+  // Handlers for Radar Viral & Captured Posts
+  const handleSaveMonitoredProfile = async (profileData: {
+    platform: Platform;
+    handle: string;
+    profileUrl?: string;
+    nicheTag?: string;
+  }) => {
+    const res = await saveMonitoredProfileAction(profileData);
+    if (res.success && res.profile) {
+      setMonitoredProfiles((prev) => {
+        const idx = prev.findIndex((p) => p.id === res.profile!.id);
+        if (idx >= 0) {
+          const next = [...prev];
+          next[idx] = res.profile!;
+          return next;
+        }
+        return [res.profile!, ...prev];
+      });
+      showToast(`Perfil @${res.profile.handle} adicionado ao Radar!`);
+    } else if (res.error) {
+      showToast(res.error);
+    }
+  };
+
+  const handleDeleteMonitoredProfile = async (id: string) => {
+    const res = await deleteMonitoredProfileAction(id);
+    if (res.success) {
+      setMonitoredProfiles((prev) => prev.filter((p) => p.id !== id));
+      showToast('Perfil removido do monitoramento.');
+    }
+  };
+
+  const handleSyncMonitoredProfiles = async (profileId?: string) => {
+    const res = await syncMonitoredProfilesAction(profileId);
+    if (res.profiles) setMonitoredProfiles(res.profiles);
+    if (res.capturedPosts) setCapturedPosts(res.capturedPosts);
+    if (res.success) {
+      showToast(
+        `Sync concluído: ${res.importedCount || 0} novos posts e ${res.updatedCount || 0} atualizados.`
+      );
+    } else if (res.error) {
+      showToast(res.error);
+    }
+  };
+
+  const handleSaveManualCapturedPost = async (data: {
+    platform: Platform;
+    postUrl?: string;
+    authorHandle?: string;
+    captionText?: string;
+    mediaType?: CapturedMediaType;
+    screenshotDataUrl?: string;
+  }) => {
+    const res = await saveManualCapturedPostAction(data);
+    if (res.success && res.posts) {
+      setCapturedPosts(res.posts);
+      showToast('Post capturado e salvo em Meus Salvos!');
+    } else if (res.error) {
+      showToast(res.error);
+    }
+  };
+
+  const handleUpdateCapturedPostStatus = async (id: string, status: CapturedPostStatus) => {
+    await updateCapturedPostStatusAction(id, status);
+    setCapturedPosts((prev) => prev.map((p) => (p.id === id ? { ...p, status } : p)));
+  };
+
+  const handleDeleteCapturedPost = async (id: string) => {
+    const res = await deleteCapturedPostAction(id);
+    if (res.success) {
+      setCapturedPosts((prev) => prev.filter((p) => p.id !== id));
+      showToast('Post removido.');
+    }
+  };
+
+  const handleRegenerateRadarToken = async () => {
+    const res = await regenerateRadarTokenAction();
+    if (res.success && res.token) {
+      setConnections((prev) => ({ ...prev, radar_ingest_token: res.token }));
+      showToast('Novo token de ingestão gerado!');
+    } else if (res.error) {
+      showToast(res.error);
+    }
+  };
+
   // Subtitle per view
   const viewTitles: Record<ActiveSubView, { title: string; subtitle: string }> = {
     posts: {
@@ -694,6 +801,10 @@ export default function Dashboard({
     references: {
       title: 'Referências Virais',
       subtitle: 'Posts de sucesso desconstruídos em templates de alta performance.',
+    },
+    radar: {
+      title: 'Radar Viral & Meus Salvos',
+      subtitle: 'Monitore perfis, detecte outliers virais e transforme posts salvos em ideias no seu tom.',
     },
     'media-library': {
       title: 'Acervo de Mídia & Biblioteca',
@@ -778,6 +889,7 @@ export default function Dashboard({
         onNavigate={handleNavigate}
         onOpenComposer={() => handleOpenComposer()}
         pendingApprovalsCount={pendingApprovalsCount}
+        newRadarPostsCount={newRadarPostsCount}
         unreadConversationsCount={unreadConversationsCount}
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
@@ -901,6 +1013,63 @@ export default function Dashboard({
               onAnalyzeAndSave={handleAnalyzeAndSaveReference}
               onDeleteReference={handleDeleteReference}
               onUseTemplate={handleGenerateFromReference}
+            />
+          )}
+
+          {currentSubView === 'radar' && (
+            <RadarView
+              profiles={monitoredProfiles}
+              capturedPosts={capturedPosts}
+              radarIngestToken={connections.radar_ingest_token}
+              apifyApiToken={connections.apify_api_token}
+              dmSaveCaptureEnabled={connections.dm_save_capture_enabled}
+              onSaveProfile={handleSaveMonitoredProfile}
+              onDeleteProfile={handleDeleteMonitoredProfile}
+              onSyncProfiles={handleSyncMonitoredProfiles}
+              onSaveManualCapture={handleSaveManualCapturedPost}
+              onUpdatePostStatus={handleUpdateCapturedPostStatus}
+              onDeleteCapturedPost={handleDeleteCapturedPost}
+              onCreateInMyVoice={(post) =>
+                handleGenerateFromReference({
+                  id: post.id,
+                  url: post.postUrl || '',
+                  platform: post.platform,
+                  author: post.authorHandle || post.authorName || post.platform,
+                  text: post.captionText,
+                  hook_analysis: post.aiHookSummary || undefined,
+                  created_at: post.capturedAt,
+                })
+              }
+              onDeconstructHook={(post) =>
+                handleAnalyzeAndSaveReference(
+                  post.captionText,
+                  post.platform,
+                  post.postUrl || undefined,
+                  post.authorHandle || post.authorName || undefined
+                )
+              }
+              onSendToIdea={(post) =>
+                handleSaveIdea({
+                  title:
+                    post.aiHookSummary ||
+                    post.captionText.split('\n').find((l) => l.trim().length > 0)?.slice(0, 110) ||
+                    `Inspiração ${post.platform}`,
+                  note: `${post.captionText}\n\nFonte: ${post.postUrl || `@${post.authorHandle || post.platform}`}`,
+                  platforms: [
+                    post.platform === 'instagram' || post.platform === 'tiktok'
+                      ? 'linkedin'
+                      : post.platform,
+                  ],
+                })
+              }
+              onAtomizePost={(post) =>
+                handleOpenSprayModal(
+                  post.aiHookSummary || post.captionText.slice(0, 120),
+                  post.captionText
+                )
+              }
+              onRegenerateToken={handleRegenerateRadarToken}
+              onNavigateToConnections={() => handleNavigate('settings', 'connection')}
             />
           )}
 

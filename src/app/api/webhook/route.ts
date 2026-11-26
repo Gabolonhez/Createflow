@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { supabase } from '@/lib/supabase';
 import { drainQueue } from '@/lib/queue-processor';
 import { after } from 'next/server';
-import { getDmCampaigns, getDmLogs, addDmLog, getConnectionsConfig } from '@/lib/db';
+import { getDmCampaigns, getDmLogs, addDmLog, getConnectionsConfig, upsertCapturedPosts } from '@/lib/db';
 import { checkUserFollowsBusiness } from '@/lib/instagram';
 import type { DmCampaign } from '@/types';
 
@@ -455,7 +455,72 @@ export async function POST(req: NextRequest) {
             .eq('id', 'instagram_config')
             .single();
 
-          if (config && senderId === config.instagram_user_id) {
+          const isOwnerMessage =
+            Boolean(config && senderId === config.instagram_user_id) ||
+            Boolean(message?.is_echo);
+
+          // Captura automática de Posts/Reels encaminhados por DM para o Inbox de Ideias (não interfere no Auto-DM)
+          try {
+            const attachments = Array.isArray(message?.attachments)
+              ? (message.attachments as Array<{
+                  type?: string;
+                  payload?: {
+                    url?: string;
+                    title?: string;
+                    reel_video_id?: string;
+                    ig_post_media_id?: string;
+                  };
+                }>)
+              : [];
+
+            const shareAttachment = attachments.find(
+              (att) => att.type === 'share' || att.type === 'ig_reel'
+            );
+            const rawTextMsg = typeof message?.text === 'string' ? message.text : '';
+            const igUrlMatch = rawTextMsg.match(/https?:\/\/(?:www\.)?instagram\.com\/(?:reel|p|tv)\/[A-Za-z0-9_-]+\/?/i);
+            const hasSaveTag = /#salvar\b/i.test(rawTextMsg);
+
+            if ((isOwnerMessage || hasSaveTag) && (shareAttachment || igUrlMatch)) {
+              const connCfg = await getConnectionsConfig();
+              if (connCfg.dm_save_capture_enabled !== false) {
+                const payloadObj = shareAttachment?.payload || {};
+                const postUrl = payloadObj.url || igUrlMatch?.[0] || null;
+                const externalId =
+                  payloadObj.ig_post_media_id || payloadObj.reel_video_id || null;
+                const mediaType =
+                  shareAttachment?.type === 'ig_reel' || (postUrl && postUrl.includes('/reel/'))
+                    ? 'reel'
+                    : 'image';
+                const captionCandidate =
+                  payloadObj.title ||
+                  rawTextMsg.replace(/#salvar/gi, '').trim() ||
+                  'Post/Reel encaminhado via DM do Instagram';
+
+                await upsertCapturedPosts(
+                  [
+                    {
+                      platform: 'instagram',
+                      postUrl,
+                      externalId,
+                      captionText: captionCandidate,
+                      mediaType,
+                      mediaUrl: payloadObj.url || null,
+                      authorHandle: connCfg.instagram_username || 'instagram',
+                    },
+                  ],
+                  {
+                    source: 'dm_share',
+                    platform: 'instagram',
+                  }
+                );
+                console.log('[Webhook-Save] Post/Reel capturado via DM para o Radar/Salvos.');
+              }
+            }
+          } catch (saveErr) {
+            console.error('[Webhook-Save] Falha não-crítica ao capturar post por DM:', saveErr);
+          }
+
+          if (isOwnerMessage) {
             continue; // Ignorar mensagens enviadas pelo próprio perfil
           }
 

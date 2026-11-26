@@ -10,7 +10,7 @@ import {
   Check,
   ArrowRight,
 } from 'lucide-react';
-import { XLogo, LinkedInLogo } from './BrandIcons';
+import { XLogo, LinkedInLogo, InstagramLogo, TikTokLogo } from './BrandIcons';
 import type { Reference, Platform } from '@/types';
 
 interface ReferencesViewProps {
@@ -115,6 +115,32 @@ export function ReferencesView({
               <LinkedInLogo className="size-3" />
               <span>LinkedIn</span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => setPlatform('instagram')}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
+                platform === 'instagram'
+                  ? 'bg-[#212121] text-[#ececec]'
+                  : 'text-[#8a8a8a] hover:text-[#ececec]'
+              }`}
+            >
+              <InstagramLogo className="size-3" />
+              <span>IG</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setPlatform('tiktok')}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
+                platform === 'tiktok'
+                  ? 'bg-[#212121] text-[#ececec]'
+                  : 'text-[#8a8a8a] hover:text-[#ececec]'
+              }`}
+            >
+              <TikTokLogo className="size-3" />
+              <span>TikTok</span>
+            </button>
           </div>
         </div>
 
@@ -155,8 +181,12 @@ export function ReferencesView({
                   <div className="flex items-center gap-1.5">
                     {ref.platform === 'x' ? (
                       <XLogo className="size-3 text-[#ececec]" />
-                    ) : (
+                    ) : ref.platform === 'linkedin' ? (
                       <LinkedInLogo className="size-3 text-[#0A66C2]" />
+                    ) : ref.platform === 'instagram' ? (
+                      <InstagramLogo className="size-3 text-[#ececec]" />
+                    ) : (
+                      <TikTokLogo className="size-3 text-[#ececec]" />
                     )}
                     <span className="text-xs font-semibold text-[#ececec]">{ref.author}</span>
                   </div>

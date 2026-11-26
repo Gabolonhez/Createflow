@@ -44,6 +44,12 @@ export function ConnectionsView({
   const [ttClientSecret, setTtClientSecret] = useState(connections.tiktok_client_secret || '');
   const [isConnectingTikTok, setIsConnectingTikTok] = useState(false);
 
+  const [radarToken, setRadarToken] = useState(connections.radar_ingest_token || '');
+  const [apifyToken, setApifyToken] = useState(connections.apify_api_token || '');
+  const [dmSaveCaptureEnabled, setDmSaveCaptureEnabled] = useState(
+    connections.dm_save_capture_enabled ?? true
+  );
+
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
   const [isSaving, setIsSaving] = useState(false);
@@ -75,6 +81,15 @@ export function ConnectionsView({
     if (connections.tiktok_client_secret && !ttClientSecret) {
       setTtClientSecret(connections.tiktok_client_secret);
     }
+    if (connections.radar_ingest_token) {
+      setRadarToken(connections.radar_ingest_token);
+    }
+    if (connections.apify_api_token && !apifyToken) {
+      setApifyToken(connections.apify_api_token);
+    }
+    if (connections.dm_save_capture_enabled !== undefined) {
+      setDmSaveCaptureEnabled(connections.dm_save_capture_enabled);
+    }
   }, [
     connections.linkedin_client_id,
     connections.linkedin_client_secret,
@@ -85,6 +100,9 @@ export function ConnectionsView({
     connections.tiktok_username,
     connections.tiktok_client_key,
     connections.tiktok_client_secret,
+    connections.radar_ingest_token,
+    connections.apify_api_token,
+    connections.dm_save_capture_enabled,
   ]);
 
   const copyToClipboard = (text: string) => {
@@ -111,6 +129,8 @@ export function ConnectionsView({
         tiktok_username: ttUsername.replace('@', '').trim(),
         tiktok_client_key: ttClientKey.trim() || undefined,
         tiktok_client_secret: ttClientSecret.trim() || undefined,
+        apify_api_token: apifyToken.trim() || undefined,
+        dm_save_capture_enabled: dmSaveCaptureEnabled,
       });
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 2500);
@@ -724,6 +744,104 @@ export function ConnectionsView({
             <span className="text-[10px] text-[#7a7a7a] leading-relaxed">
               <strong>No TikTok Developer Portal:</strong> Na aba <em>Login Kit</em>, adicione a URL acima em <em>Redirect URI</em> para habilitar o login e permissões.
             </span>
+          </div>
+        </div>
+
+        {/* ========================================= */}
+        {/* 5. RADAR VIRAL, EXTENSÃO CHROME & APIFY   */}
+        {/* ========================================= */}
+        <div className="md:col-span-2 p-5 sm:p-6 rounded-[22px] bg-[#161616] border border-[#222222] flex flex-col gap-4">
+          <div className="flex items-start justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-3">
+              <div className="size-10 rounded-full bg-[#212121] border border-[#2c2c2c] flex items-center justify-center shrink-0 text-[#ececec]">
+                <Zap size={16} />
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-semibold text-[#ececec] text-sm">
+                    Radar Viral, Extensão Chrome &amp; Apify Sync
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium bg-[#212121] text-[#7ae6a0] border border-[#2c2c2c]">
+                    Salvos + Outliers
+                  </span>
+                </div>
+                <span className="text-[#7a7a7a] text-xs mt-0.5">
+                  Configure a extensão Chrome local, sincronização diária automática via Apify e captura de Reels/Posts por DM.
+                </span>
+              </div>
+            </div>
+
+            <label className="flex items-center gap-2.5 cursor-pointer select-none">
+              <span className="text-xs font-mono text-[#9a9a9a]">Captura por DM no Instagram</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={dmSaveCaptureEnabled}
+                onClick={() => setDmSaveCaptureEnabled((prev) => !prev)}
+                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors cursor-pointer ${
+                  dmSaveCaptureEnabled ? 'bg-[#0c8ce9]' : 'bg-[#333333]'
+                }`}
+              >
+                <span
+                  className={`inline-block size-4 transform rounded-full bg-white transition-transform ${
+                    dmSaveCaptureEnabled ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </label>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-mono text-[#7a7a7a]">
+                Token Pessoal da Extensão Chrome (Radar Ingest)
+              </label>
+              <div className="flex items-center gap-1.5">
+                <code className="flex-1 px-3 py-2.5 rounded-[14px] bg-[#111111] border border-[#242424] text-[11px] font-mono text-[#7ae6a0] truncate">
+                  {radarToken || 'Será gerado ao salvar/carregar'}
+                </code>
+                <button
+                  type="button"
+                  disabled={!radarToken}
+                  onClick={() => copyToClipboard(radarToken)}
+                  className="p-2.5 rounded-[14px] bg-[#212121] hover:bg-[#2a2a2a] border border-[#2c2c2c] text-[#ececec] cursor-pointer disabled:opacity-40"
+                  title="Copiar token"
+                >
+                  {copiedUrl === radarToken ? <Check size={12} className="text-[#7ae6a0]" /> : <Copy size={12} />}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-mono text-[#7a7a7a]">
+                Apify API Token (Opcional — para Cron Diário de Perfis)
+              </label>
+              <input
+                type="password"
+                value={apifyToken}
+                onChange={(e) => setApifyToken(e.target.value)}
+                placeholder="apify_api_..."
+                className="px-3.5 py-2.5 rounded-[14px] bg-[#1c1c1c] border border-[#2a2a2a] text-[#ececec] placeholder:text-[#6f6f6f] text-xs font-mono focus:outline-none focus:border-[#4a4a4a] transition-colors"
+              />
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-[16px] bg-[#1c1c1c] border border-[#262626] flex items-center justify-between flex-wrap gap-2">
+            <span className="text-[11px] font-mono text-[#8a8a8a]">
+              Endpoint de ingestão da extensão: <code className="text-[#ececec]">/api/radar/ingest</code>
+            </span>
+            <button
+              type="button"
+              onClick={() => copyToClipboard('https://createfloww.vercel.app/api/radar/ingest')}
+              className="flex items-center gap-1 text-[10px] font-mono text-[#ececec] hover:underline cursor-pointer"
+            >
+              <Copy size={11} />
+              <span>
+                {copiedUrl === 'https://createfloww.vercel.app/api/radar/ingest'
+                  ? 'URL copiada!'
+                  : 'Copiar URL Produção'}
+              </span>
+            </button>
           </div>
         </div>
       </div>

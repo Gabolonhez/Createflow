@@ -26,6 +26,7 @@ import {
   ScrollText,
   Film,
   Bot,
+  Radar,
   X,
   Menu,
 } from 'lucide-react';
@@ -38,6 +39,7 @@ interface AppSidebarProps {
   onNavigate: (section: MainSection, subView: ActiveSubView) => void;
   onOpenComposer: () => void;
   pendingApprovalsCount: number;
+  newRadarPostsCount?: number;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
   unreadConversationsCount?: number;
@@ -57,6 +59,7 @@ export function AppSidebar({
   onNavigate,
   onOpenComposer,
   pendingApprovalsCount,
+  newRadarPostsCount = 0,
   isCollapsed,
   onToggleCollapse,
   unreadConversationsCount = 0,
@@ -158,6 +161,15 @@ export function AppSidebar({
           subView: 'references' as ActiveSubView,
           label: 'Referências Virais',
           icon: <BookOpen size={17} />,
+        },
+        {
+          id: 'radar',
+          section: 'ideas' as MainSection,
+          subView: 'radar' as ActiveSubView,
+          label: 'Radar & Salvos',
+          icon: <Radar size={17} />,
+          badge: newRadarPostsCount > 0 ? String(newRadarPostsCount) : undefined,
+          badgeColor: 'bg-[#7ae6a0]/15 text-[#7ae6a0] border border-[#7ae6a0]/25 rounded-[5px]',
         },
         {
           id: 'video-crew',

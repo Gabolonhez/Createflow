@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CreateFlow Radar &amp; Salvos</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="header">
+      <div class="brand">
+        <span class="dot"></span>
+        <span>CreateFlow</span>
+        <span class="tag">RADAR</span>
+      </div>
+      <span id="contextBadge" class="context-pill">Detectando aba...</span>
+    </header>
+
+    <section class="card">
+      <label class="label" for="apiUrl">URL do CreateFlow</label>
+      <input id="apiUrl" type="url" placeholder="http://localhost:3002" />
+
+      <label class="label" for="apiToken">Token Pessoal (Setup / Conexões)</label>
+      <input id="apiToken" type="password" placeholder="cf_radar_..." />
+
+      <button id="saveCfgBtn" class="btn-quiet" type="button">Salvar configuração</button>
+    </section>
+
+    <section class="actions">
+      <button id="captureSavedBtn" class="btn-primary" type="button">
+        Capturar Posts Salvos desta Tela
+      </button>
+      <button id="captureRadarBtn" class="btn-quiet" type="button">
+        Sincronizar Perfil para o Radar Viral
+      </button>
+    </section>
+
+    <div id="statusBox" class="status hidden"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

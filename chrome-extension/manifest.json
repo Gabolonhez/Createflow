@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "CreateFlow Radar & Salvos",
+  "version": "1.0.0",
+  "description": "Capture seus posts salvos e feeds de perfis monitorados no Instagram e LinkedIn direto para o CreateFlow.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.linkedin.com/*",
+    "https://www.instagram.com/*",
+    "http://localhost:3000/*",
+    "http://localhost:3001/*",
+    "http://localhost:3002/*",
+    "https://*.vercel.app/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "CreateFlow Radar & Salvos"
+  }
+}
