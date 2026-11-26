@@ -192,6 +192,10 @@ Responda estritamente no formato JSON:
 
 type JsonRecord = Record<string, unknown>;
 
+function asRecord(val: unknown): JsonRecord | undefined {
+  return val && typeof val === 'object' && !Array.isArray(val) ? (val as JsonRecord) : undefined;
+}
+
 function readString(obj: JsonRecord, keys: string[]): string | undefined {
   for (const k of keys) {
     const val = obj[k];
@@ -213,24 +217,34 @@ function readMetric(obj: JsonRecord, keys: string[]): number {
   return 0;
 }
 
-function inferMediaType(platform: Platform, raw: JsonRecord): CapturedMediaType {
+function inferMediaType(platform: Platform, raw: JsonRecord, postImages: unknown[]): CapturedMediaType {
   const typeStr = (readString(raw, ['type', 'mediaType', 'productType', 'postType']) || '').toLowerCase();
   if (typeStr.includes('reel') || typeStr.includes('clips') || platform === 'tiktok') return 'reel';
-  if (typeStr.includes('video')) return 'video';
-  if (typeStr.includes('sidecar') || typeStr.includes('carousel')) return 'carousel';
+  if (typeStr.includes('video') || Boolean(raw.video)) return 'video';
+  if (typeStr.includes('sidecar') || typeStr.includes('carousel') || Boolean(raw.document)) return 'carousel';
   if (raw.childPosts && Array.isArray(raw.childPosts) && raw.childPosts.length > 1) return 'carousel';
+  if (postImages.length > 1) return 'carousel';
   if (readString(raw, ['videoUrl', 'video_url'])) return platform === 'instagram' ? 'reel' : 'video';
-  if (readString(raw, ['displayUrl', 'imageUrl', 'thumbnailUrl', 'mediaUrl'])) return 'image';
+  if (readString(raw, ['displayUrl', 'imageUrl', 'thumbnailUrl', 'mediaUrl']) || postImages.length === 1) {
+    return 'image';
+  }
   return 'text';
 }
 
-function normalizeApifyItem(
+export function normalizeApifyItem(
   profile: MonitoredProfile,
   raw: JsonRecord
 ): (RadarIngestPostInput & { platform: Platform }) | null {
+  const authorObj = asRecord(raw.author);
+  const engagementObj = asRecord(raw.engagement);
+  const postedAtObj = asRecord(raw.postedAt);
+  const postImages = Array.isArray(raw.postImages) ? raw.postImages : [];
+  const firstImageUrl = postImages.length > 0 ? readString(asRecord(postImages[0]) || {}, ['url', 'imageUrl']) : undefined;
+
   const captionText =
     readString(raw, [
       'caption',
+      'content',
       'text',
       'fullText',
       'full_text',
@@ -241,7 +255,7 @@ function normalizeApifyItem(
     ]) || '';
 
   const postUrl =
-    readString(raw, ['url', 'postUrl', 'permalink', 'link', 'webVideoUrl']) ||
+    readString(raw, ['url', 'linkedinUrl', 'postUrl', 'post_url', 'permalink', 'link', 'webVideoUrl']) ||
     (readString(raw, ['shortCode']) && profile.platform === 'instagram'
       ? `https://www.instagram.com/p/${readString(raw, ['shortCode'])}/`
       : undefined);
@@ -249,34 +263,46 @@ function normalizeApifyItem(
   if (!captionText && !postUrl) return null;
 
   const cleanHandle = profile.handle.replace(/^@/, '');
-  const likesCount = readMetric(raw, [
-    'likesCount',
-    'likeCount',
-    'numLikes',
-    'favoriteCount',
-    'diggCount',
-    'reactionsCount',
-  ]);
-  const commentsCount = readMetric(raw, [
-    'commentsCount',
-    'commentCount',
-    'numComments',
-    'replyCount',
-  ]);
-  const viewsCount = readMetric(raw, [
-    'videoViewCount',
-    'videoPlayCount',
-    'viewCount',
-    'viewsCount',
-    'playCount',
-  ]);
-  const sharesCount = readMetric(raw, [
-    'sharesCount',
-    'shareCount',
-    'numShares',
-    'repostCount',
-    'retweetCount',
-  ]);
+  const likesCount =
+    readMetric(raw, [
+      'likesCount',
+      'likeCount',
+      'numLikes',
+      'favoriteCount',
+      'diggCount',
+      'reactionsCount',
+    ]) || (engagementObj ? readMetric(engagementObj, ['likes', 'reactions', 'totalReactions']) : 0);
+
+  const commentsCount =
+    readMetric(raw, [
+      'commentsCount',
+      'commentCount',
+      'numComments',
+      'replyCount',
+    ]) || (engagementObj ? readMetric(engagementObj, ['comments', 'totalComments']) : 0);
+
+  const viewsCount =
+    readMetric(raw, [
+      'videoViewCount',
+      'videoPlayCount',
+      'viewCount',
+      'viewsCount',
+      'playCount',
+    ]) || (engagementObj ? readMetric(engagementObj, ['views', 'impressions']) : 0);
+
+  const sharesCount =
+    readMetric(raw, [
+      'sharesCount',
+      'shareCount',
+      'numShares',
+      'repostCount',
+      'retweetCount',
+    ]) || (engagementObj ? readMetric(engagementObj, ['shares', 'reposts', 'totalShares']) : 0);
+
+  const rawAuthorHandle =
+    readString(raw, ['ownerUsername', 'authorHandle', 'username']) ||
+    (authorObj ? readString(authorObj, ['publicIdentifier', 'username', 'handle']) : undefined) ||
+    cleanHandle;
 
   return {
     platform: profile.platform,
@@ -284,23 +310,28 @@ function normalizeApifyItem(
     externalId: readString(raw, ['id', 'shortCode', 'urn']) || null,
     authorName:
       readString(raw, ['ownerFullName', 'authorName', 'name']) ||
+      (authorObj ? readString(authorObj, ['name', 'fullName']) : undefined) ||
       profile.displayName ||
       cleanHandle,
-    authorHandle:
-      (readString(raw, ['ownerUsername', 'authorHandle', 'username']) || cleanHandle).replace(/^@/, ''),
+    authorHandle: rawAuthorHandle.replace(/^@/, ''),
     captionText: captionText || '(Post sem legenda textual)',
-    mediaType: inferMediaType(profile.platform, raw),
+    mediaType: inferMediaType(profile.platform, raw, postImages),
     mediaUrl:
-      readString(raw, ['displayUrl', 'thumbnailUrl', 'imageUrl', 'coverUrl', 'mediaUrl']) || null,
+      readString(raw, ['displayUrl', 'thumbnailUrl', 'imageUrl', 'coverUrl', 'mediaUrl']) ||
+      firstImageUrl ||
+      null,
     likesCount,
     commentsCount,
     viewsCount,
     sharesCount,
-    publishedAt: readString(raw, ['timestamp', 'createdAt', 'postedAt', 'date']) || null,
+    publishedAt:
+      readString(raw, ['timestamp', 'createdAt', 'postedAt', 'date']) ||
+      (postedAtObj ? readString(postedAtObj, ['date', 'timestamp', 'postedAt']) : undefined) ||
+      null,
   };
 }
 
-function buildApifyActorRequest(profile: MonitoredProfile): {
+export function buildApifyActorRequest(profile: MonitoredProfile): {
   actorId: string;
   input: Record<string, unknown>;
 } {
@@ -315,10 +346,18 @@ function buildApifyActorRequest(profile: MonitoredProfile): {
         },
       };
     case 'linkedin': {
-      const targetUrl =
-        profile.profileUrl && profile.profileUrl.startsWith('http')
-          ? profile.profileUrl
-          : `https://www.linkedin.com/in/${cleanHandle}/`;
+      let targetUrl: string;
+      if (profile.profileUrl && profile.profileUrl.startsWith('http')) {
+        targetUrl = profile.profileUrl;
+      } else if (cleanHandle.startsWith('http')) {
+        targetUrl = cleanHandle;
+      } else if (cleanHandle.startsWith('linkedin.com/')) {
+        targetUrl = `https://www.${cleanHandle}`;
+      } else if (cleanHandle.startsWith('in/') || cleanHandle.startsWith('company/') || cleanHandle.startsWith('/in/') || cleanHandle.startsWith('/company/')) {
+        targetUrl = `https://www.linkedin.com/${cleanHandle.replace(/^\/+/, '')}`;
+      } else {
+        targetUrl = `https://www.linkedin.com/in/${cleanHandle}/`;
+      }
       return {
         actorId: 'harvestapi~linkedin-profile-posts',
         input: {
@@ -389,11 +428,21 @@ export async function syncProfileViaApify(
     if (normalized) posts.push(normalized);
   }
 
+  if (items.length > 0 && posts.length === 0) {
+    throw new Error(
+      `A Apify retornou ${items.length} itens para @${profile.handle}, mas nenhum pôde ser convertido em post válido.`
+    );
+  }
+
   const first = items[0];
+  const firstAuthor = first ? asRecord(first.author) : undefined;
   const profilePatch: Partial<MonitoredProfile> | undefined = first
     ? {
         displayName:
-          readString(first, ['ownerFullName', 'authorName']) || profile.displayName || undefined,
+          readString(first, ['ownerFullName', 'authorName', 'name']) ||
+          (firstAuthor ? readString(firstAuthor, ['name', 'fullName']) : undefined) ||
+          profile.displayName ||
+          undefined,
         followersCount:
           readMetric(first, ['followersCount', 'ownerFollowersCount', 'authorFollowersCount']) ||
           profile.followersCount,

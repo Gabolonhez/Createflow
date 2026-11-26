@@ -94,8 +94,9 @@ async function runCapture(mode) {
     }
 
     if (!Array.isArray(extracted.posts) || extracted.posts.length === 0) {
+      const debugSuffix = extracted?.debug ? ` [${extracted.debug}]` : '';
       throw new Error(
-        'Nenhum post visível encontrado. Role a página um pouco para carregar os cards e tente novamente.'
+        `Nenhum post visível encontrado. Role a página um pouco para carregar os cards e tente novamente.${debugSuffix}`
       );
     }
 
